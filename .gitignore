@@ -1,0 +1,21 @@
+# .gitignore pour DiaCare Kids
+
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Node / React
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db

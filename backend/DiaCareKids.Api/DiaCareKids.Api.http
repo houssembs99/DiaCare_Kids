@@ -1,0 +1,6 @@
+@DiaCareKids.Api_HostAddress = http://localhost:5246
+
+GET {{DiaCareKids.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,305 @@
+CAHIER DES CHARGES
+DiaCare Kids
+Système intelligent de suivi du diabète de type 1 chez l’enfant avec éducation en Réalité Augmentée
+1. Contexte et problématique
+
+Le diabète de type 1 est une maladie chronique fréquente chez l’enfant nécessitant :
+
+Un suivi glycémique quotidien rigoureux
+
+Une adaptation régulière des doses d’insuline
+
+Une surveillance continue afin d’éviter les hypoglycémies et hyperglycémies
+
+Situation actuelle
+
+Les données sont souvent notées manuellement
+
+Le médecin ne dispose pas toujours d’un historique structuré et centralisé
+
+Les parents manquent d’assistance immédiate dans certaines situations
+
+L’enfant ne comprend pas toujours sa maladie, ce qui impacte son adhésion au traitement
+
+Il devient donc nécessaire de proposer une solution numérique intégrée permettant un suivi intelligent, structuré et éducatif.
+
+2. Objectifs du projet
+🎯 Objectif général
+
+Concevoir et développer une plateforme intelligente Web + Mobile + Réalité Augmentée permettant :
+
+Le suivi médical structuré des enfants diabétiques
+
+L’assistance des parents dans la gestion quotidienne
+
+L’éducation et la motivation de l’enfant via la réalité augmentée
+
+🎯 Objectifs spécifiques
+
+Centraliser l’historique médical des patients
+
+Mettre en place un module d’aide à la décision basé sur des règles métier
+
+Générer des alertes automatiques
+
+Concevoir un jeu éducatif en réalité augmentée
+
+Assurer la sécurité et la confidentialité des données médicales
+
+3. Périmètre du projet
+✅ Inclus
+
+Application Web (médecin + admin + clinique)
+
+Interface parent (Web ou Mobile)
+
+Application mobile AR (enfant)
+
+Base de données sécurisée
+
+Module d’analyse automatique
+
+Système d’alertes
+
+❌ Non inclus
+
+Diagnostic médical automatique
+
+Prescription automatique
+
+Intégration directe avec des dispositifs médicaux réels
+
+4. Acteurs du système
+Acteur	Rôle
+Admin	Gestion globale des comptes, abonnements et paiements
+Clinique	Association des médecins, gestion des listes de médecins et patients
+Médecin	Suivi médical, analyse des données, consultation des historiques
+Parent	Saisie quotidienne des mesures
+Enfant	Utilisation du module AR éducatif
+5. Description fonctionnelle
+5.1 Module Médecin (Application Web – Partie principale)
+5.1.1 Authentification & Sécurité
+
+Connexion sécurisée
+
+Gestion des rôles
+
+Authentification via JWT
+
+Protection des données médicales
+
+5.1.2 Gestion des patients
+
+Le médecin peut :
+
+Créer un dossier patient
+
+Modifier les informations
+
+Associer un parent
+
+Définir des objectifs glycémiques
+
+La fiche médicale contient :
+
+Identité de l’enfant
+
+Date de diagnostic
+
+Type de diabète
+
+Traitement actuel
+
+Historique complet
+
+5.1.3 Historique médical (fonction clé)
+
+Enregistrement chronologique de :
+
+Glycémie (avant / après repas)
+
+Doses d’insuline
+
+Repas (glucides estimés)
+
+Activité physique
+
+Hypoglycémies / hyperglycémies
+
+Consultations
+
+Visualisation :
+
+Courbes interactives
+
+Moyennes journalières et hebdomadaires
+
+Indicateurs statistiques
+
+Fréquence des anomalies
+
+5.1.4 Module d’aide à la décision
+
+Basé sur des règles métier simples.
+
+Exemples :
+
+Si glycémie < 70 mg/dL → Alerte hypoglycémie
+
+Si glycémie > 250 mg/dL → Surveillance renforcée
+
+Si anomalies répétées → Suggestion de consultation
+
+⚠ Le système fournit uniquement des recommandations indicatives et ne remplace pas l’avis médical.
+
+5.1.5 Dashboard Médecin
+
+Liste des patients
+
+Statut en temps réel (vert / orange / rouge)
+
+Alertes automatiques
+
+Export PDF
+
+Historique des consultations
+
+5.2 Module Parent
+5.2.1 Saisie quotidienne
+
+Le parent peut saisir :
+
+Glycémie
+
+Dose d’insuline
+
+Repas
+
+Activité physique
+
+Symptômes
+
+5.2.2 Conseils automatiques
+
+Après analyse :
+
+Donner du sucre rapide
+
+Hydratation
+
+Surveillance renforcée
+
+Contacter le médecin
+
+5.2.3 Notifications
+
+Rappel prise d’insuline
+
+Rappel mesure de glycémie
+
+Alerte en cas de valeurs critiques
+
+5.3 Module Enfant – Application Mobile AR
+🎯 Objectifs
+
+Comprendre le diabète
+
+Comprendre le rôle de l’insuline
+
+Être motivé à suivre le traitement
+
+Fonctionnalités AR
+
+Visualisation 3D du corps humain
+
+Pancréas en réalité augmentée
+
+Simulation :
+
+Sucre dans le sang
+
+Insuline entrant dans la cellule
+
+Mini-jeu éducatif
+
+Système de points et badges
+
+Contraintes
+
+Aucun accès aux données médicales
+
+Lecture seule
+
+Fonction purement éducative
+
+6. Exigences non fonctionnelles
+
+Sécurité et confidentialité des données
+
+Interface intuitive et ergonomique
+
+Temps de réponse rapide
+
+Compatibilité Android
+
+Architecture évolutive
+
+Sauvegarde et récupération des données
+
+7. Architecture technique
+Web
+
+Frontend : React ou Angular
+
+Backend : .NET ou Spring Boot
+
+API REST sécurisée
+
+Authentification JWT
+
+Base de données PostgreSQL
+
+Mobile
+
+Unity + AR Foundation
+
+Android (ARCore)
+
+8. Modélisation UML
+
+À réaliser :
+
+Diagramme de cas d’utilisation
+
+Diagramme de classes
+
+Diagramme de séquence :
+Saisie parent → Analyse → Recommandation
+
+Diagramme d’architecture
+
+9. Résultats attendus
+
+Plateforme Web fonctionnelle
+
+Module AR interactif
+
+Interface médecin complète
+
+Système d’alertes opérationnel
+
+Démonstration complète pour la soutenance
+
+🔎 Conclusion
+
+Le projet DiaCare Kids propose une solution innovante combinant :
+
+Suivi médical structuré
+
+Aide à la décision basée sur des règles métier
+
+Participation active des parents
+
+Éducation immersive par réalité augmentée
+
+Il répond à une problématique réelle de santé pédiatrique tout en intégrant des technologies modernes adaptées à un Projet de Fin d’Études en Génie Logiciel.
