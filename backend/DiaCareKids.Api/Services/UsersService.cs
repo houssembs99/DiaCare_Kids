@@ -15,11 +15,26 @@ namespace DiaCareKids.Api.Services
         public async Task<List<User>> GetAsync() =>
             await _usersCollection.Find(_ => true).ToListAsync();
 
+        public async Task<List<User>> GetByRoleAsync(string role) =>
+            await _usersCollection.Find(x => x.Role == role).ToListAsync();
+
         public async Task<User?> GetAsync(string id) =>
             await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
         public async Task<User?> GetByEmailAsync(string email) =>
             await _usersCollection.Find(x => x.Email == email).FirstOrDefaultAsync();
+
+        public async Task<List<User>> GetByParentIdAsync(string parentId) =>
+            await _usersCollection.Find(x => x.AssociatedParentId == parentId).ToListAsync();
+
+        public async Task<List<User>> GetByClinicIdAsync(string clinicId) =>
+            await _usersCollection.Find(x => x.AssociatedClinicId == clinicId).ToListAsync();
+
+        public async Task<List<User>> GetByDoctorIdAsync(string doctorId) =>
+            await _usersCollection.Find(x => x.AssociatedDoctorId == doctorId).ToListAsync();
+
+        public async Task<User?> GetByFileNumberAsync(string fileNumber) =>
+            await _usersCollection.Find(x => x.FileNumber == fileNumber).FirstOrDefaultAsync();
 
         public async Task CreateAsync(User newUser) =>
             await _usersCollection.InsertOneAsync(newUser);

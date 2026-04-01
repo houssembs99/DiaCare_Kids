@@ -19,6 +19,15 @@ builder.Services.AddScoped(s =>
 });
 
 builder.Services.AddScoped<DiaCareKids.Api.Services.UsersService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.PatientsService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.MedicalRecordsService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.ClinicsService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.DoctorsService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.MessagesService>();
+builder.Services.AddSingleton<DiaCareKids.Api.Services.DecisionSupportService>();
+builder.Services.AddSingleton<DiaCareKids.Api.Services.GlucosePredictionService>();
+
+
 
 // Auth Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -45,7 +54,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -67,6 +81,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles(); // Serve /wwwroot/uploads
 
 app.UseCors("AllowAll");
 

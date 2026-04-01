@@ -1,0 +1,132 @@
+using DiaCareKids.Api.Models;
+using DiaCareKids.Api.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace DiaCareKids.Api.Controllers
+{
+    [ApiController]
+    [Route("api/doctor-management")]
+    [Authorize(Roles = "Medecin")]
+    public class DoctorManagementController : ControllerBase
+    {
+        private readonly UsersService _usersService;
+        private readonly MedicalRecordsService _recordsService;
+
+        public DoctorManagementController(UsersService usersService, MedicalRecordsService recordsService)
+        {
+            _usersService = usersService;
+            _recordsService = recordsService;
+            Console.WriteLine("[DOCTOR LOG] DoctorManagementController initialized.");
+        }
+
+        private string GetCurrentUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        [HttpGet("patients")]
+        public async Task<ActionResult> GetMyPatients()
+        {
+            var doctorId = GetCurrentUserId();
+            var patients = await _usersService.GetByDoctorIdAsync(doctorId);
+            
+            var result = new List<object>();
+            foreach (var p in patients)
+            {
+                var records = await _recordsService.GetByPatientAsync(p.Id!);
+                var lastRecord = records.FirstOrDefault();
+                
+                result.Add(new
+                {
+                    p.Id,
+                    p.FullName,
+                    p.FileNumber,
+                    p.DateOfBirth,
+                    p.Status,
+                    LastGlucose = lastRecord?.GlucoseValue
+                });
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet("patients/{id}")]
+        public async Task<ActionResult> GetPatientDetail(string id)
+        {
+            var doctorId = GetCurrentUserId();
+            var patient = await _usersService.GetAsync(id);
+            
+            if (patient == null || patient.AssociatedDoctorId != doctorId)
+                return NotFound(new { message = "Patient non trouvé ou n'est pas sous votre suivi." });
+
+            User? parent = null;
+            if (!string.IsNullOrEmpty(patient.AssociatedParentId))
+            {
+                parent = await _usersService.GetAsync(patient.AssociatedParentId);
+            }
+
+            var records = await _recordsService.GetByPatientAsync(id);
+
+            return Ok(new
+            {
+                Patient = patient,
+                Parent = parent,
+                Records = records
+            });
+        }
+        [HttpPut("update-patient-profile/{patientId}")]
+        public async Task<IActionResult> UpdatePatientProfile(string patientId, [FromBody] UpdateChildProfileRequest request)
+        {
+            var doctorId = GetCurrentUserId();
+            var patient = await _usersService.GetAsync(patientId);
+
+            if (patient == null || patient.AssociatedDoctorId != doctorId)
+            {
+                return NotFound(new { message = "Patient non trouvé ou non autorisé." });
+            }
+
+            patient.Height = request.Height;
+            patient.Weight = request.Weight;
+            patient.Allergies = request.Allergies;
+            patient.DiagnosisDate = request.DiagnosisDate;
+            patient.DiabetesType = request.DiabetesType;
+
+            await _usersService.UpdateAsync(patientId, patient);
+
+            return Ok(new { message = "Profil médical mis à jour avec succès", patient });
+        }
+        [HttpPut("update-medical-notes/{patientId}")]
+        public async Task<IActionResult> UpdateMedicalNotes(string patientId, [FromBody] UpdateNotesRequest request)
+        {
+            var doctorId = GetCurrentUserId();
+            var patient = await _usersService.GetAsync(patientId);
+
+            if (patient == null || patient.AssociatedDoctorId != doctorId)
+            {
+                return NotFound(new { message = "Patient non trouvé ou non autorisé." });
+            }
+
+            patient.MedicalNotes = request.Notes;
+            await _usersService.UpdateAsync(patientId, patient);
+
+            return Ok(new { message = "Notes médicales mises à jour avec succès", patient });
+        }
+
+        [HttpGet("stats")]
+        public async Task<ActionResult> GetStats()
+        {
+            var doctorId = GetCurrentUserId();
+            var patients = await _usersService.GetByDoctorIdAsync(doctorId);
+            
+            return Ok(new
+            {
+                totalPatients = patients.Count,
+                alerts = 0 // Mock for now
+            });
+        }
+    }
+
+    public class UpdateNotesRequest
+    {
+        public string? Notes { get; set; }
+    }
+}

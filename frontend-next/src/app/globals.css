@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  --background: #0b1b2b;
+  --foreground: #EBF4F6;
+  /* Blanc glacé premium */
+  --text-secondary: rgba(235, 244, 246, 0.6);
+  /* Version translucide pour les légendes */
+  --primary: #FFFFFF;
+  /* Pour un contraste maximal sur fond sombre */
+  --secondary: rgba(255, 255, 255, 0.15);
+  --accent: #FFB300;
+  /* Ambre/Or pour attirer l'attention */
+  --success: #00E676;
+  /* Vert menthe vibrant */
+  --radius: 24px;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 20%);
+}
+
+@layer components {
+
+  /* Apple-style Glass Cards Optimized for Dark Cyan/Blue Overlay */
+  .apple-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .apple-card:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transform: translateY(-4px);
+  }
+
+  /* Premium Buttons for Dark Background */
+  .btn-apple {
+    @apply px-8 py-4 bg-white text-[#0b1b2b] font-bold rounded-full shadow-xl shadow-black/10 transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-apple-secondary {
+    @apply px-8 py-4 bg-white/5 text-white font-bold rounded-full border border-white/10 backdrop-blur-md transition-all duration-300 hover:bg-white/10 active:scale-95;
+  }
+
+  /* Bento Grid Utilities */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .bento-grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+  }
+
+  /* Text Overlays */
+  .text-premium {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to bottom right, #EBF4F6, #B2C8D1);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
