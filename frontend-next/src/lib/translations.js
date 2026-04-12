@@ -137,7 +137,14 @@ export const translations = {
             gameHypo: "Mission Resucrage",
             gameFood: "Le Détective des Repas",
             arTitle: "Magie AR",
-            arDesc: "Regarde l'insuline agir dans ton corps !"
+            arDesc: "Regarde l'insuline agir dans ton corps !",
+            avecDiaPote: "Avec DiaPote",
+            questionsFreq: "Questions fréquentes",
+            conseilsChampion: "Conseils de Champion",
+            diaPoteSpeaking: "DiaPote est en train de parler...",
+            diaPoteListening: "DiaPote est à l'écoute",
+            next: "Suivant",
+            letsGo: "C'est parti !"
         },
         doctor: {
             dashboardTitle: "Tableau de Bord Médical",
@@ -319,7 +326,14 @@ export const translations = {
             gameHypo: "Rescue Mission",
             gameFood: "Meal Detective",
             arTitle: "AR Magic",
-            arDesc: "See how insulin works in your body!"
+            arDesc: "See how insulin works in your body !",
+            avecDiaPote: "With DiaPote",
+            questionsFreq: "Frequently Asked Questions",
+            conseilsChampion: "Champion's Advice",
+            diaPoteSpeaking: "DiaPote is speaking...",
+            diaPoteListening: "DiaPote is listening",
+            next: "Next",
+            letsGo: "Let's Go!"
         },
         doctor: {
             dashboardTitle: "Medical Dashboard",
@@ -501,7 +515,14 @@ export const translations = {
             gameHypo: "مهمة الإنقاذ",
             gameFood: "مكتشف الوجبات",
             arTitle: "سحر الواقع المعزز",
-            arDesc: "شاهد كيف يعمل الأنسولين في جسمك !"
+            arDesc: "شاهد كيف يعمل الأنسولين في جسمك !",
+            avecDiaPote: "مع ديا-بوت",
+            questionsFreq: "الأسئلة المتكررة",
+            conseilsChampion: "نصائح الأبطال",
+            diaPoteSpeaking: "ديا-بوت يتحدث...",
+            diaPoteListening: "ديا-بوت يستمع",
+            next: "التالي",
+            letsGo: "هيا بنا!"
         },
         doctor: {
             dashboardTitle: "لوحة التحكم الطبية",

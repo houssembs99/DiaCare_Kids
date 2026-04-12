@@ -193,6 +193,35 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
                 <div className="fixed bottom-0 left-0 right-0 bg-[#0b1b2b]/80 backdrop-blur-2xl border-t border-white/10 px-4 py-4 flex justify-around items-center z-[60] rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
                     {kidLinks.map((link) => {
                         const isActive = pathname === link.href;
+                        const isEducation = link.name === t('kid.jApprends');
+
+                        const Content = (
+                            <>
+                                <div className={cn(
+                                    "p-4 rounded-3xl transition-all shadow-lg",
+                                    isActive ? "bg-[#FFB300] text-black rotate-[5deg]" : "text-white"
+                                )}>
+                                    {React.cloneElement(link.icon, { size: 28 })}
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-tight mt-1">{link.name}</span>
+                            </>
+                        );
+
+                        if (isEducation) {
+                            return (
+                                <button
+                                    key={link.name}
+                                    onClick={() => window.dispatchEvent(new CustomEvent('open-education'))}
+                                    className={cn(
+                                        "flex flex-col items-center gap-1 transition-all duration-300",
+                                        isActive ? "scale-110" : "opacity-40"
+                                    )}
+                                >
+                                    {Content}
+                                </button>
+                            );
+                        }
+
                         return (
                             <Link
                                 key={link.name}
@@ -202,13 +231,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
                                     isActive ? "scale-110" : "opacity-40"
                                 )}
                             >
-                                <div className={cn(
-                                    "p-4 rounded-3xl transition-all shadow-lg",
-                                    isActive ? "bg-[#FFB300] text-black rotate-[5deg]" : "text-white"
-                                )}>
-                                    {React.cloneElement(link.icon, { size: 28 })}
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-tight mt-1">{link.name}</span>
+                                {Content}
                             </Link>
                         );
                     })}
@@ -270,16 +293,10 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
                             <nav className="flex-1 px-4 overflow-y-auto custom-scrollbar space-y-2 pb-10">
                                 {sidebarLinks.map((link) => {
                                     const isActive = pathname === link.href;
-                                    return (
-                                        <Link
-                                            key={link.name}
-                                            href={link.href}
-                                            onClick={() => setSidebarOpen(false)}
-                                            className={cn(
-                                                "flex items-center gap-4 px-6 py-5 rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all group relative overflow-hidden",
-                                                isActive ? "bg-white text-[#1E88E5] shadow-xl" : "text-white/40 hover:bg-white/5 hover:text-white"
-                                            )}
-                                        >
+                                    const isEducation = link.name === t('kid.jApprends');
+
+                                    const LinkContent = (
+                                        <>
                                             <span className={cn("transition-transform group-hover:scale-110 relative", isActive ? "text-[#1E88E5]" : "text-white/20 group-hover:text-white")}>
                                                 {React.cloneElement(link.icon, { size: 20 })}
                                                 {link.href.includes('messaging') && unreadMessages > 0 && (
@@ -295,6 +312,38 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
                                                     {unreadMessages > 9 ? '9+' : unreadMessages}
                                                 </div>
                                             )}
+                                        </>
+                                    );
+
+                                    if (isEducation) {
+                                        return (
+                                            <button
+                                                key={link.name}
+                                                onClick={() => {
+                                                    setSidebarOpen(false);
+                                                    window.dispatchEvent(new CustomEvent('open-education'));
+                                                }}
+                                                className={cn(
+                                                    "flex items-center gap-4 px-6 py-5 rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all group relative overflow-hidden w-full text-left",
+                                                    isActive ? "bg-white text-[#1E88E5] shadow-xl" : "text-white/40 hover:bg-white/5 hover:text-white"
+                                                )}
+                                            >
+                                                {LinkContent}
+                                            </button>
+                                        );
+                                    }
+
+                                    return (
+                                        <Link
+                                            key={link.name}
+                                            href={link.href}
+                                            onClick={() => setSidebarOpen(false)}
+                                            className={cn(
+                                                "flex items-center gap-4 px-6 py-5 rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all group relative overflow-hidden",
+                                                isActive ? "bg-white text-[#1E88E5] shadow-xl" : "text-white/40 hover:bg-white/5 hover:text-white"
+                                            )}
+                                        >
+                                            {LinkContent}
                                         </Link>
                                     );
                                 })}

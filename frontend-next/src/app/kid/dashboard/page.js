@@ -2,24 +2,31 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import DiaPoteMascot from '@/components/DiaPoteMascot';
+import DiaPoteInteraction from '@/components/DiaPoteInteraction';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Zap, Heart, Star, Sparkles,
     ChevronRight, ChevronLeft,
-    Crown, Rocket, Shield, Loader2
+    Crown, Rocket, Shield, Loader2,
+    Gamepad2, BookOpen, Trophy, LayoutDashboard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
 import api from '@/lib/api';
+import Link from 'next/link';
+import Lottie from 'lottie-react';
+import stableAnimData from '@/animations/diapotstable.json';
 
 export default function KidDashboard() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const [energy, setEnergy] = useState(0);
-    const [avatarIndex, setAvatarIndex] = useState(0);
     const [userName, setUserName] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
     const [force, setForce] = useState('-');
     const [loading, setLoading] = useState(true);
+    const [showMascot, setShowMascot] = useState(false);
+    const [isEducationOpen, setIsEducationOpen] = useState(false);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -27,10 +34,15 @@ export default function KidDashboard() {
             setUserName(user.fullName.split(' ')[0]);
         }
 
+        // Show mascot on first visit of the session
+        const hasSeenMascot = sessionStorage.getItem('hasSeenMascot');
+        if (!hasSeenMascot) {
+            setShowMascot(true);
+            sessionStorage.setItem('hasSeenMascot', 'true');
+        }
+
         const fetchHealthData = async () => {
             try {
-                // Try to find the patient first to get targets
-                // In this architecture, we check if there's a medical record for this user id
                 const recordRes = await api.get(`/medicalrecords/patient/${user.id}`);
                 const records = recordRes.data;
 
@@ -39,10 +51,9 @@ export default function KidDashboard() {
                     const val = latest.glucoseValue;
 
                     if (val) {
-                        // Dynamic Energy Calculation (Safe range 70-150)
                         let calculatedEnergy = 0;
                         if (val >= 70 && val <= 140) {
-                            calculatedEnergy = 90 + Math.random() * 10; // High energy when in range
+                            calculatedEnergy = 90 + Math.random() * 10;
                             setForce("Maxima ⚡");
                             setStatusMessage(t('kid.perfectMsg'));
                         } else if (val < 70) {
@@ -57,189 +68,233 @@ export default function KidDashboard() {
                         setEnergy(Math.round(calculatedEnergy));
                     }
                 } else {
-                    setStatusMessage("En attente de tes premières mesures !");
+                    setStatusMessage(t('kid.welcome'));
                     setForce("Initialisation");
                 }
             } catch (err) {
                 console.error("Dashboard error:", err);
-                setStatusMessage("Connectez-vous pour voir vos exploits !");
             } finally {
                 setLoading(false);
             }
         };
 
+        const handleOpenEducation = () => setIsEducationOpen(true);
+        window.addEventListener('open-education', handleOpenEducation);
+
         if (user.id) fetchHealthData();
         else setLoading(false);
+
+        return () => {
+            window.removeEventListener('open-education', handleOpenEducation);
+        };
     }, [t]);
 
-    const avatars = [
-        { id: 1, name: "Super Théo", color: "bg-blue-400", accessories: "🚀" },
-        { id: 2, name: "Léa l'Héroïne", color: "bg-pink-400", accessories: "⭐" },
-        { id: 3, name: "Capitaine Dia", color: "bg-green-400", accessories: "🛡️" }
+    const bentoCards = [
+        { 
+            title: t('kid.monMonde'), 
+            icon: <LayoutDashboard size={32} />, 
+            link: "/kid/dashboard", 
+            color: "bg-[#0071E3]", 
+            textColor: "text-white",
+            span: "col-span-2 md:col-span-1"
+        },
+        { 
+            title: t('kid.mesJeux'), 
+            icon: <Gamepad2 size={32} />, 
+            link: "/kid/games", 
+            color: "bg-[#FF3B30]", 
+            textColor: "text-white",
+            span: "col-span-1"
+        },
+        { 
+            title: t('kid.jApprends'), 
+            icon: <BookOpen size={32} />, 
+            link: "/kid/learn", 
+            color: "bg-[#34C759]", 
+            textColor: "text-white",
+            span: "col-span-1"
+        },
+        { 
+            title: t('kid.recompenses'), 
+            icon: <Trophy size={32} />, 
+            link: "/kid/rewards", 
+            color: "bg-[#FF9500]", 
+            textColor: "text-white",
+            span: "col-span-2"
+        }
     ];
 
     return (
         <DashboardLayout role="Enfant">
-            <div className="min-h-screen flex flex-col space-y-10 pb-32 max-w-lg mx-auto px-6 pt-10 text-white overflow-hidden">
+            {showMascot && <DiaPoteMascot userName={userName} onClose={() => setShowMascot(false)} />}
+            
+            <AnimatePresence>
+                {isEducationOpen && (
+                    <DiaPoteInteraction 
+                        energy={energy} 
+                        userName={userName}
+                        onClose={() => setIsEducationOpen(false)} 
+                    />
+                )}
+            </AnimatePresence>
 
-                {/* Profile Header */}
-                <div className="flex items-center justify-between">
+            <div className="min-h-screen pb-32 max-w-5xl mx-auto px-6 pt-6 md:pt-12 text-white overflow-hidden">
+                
+                {/* Header Section */}
+                <div className="flex items-center justify-between mb-10">
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-[#FFB300] rounded-[24px] flex items-center justify-center text-black shadow-[0_10px_30px_rgba(255,179,0,0.4)]">
-                            <Crown size={32} />
-                        </div>
+                        <motion.div 
+                            whileHover={{ rotate: 15 }}
+                            className="w-14 h-14 md:w-20 md:h-20 bg-[#FFB300] rounded-2xl md:rounded-[32px] flex items-center justify-center text-black shadow-lg"
+                        >
+                            <Crown size={32} className="md:w-12 md:h-12" />
+                        </motion.div>
                         <div>
-                            <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">
-                                {userName || 'Amine'} <span className="text-[#FFB300]">Le Roi</span>
+                            <h1 className="text-2xl md:text-4xl font-black italic tracking-tighter uppercase leading-none">
+                                {userName || 'Héros'} <span className="text-[#FFB300]">DiaCare</span>
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
                                 <Star size={12} className="text-[#FFB300] fill-[#FFB300]" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Niveau 0 • 0 XP</span>
+                                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Niveau 5 • Pro du Glucose</span>
                             </div>
                         </div>
                     </div>
-                    <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center">
-                        <Rocket size={24} className="text-white/20" />
+                    <div className="hidden md:flex gap-4">
+                         <div className="bg-white/5 border border-white/10 p-4 rounded-3xl flex items-center gap-3">
+                            <Sparkles className="text-[#FFB300]" />
+                            <span className="font-bold">450 XP</span>
+                         </div>
                     </div>
                 </div>
 
-                {/* Main Avatar World SECTION 4.1 */}
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="relative flex flex-col items-center justify-center py-10"
-                >
-                    {/* Animated Glow Background */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#088395]/20 to-transparent blur-[100px] rounded-full scale-150" />
-
-                    {/* Character Platform */}
-                    <div className="relative z-10 w-full aspect-square max-w-[300px] flex items-center justify-center group">
-
-                        {/* Avatar Picker */}
-                        <button
-                            onClick={() => setAvatarIndex((avatarIndex - 1 + avatars.length) % avatars.length)}
-                            className="absolute left-0 p-4 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all z-20"
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    {/* LEFT COLUMN: Energy & Status */}
+                    <div className="lg:col-span-5 space-y-8">
+                        <motion.div 
+                            initial={{ x: -20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[40px] p-8"
                         >
-                            <ChevronLeft size={24} />
-                        </button>
-
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={avatarIndex}
-                                initial={{ x: 20, opacity: 0, rotate: -10 }}
-                                animate={{ x: 0, opacity: 1, rotate: 0 }}
-                                exit={{ x: -20, opacity: 0, rotate: 10 }}
-                                className={cn(
-                                    "w-48 h-48 rounded-[60px] flex items-center justify-center text-7xl shadow-3xl border-4 border-white/20 relative",
-                                    avatars[avatarIndex].color
-                                )}
-                            >
-                                <span className="drop-shadow-2xl">{avatars[avatarIndex].accessories}</span>
-
-                                {/* Floating Badge */}
+                            <div className="flex justify-between items-center mb-6">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kid.energyLevel')}</span>
+                                <span className="text-2xl font-black italic text-[#FFB300]">{energy}%</span>
+                            </div>
+                            
+                            <div className="h-6 bg-white/5 border border-white/10 rounded-full overflow-hidden p-1.5 mb-8">
                                 <motion.div
-                                    animate={{ y: [0, -10, 0] }}
-                                    transition={{ repeat: Infinity, duration: 2 }}
-                                    className="absolute -top-6 -right-6 w-20 h-20 bg-[#FFD700] rounded-full flex items-center justify-center border-4 border-[#0b1b2b] shadow-xl"
-                                >
-                                    <Sparkles size={32} className="text-[#0b1b2b]" />
-                                </motion.div>
-                            </motion.div>
-                        </AnimatePresence>
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${energy}%` }}
+                                    className={cn(
+                                        "h-full rounded-full transition-all duration-1000",
+                                        energy > 70 ? "bg-gradient-to-r from-[#34C759] to-[#4CAF50] shadow-[0_0_20px_rgba(52,199,89,0.4)]" :
+                                        (energy < 40 ? "bg-gradient-to-r from-[#FF3B30] to-[#F44336] shadow-[0_0_20px_rgba(255,59,48,0.4)]" : "bg-gradient-to-r from-[#FF9500] to-[#FFB300] shadow-[0_0_20px_rgba(255,149,0,0.4)]")
+                                    )}
+                                />
+                            </div>
 
-                        <button
-                            onClick={() => setAvatarIndex((avatarIndex + 1) % avatars.length)}
-                            className="absolute right-0 p-4 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all z-20"
-                        >
-                            <ChevronRight size={24} />
-                        </button>
-
-                        {/* Energy Halo */}
-                        <div className={cn(
-                            "absolute inset-0 border-4 border-dashed rounded-full animate-spin-slow opacity-20",
-                            energy > 70 ? "border-success" : (energy < 40 ? "border-accent" : "border-warning")
-                        )} />
-                    </div>
-
-                    {/* Energy Bar SECTION 4.2 */}
-                    <div className="w-full mt-12 space-y-4">
-                        <div className="flex justify-between items-center px-2">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kid.energyLevel')}</span>
-                            <span className="text-xl font-black italic">{energy}%</span>
-                        </div>
-                        <div className="h-4 bg-white/5 border border-white/10 rounded-full overflow-hidden p-1">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${energy}%` }}
-                                className={cn(
-                                    "h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.3)]",
-                                    energy > 70 ? "bg-gradient-to-r from-success to-[#4CAF50]" :
-                                        (energy < 40 ? "bg-gradient-to-r from-accent to-[#F44336]" : "bg-gradient-to-r from-warning to-[#FFB300]")
-                                )}
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Motivating Message SECTION 4.3 */}
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 relative overflow-hidden group hover:border-[#FFB300]/30 transition-all shadow-2xl"
-                >
-                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-100 transition-opacity">
-                        <Heart size={40} className="text-[#FFB300]" />
-                    </div>
-                    {loading ? (
-                        <div className="flex items-center gap-4 py-4">
-                            <Loader2 className="animate-spin text-white/20" />
-                            <span className="text-xs font-bold text-white/20 uppercase tracking-widest">Calcul de tes forces...</span>
-                        </div>
-                    ) : (
-                        <>
-                            <p className="text-xl font-black italic uppercase tracking-tighter leading-tight pr-10">
-                                {statusMessage}
+                            <p className="text-xl font-black italic uppercase tracking-tighter leading-tight bg-white/5 p-6 rounded-3xl border border-white/5">
+                                {loading ? <Loader2 className="animate-spin" /> : statusMessage}
                             </p>
-                            <div className="mt-4 flex items-center gap-3">
-                                <div className="w-10 h-10 bg-[#FFB300]/20 rounded-xl flex items-center justify-center text-[#FFB300]">
-                                    <Shield size={18} />
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Force : {force}</span>
-                            </div>
-                        </>
-                    )}
-                </motion.div>
 
-                {/* Quick Quest */}
-                <div className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 pl-4">Mission du Jour</h3>
-                    <div className="p-6 bg-gradient-to-br from-[#088395] to-[#066a7a] rounded-[32px] flex items-center justify-between shadow-2xl">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
-                                <Zap size={24} />
+                            <div className="mt-6 flex items-center gap-3 text-white/40">
+                                <Shield size={16} />
+                                <span className="text-[11px] font-black uppercase tracking-widest">Force : {force}</span>
                             </div>
-                            <div>
-                                <div className="text-[11px] font-black uppercase tracking-tight">Le Combat du Sucre</div>
-                                <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Gagner 200 XP</div>
-                            </div>
+                        </motion.div>
+
+                        <div className="p-8 bg-gradient-to-br from-[#088395] to-[#0b1b2b] rounded-[40px] border border-white/10 relative overflow-hidden group">
+                             <Rocket className="absolute -bottom-4 -right-4 w-32 h-32 opacity-5 group-hover:scale-110 transition-transform" />
+                             <h3 className="text-sm font-black uppercase tracking-widest mb-4">Mission Active</h3>
+                             <p className="text-2xl font-black italic leading-none mb-6 tracking-tighter uppercase">Le Détective des Repas</p>
+                             <button className="bg-white text-[#088395] px-6 py-3 rounded-2xl font-bold text-sm uppercase tracking-widest">Jouer</button>
                         </div>
-                        <button className="w-10 h-10 bg-white text-[#088395] rounded-full flex items-center justify-center shadow-lg">
-                            <ChevronRight size={20} />
-                        </button>
                     </div>
+
+                    {/* RIGHT COLUMN: Bento Grid Navigation */}
+                    <div className="lg:col-span-7">
+                        <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 h-full">
+                            {bentoCards.map((card, idx) => {
+                                const isEducation = card.title === t('kid.jApprends');
+                                const Content = (
+                                    <>
+                                        <div className="absolute top-0 right-0 p-6 md:p-8 opacity-20 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-500">
+                                            {card.icon}
+                                        </div>
+                                        <div className="relative z-10 h-full flex flex-col justify-end min-h-[120px]">
+                                            <h3 className={cn("text-xl md:text-2xl font-black italic uppercase tracking-tighter leading-none mb-2", card.textColor)}>
+                                                {card.title}
+                                            </h3>
+                                            <div className="flex items-center gap-2 opacity-60">
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Ouvrir</span>
+                                                <ChevronRight size={14} />
+                                            </div>
+                                        </div>
+                                    </>
+                                );
+
+                                if (isEducation) {
+                                    return (
+                                        <button 
+                                            key={idx} 
+                                            onClick={() => setIsEducationOpen(true)}
+                                            className={cn(
+                                                "relative group overflow-hidden p-6 md:p-8 rounded-[32px] md:rounded-[40px] border border-white/10 hover:scale-[1.02] active:scale-95 transition-all duration-300 text-left w-full",
+                                                card.color,
+                                                card.span
+                                            )}
+                                        >
+                                            {Content}
+                                        </button>
+                                    );
+                                }
+
+                                return (
+                                    <Link 
+                                        key={idx} 
+                                        href={card.link}
+                                        className={cn(
+                                            "relative group overflow-hidden p-6 md:p-8 rounded-[32px] md:rounded-[40px] border border-white/10 hover:scale-[1.02] active:scale-95 transition-all duration-300",
+                                            card.color,
+                                            card.span
+                                        )}
+                                    >
+                                        {Content}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* Footer Message */}
+                <div className="mt-20 text-center pb-10">
+                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">
+                        DiaCare Kids v2.0 • Propulsé par DiaPote IA
+                    </p>
                 </div>
 
             </div>
 
-            <style jsx global>{`
-                @keyframes spin-slow {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-                .animate-spin-slow {
-                    animation: spin-slow 10s linear infinite;
-                }
-            `}</style>
+            {/* Manual DiaPote Trigger */}
+            <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowMascot(true)}
+                className="fixed bottom-32 right-6 w-20 h-20 bg-[#FFB300] rounded-full shadow-2xl flex items-center justify-center text-[#0b1b2b] z-[100] border-4 border-white/20"
+            >
+                <div className="relative w-full h-full p-1">
+                    <Lottie 
+                        animationData={stableAnimData}
+                        loop={true}
+                        autoplay={true}
+                        className="w-full h-full scale-[1.7] translate-y-2"
+                    />
+                    <div className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+                </div>
+            </motion.button>
         </DashboardLayout>
     );
 }
+

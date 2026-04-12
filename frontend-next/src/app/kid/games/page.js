@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Gamepad2, Zap, Rocket, Apple,
     Play, Trophy, Star, ChevronRight,
-    Target, Search, X, Activity
+    Target, Search, X, Activity, LayoutGrid
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -44,7 +44,7 @@ export default function KidGames() {
 
     const games = [
         { id: 'runner', title: 'Dia Runner', desc: "Esquive les ennemies, collecte les coeurs !", icon: Activity, color: "bg-red-500", xp: 500, link: '/kid/games/runner' },
-        { id: 1, title: t('kid.gameInsulin'), desc: "Utilise ton bouclier d'insuline !", icon: Zap, color: "bg-blue-500", xp: 250 },
+        { id: 'puzzle', title: 'Puzzle Champion', desc: "Reconstitue les images et débloque les 12 niveaux !", icon: LayoutGrid, color: "bg-blue-500", xp: 1500, link: '/kid/games/puzzle' },
         { id: 2, title: t('kid.gameHypo'), desc: "Trouve le trésor sucré pour gagner !", icon: Apple, color: "bg-accent", xp: 150 },
         { id: 3, title: t('kid.gameFood'), desc: "Aide ton héros à choisir son repas.", icon: Search, color: "bg-success", xp: 200 }
     ];
