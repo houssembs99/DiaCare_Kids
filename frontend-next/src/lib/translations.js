@@ -144,7 +144,20 @@ export const translations = {
             diaPoteSpeaking: "DiaPote est en train de parler...",
             diaPoteListening: "DiaPote est à l'écoute",
             next: "Suivant",
-            letsGo: "C'est parti !"
+            letsGo: "C'est parti !",
+            arEdu: {
+                greeting: "Salut champion ! Je suis Hamouch, ton ami ! Allons voir comment tu vas !",
+                hypoTitle: "Alerte Hypo !",
+                hypoDesc: "Oh non, Hamouch n'a plus d'energie... Vite, donne-lui un peu de sucre pour qu'il retrouve son sourire !",
+                hypoAction: "Donner du sucre",
+                hyperTitle: "Alerte Hyper !",
+                hyperDesc: "Hamouch a trop de sucre dans son moteur... Aidons-le avec sa potion magique (l'insuline) !",
+                hyperAction: "Donner l'insuline",
+                perfectTitle: "Energie Parfaite !",
+                perfectDesc: "Regarde comme Hamouch est en forme ! C'est le moment ideal pour jouer ou apprendre.",
+                sportTitle: "Mode Sport",
+                sportDesc: "Avant de courir, verifions si on a assez de carburant !"
+            }
         },
         doctor: {
             dashboardTitle: "Tableau de Bord Médical",
@@ -333,7 +346,20 @@ export const translations = {
             diaPoteSpeaking: "DiaPote is speaking...",
             diaPoteListening: "DiaPote is listening",
             next: "Next",
-            letsGo: "Let's Go!"
+            letsGo: "Let's Go!",
+            arEdu: {
+                greeting: "Hi champion! I am Hamouch, your friend! Let's see how you are doing!",
+                hypoTitle: "Hypo Alert!",
+                hypoDesc: "Oh no, Hamouch is out of energy... Quick, give him some sugar so he can smile again!",
+                hypoAction: "Give Sugar",
+                hyperTitle: "Hyper Alert!",
+                hyperDesc: "Hamouch has too much sugar in his engine... Let's help him with his magic potion (insulin)!",
+                hyperAction: "Give Insulin",
+                perfectTitle: "Perfect Energy!",
+                perfectDesc: "Look how fit Hamouch is! It's the perfect time to play or learn.",
+                sportTitle: "Sport Mode",
+                sportDesc: "Before running, let's check if we have enough fuel!"
+            }
         },
         doctor: {
             dashboardTitle: "Medical Dashboard",
@@ -522,7 +548,20 @@ export const translations = {
             diaPoteSpeaking: "ديا-بوت يتحدث...",
             diaPoteListening: "ديا-بوت يستمع",
             next: "التالي",
-            letsGo: "هيا بنا!"
+            letsGo: "هيا بنا!",
+            arEdu: {
+                greeting: "أهلاً يا بطل! أنا حموش، صديقك! لنرى كيف حالك!",
+                hypoTitle: "تنبيه هبوط!",
+                hypoDesc: "أوه لا، حموش فقد طاقته... بسرعة، أعطه بعض السكر ليعود إليه النشاط!",
+                hypoAction: "إعطاء سكر",
+                hyperTitle: "تنبيه ارتفاع!",
+                hyperDesc: "حموش لديه الكثير من السكر... لنساعده بجرعته السحرية!",
+                hyperAction: "إعطاء أنسولين",
+                perfectTitle: "طاقة مثالية!",
+                perfectDesc: "انظر كم حموش نشيط! هذا هو الوقت المثالي للعب أو التعلم.",
+                sportTitle: "وضع الرياضة",
+                sportDesc: "قبل الجري، لنفحص إذا كان لدينا وقود كافٍ!"
+            }
         },
         doctor: {
             dashboardTitle: "لوحة التحكم الطبية",

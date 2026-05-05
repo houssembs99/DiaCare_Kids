@@ -120,7 +120,15 @@ export default function KidDashboard() {
             link: "/kid/rewards", 
             color: "bg-[#FF9500]", 
             textColor: "text-white",
-            span: "col-span-2"
+            span: "col-span-1"
+        },
+        { 
+            title: t('kid.arTitle'), 
+            icon: <Sparkles size={32} />, 
+            link: "/kid/ar", 
+            color: "bg-gradient-to-br from-[#FFB300] to-[#FF9500]", 
+            textColor: "text-[#0b1b2b]",
+            span: "col-span-1"
         }
     ];
 

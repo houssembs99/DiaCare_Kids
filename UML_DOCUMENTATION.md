@@ -96,4 +96,4 @@ graph TD
 ```
 
 ---
-*Document généré par DiaCare GPT pour le projet de fin d'études.*
+*Document généré par DiaCare pour le projet de fin d'études.*
