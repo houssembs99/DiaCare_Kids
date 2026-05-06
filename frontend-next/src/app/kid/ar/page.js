@@ -119,30 +119,36 @@ export default function ARPage() {
   const current = statusInfo[currentStatus];
 
   return (
-    <div className="fixed inset-0 bg-[#0b1b2b] flex flex-col overflow-hidden font-sans">
+    <div className="fixed inset-0 bg-[#0b1b2b] flex flex-col overflow-hidden font-sans select-none">
       
-      {/* Header / Navbar */}
-      <div className="p-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
-        <Link href="/kid/dashboard" className="p-3 bg-white/10 rounded-2xl text-white hover:bg-white/20 transition-all flex items-center gap-2">
-          <ChevronLeft size={20} />
-          <span className="font-bold uppercase tracking-widest text-[10px]">{lang === 'ar' ? 'خروج' : 'Quitter'}</span>
+      {/* Header / Navbar - Adapté pour les Safe Areas */}
+      <div className="pt-12 pb-4 px-6 flex items-center justify-between z-[200] bg-gradient-to-b from-black/90 to-transparent">
+        <Link href="/kid/dashboard" className="p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl text-white hover:bg-white/20 active:scale-95 transition-all flex items-center gap-3 shadow-lg">
+          <ChevronLeft size={22} />
+          <span className="font-black uppercase tracking-[0.1em] text-[11px]">{lang === 'ar' ? 'خروج' : 'Quitter'}</span>
         </Link>
-        <h1 className="text-white font-black italic uppercase tracking-tighter text-xl">
-            {lang === 'ar' ? 'حموش' : 'Hamouch'} <span className="text-[#FFB300]">AR</span>
-        </h1>
-        <div className="w-20" />
+        <div className="flex flex-col items-end">
+            <h1 className="text-white font-black italic uppercase tracking-tighter text-2xl leading-none">
+                {lang === 'ar' ? 'حموش' : 'Hamouch'} <span className="text-[#FFB300]">AR</span>
+            </h1>
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40 mt-1">DiaCare Experience</span>
+        </div>
       </div>
 
-      {/* Capteur de Glycémie - Bien visible sous la navbar */}
-      <div className="px-4 pb-3 z-10">
-        <div className="flex items-center justify-center gap-3 bg-black/50 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-2xl shadow-lg max-w-xs mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_2px_rgba(74,222,128,0.6)]" />
-            <span className="text-white/60 text-xs font-bold uppercase tracking-widest">Capteur</span>
+      {/* Capteur de Glycémie - Repositionné pour ne pas gêner */}
+      <div className="px-6 py-2 z-[200]">
+        <div className="flex items-center justify-between bg-black/60 backdrop-blur-2xl border border-white/20 p-4 rounded-[28px] shadow-2xl max-w-sm mx-auto w-full">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping opacity-40" />
+            </div>
+            <span className="text-white/70 text-[10px] font-black uppercase tracking-widest">Glycémie en Direct</span>
           </div>
-          <div className="w-px h-5 bg-white/20" />
-          <span className="text-[#FFB300] text-xl font-black tracking-tight">{glucose}</span>
-          <span className="text-white/50 text-xs font-bold">mg/dL</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[#FFB300] text-2xl font-black tracking-tight">{glucose}</span>
+            <span className="text-white/40 text-[10px] font-black">mg/dL</span>
+          </div>
         </div>
       </div>
 
@@ -198,29 +204,29 @@ export default function ARPage() {
         )}
       </AnimatePresence>
 
-      {/* Barre de contrôle manuelle */}
-      <div className="absolute bottom-10 left-0 right-0 px-6 z-[100] flex justify-center gap-4">
+      {/* Barre de contrôle manuelle - Adaptée */}
+      <div className="absolute bottom-10 left-0 right-0 px-6 z-[200] flex justify-center gap-4">
         <button 
           onClick={() => { setAnimation("sport"); handleSpeak(t('kid.arEdu.sportDesc')); }}
-          className="bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex items-center gap-3 text-white hover:bg-[#FFB300] hover:text-[#0b1b2b] transition-all group"
+          className="bg-black/60 backdrop-blur-2xl border border-white/10 px-6 py-4 rounded-[24px] flex items-center gap-3 text-white hover:bg-[#FFB300] hover:text-[#0b1b2b] active:scale-95 transition-all group shadow-2xl"
         >
-          <PlayCircle size={24} className="group-hover:rotate-90 transition-transform" />
-          <span className="font-black uppercase tracking-widest text-[10px]">{t('kid.arEdu.sportTitle')}</span>
+          <PlayCircle size={22} className="group-hover:rotate-90 transition-transform" />
+          <span className="font-black uppercase tracking-[0.15em] text-[10px]">{t('kid.arEdu.sportTitle')}</span>
         </button>
 
         <button 
           onClick={() => setShowPopup(true)}
-          className="w-14 h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center text-white"
+          className="w-16 h-16 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[24px] flex items-center justify-center text-white active:scale-90 shadow-2xl"
         >
           <MessageCircle size={24} />
         </button>
       </div>
 
-      {/* PANNEAU DE TEST (Debug) */}
-      <div className="absolute top-24 right-6 z-[200] flex flex-col gap-2">
-        <button onClick={() => { setGlucose(50); setAnimation("basgl"); setCurrentStatus("hypo"); setIsGreeting(false); setShowPopup(true); }} className="p-3 bg-red-500/80 rounded-xl text-white text-[10px] font-bold">TEST HYPO</button>
-        <button onClick={() => { setGlucose(100); setAnimation("happyidle"); setCurrentStatus("perfect"); setIsGreeting(false); setShowPopup(true); }} className="p-3 bg-green-500/80 rounded-xl text-white text-[10px] font-bold">TEST OK</button>
-        <button onClick={() => { setGlucose(250); setAnimation("hautegl"); setCurrentStatus("hyper"); setIsGreeting(false); setShowPopup(true); }} className="p-3 bg-orange-500/80 rounded-xl text-white text-[10px] font-bold">TEST HYPER</button>
+      {/* PANNEAU DE TEST (Debug) - Plus discret sur mobile */}
+      <div className="absolute top-48 right-4 z-[200] flex flex-col gap-2 opacity-30 hover:opacity-100 transition-opacity">
+        <button onClick={() => { setGlucose(50); setAnimation("basgl"); setCurrentStatus("hypo"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-red-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">L</button>
+        <button onClick={() => { setGlucose(100); setAnimation("happyidle"); setCurrentStatus("perfect"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-green-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">OK</button>
+        <button onClick={() => { setGlucose(250); setAnimation("hautegl"); setCurrentStatus("hyper"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-orange-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">H</button>
       </div>
 
     </div>
