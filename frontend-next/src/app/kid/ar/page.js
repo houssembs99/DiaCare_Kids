@@ -233,8 +233,5 @@ export default function ARPage() {
 
       </div>
     </div>
-v>
-
-    </div>
   );
 }
