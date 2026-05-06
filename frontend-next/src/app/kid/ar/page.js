@@ -135,7 +135,7 @@ export default function ARPage() {
   if (!isMounted) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#0b1b2b] overflow-hidden font-sans select-none">
+    <div className="fixed inset-0 bg-transparent overflow-hidden font-sans select-none">
       
       {/* SCÈNE AR (EN ARRIÈRE-PLAN) */}
       <div className="absolute inset-0 z-0">

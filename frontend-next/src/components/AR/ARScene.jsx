@@ -8,7 +8,7 @@ import { Model } from './AvatarModel';
 
 export const store = createXRStore({
   domOverlay: typeof window !== 'undefined' ? { 
-    root: () => document.getElementById('ar-ui-root') 
+    root: () => document.getElementById('ar-ui-overlay') 
   } : undefined
 });
 
