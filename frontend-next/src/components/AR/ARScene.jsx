@@ -7,8 +7,6 @@ import { OrbitControls } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 export const store = createXRStore({
-  depthSensing: true,
-  hand: true,
   domOverlay: typeof window !== 'undefined' ? { root: document.body } : undefined
 });
 
