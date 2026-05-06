@@ -1,31 +1,14 @@
 "use client";
 
-import React, { Suspense, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
 import { XR, createXRStore } from '@react-three/xr';
-import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 const store = createXRStore({
   domOverlay: typeof window !== 'undefined' ? { root: document.body } : undefined
 });
-
-const InteractiveModel = ({ animationName }) => {
-  const [rotation, setRotation] = useState([0, 0, 0]);
-
-  return (
-    <group 
-      rotation={rotation}
-      // On permet la rotation via OrbitControls qui est bridge par XR
-    >
-      <Model 
-        position={[0, -0.5, -1.2]} 
-        scale={1.2} 
-        animationName={animationName} 
-      />
-    </group>
-  );
-};
 
 const ARScene = ({ animationName = "Idle" }) => {
   return (
@@ -42,12 +25,14 @@ const ARScene = ({ animationName = "Idle" }) => {
       <Canvas shadows camera={{ position: [0, 1.6, 2], fov: 50 }}>
         <XR store={store}>
           <Suspense fallback={null}>
-            <Environment preset="sunset" />
-            <ambientLight intensity={1.5} />
-            <pointLight position={[5, 5, 5]} intensity={2} />
-            <directionalLight position={[0, 10, 0]} intensity={1} castShadow />
-
-            <InteractiveModel animationName={animationName} />
+            <ambientLight intensity={2.5} />
+            <pointLight position={[5, 5, 5]} intensity={3} />
+            
+            <Model 
+              position={[0, -0.4, -1.2]} 
+              scale={1.2} 
+              animationName={animationName} 
+            />
 
             <ContactShadows
               opacity={0.6}
@@ -57,13 +42,8 @@ const ARScene = ({ animationName = "Idle" }) => {
               resolution={256}
               color="#000000"
             />
-
-            <OrbitControls 
-              makeDefault 
-              enablePan={false} 
-              minDistance={1} 
-              maxDistance={5}
-            />
+            
+            <OrbitControls makeDefault />
           </Suspense>
         </XR>
       </Canvas>
