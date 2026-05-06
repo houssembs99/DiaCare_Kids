@@ -135,7 +135,7 @@ export default function ARPage() {
   if (!isMounted) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#0b1b2b] flex flex-col overflow-hidden font-sans select-none">
+    <div id="ar-ui-root" className="fixed inset-0 flex flex-col overflow-hidden font-sans select-none bg-transparent">
       <div className="h-[120px] pt-16 px-6 flex items-center justify-center z-[100] bg-[#0b1b2b]">
         <div className="w-24 h-1.5 bg-white/5 rounded-full" />
       </div>

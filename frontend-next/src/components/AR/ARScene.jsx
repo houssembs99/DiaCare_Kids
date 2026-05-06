@@ -7,7 +7,9 @@ import { OrbitControls } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 export const store = createXRStore({
-  domOverlay: typeof window !== 'undefined' ? { root: document.body } : undefined
+  domOverlay: typeof window !== 'undefined' ? { 
+    root: () => document.getElementById('ar-ui-root') 
+  } : undefined
 });
 
 const ARScene = ({ animationName = "Idle" }) => {
