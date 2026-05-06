@@ -11,10 +11,12 @@ namespace DiaCareKids.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UsersService _usersService;
+        private readonly IPhotoService _photoService;
 
-        public UsersController(UsersService usersService)
+        public UsersController(UsersService usersService, IPhotoService photoService)
         {
             _usersService = usersService;
+            _photoService = photoService;
         }
 
         [HttpGet]
@@ -109,6 +111,29 @@ namespace DiaCareKids.Api.Controllers
             
             await _usersService.RemoveAsync(id);
             return NoContent();
+        }
+
+        [HttpPost("upload-avatar/{id}")]
+        [Authorize]
+        public async Task<IActionResult> UploadAvatar(string id, IFormFile file)
+        {
+            var user = await _usersService.GetAsync(id);
+            if (user == null) return NotFound("Utilisateur non trouvé.");
+
+            // Check if current user is authorized (Admin or self)
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var currentUserRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (currentUserRole != "Admin" && currentUserId != id) return Forbid();
+
+            var result = await _photoService.AddPhotoAsync(file);
+
+            if (result.Error != null) return BadRequest(result.Error.Message);
+
+            // Update user with new AvatarUrl
+            user.AvatarUrl = result.SecureUrl.AbsoluteUri;
+            await _usersService.UpdateAsync(id, user);
+
+            return Ok(new { avatarUrl = user.AvatarUrl });
         }
     }
 

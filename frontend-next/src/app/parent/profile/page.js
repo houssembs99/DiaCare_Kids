@@ -38,6 +38,7 @@ export default function ParentProfile() {
     const { t } = useLanguage();
     const router = useRouter();
 
+    const [user, setUser] = useState(null);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -67,10 +68,39 @@ export default function ParentProfile() {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        router.push('/auth');
+    useEffect(() => {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (storedUser.id) {
+            setUser(storedUser);
+            // Optionally fetch fresh data from API
+            api.get(`/Users/${storedUser.id}`).then(res => {
+                setUser(res.data);
+                localStorage.setItem('user', JSON.stringify(res.data));
+            }).catch(err => console.error("Error fetching user", err));
+        } else {
+            router.push('/auth');
+        }
+    }, [router]);
+
+    const handleAvatarUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await api.post(`/Users/upload-avatar/${user.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const updatedUser = { ...user, avatarUrl: res.data.avatarUrl };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            alert("Photo de profil mise à jour !");
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de l'upload de l'image.");
+        }
     };
 
     return (
@@ -80,19 +110,26 @@ export default function ParentProfile() {
                 {/* Profile Header SECTION 10 */}
                 <div className="flex flex-col items-center pt-8 space-y-4">
                     <div className="relative group">
-                        <div className="w-32 h-32 rounded-[40px] bg-gradient-to-br from-[#088395] to-[#066a7a] flex items-center justify-center text-white border-4 border-white/10 shadow-3xl overflow-hidden">
-                            <Baby size={60} className="text-white group-hover:scale-110 transition-transform duration-500" />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all cursor-pointer">
-                                <Camera size={24} />
+                        <label className="cursor-pointer block">
+                            <div className="w-32 h-32 rounded-[40px] bg-gradient-to-br from-[#088395] to-[#066a7a] flex items-center justify-center text-white border-4 border-white/10 shadow-3xl overflow-hidden relative">
+                                {user?.avatarUrl ? (
+                                    <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                ) : (
+                                    <Baby size={60} className="text-white group-hover:scale-110 transition-transform duration-500" />
+                                )}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                    <Camera size={24} className="text-white" />
+                                </div>
                             </div>
-                        </div>
+                            <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
+                        </label>
                         <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-success border-4 border-[#1E88E5] rounded-full flex items-center justify-center shadow-xl">
                             <Activity size={14} className="text-white" />
                         </div>
                     </div>
                     <div className="text-center">
-                        <h1 className="text-2xl font-black italic uppercase tracking-tighter">Amine Trabelsi</h1>
-                        <p className="text-[10px] font-black text-[#088395] uppercase tracking-widest mt-1">Champion DiaCare Kids #RT-9201</p>
+                        <h1 className="text-2xl font-black italic uppercase tracking-tighter">{user?.fullName || "Utilisateur"}</h1>
+                        <p className="text-[10px] font-black text-[#088395] uppercase tracking-widest mt-1">Champion DiaCare Kids #{user?.id?.slice(-4) || "0000"}</p>
                     </div>
                 </div>
 
@@ -150,7 +187,11 @@ export default function ParentProfile() {
 
                 {/* Logout SECTION 10 */}
                 <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        router.push('/auth');
+                    }}
                     className="w-full py-6 mt-6 bg-accent/20 border border-accent/20 text-accent rounded-[32px] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl flex items-center justify-center gap-3 hover:bg-accent hover:text-white transition-all group"
                 >
                     <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />

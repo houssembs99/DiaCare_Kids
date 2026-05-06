@@ -282,8 +282,12 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
                                         <ShieldCheck size={80} />
                                     </div>
                                     <div className="flex items-center gap-4 relative z-10">
-                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#1E88E5] font-black text-xl shadow-2xl group-hover/profile:scale-110 transition-transform">
-                                            {user.fullName?.charAt(0)}
+                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#1E88E5] font-black text-xl shadow-2xl group-hover/profile:scale-110 transition-transform overflow-hidden">
+                                            {user.avatarUrl ? (
+                                                <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                user.fullName?.charAt(0)
+                                            )}
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                             <span className="text-xs font-black text-white uppercase leading-none truncate">{user.fullName}</span>

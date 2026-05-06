@@ -1,5 +1,6 @@
 using System.Text;
 using DiaCareKids.Api.Configuration;
+using DiaCareKids.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
@@ -26,6 +27,8 @@ builder.Services.AddScoped<DiaCareKids.Api.Services.DoctorsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.MessagesService>();
 builder.Services.AddSingleton<DiaCareKids.Api.Services.DecisionSupportService>();
 builder.Services.AddSingleton<DiaCareKids.Api.Services.GlucosePredictionService>();
+builder.Services.AddScoped<IPhotoService, PhotoService>();
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 
 

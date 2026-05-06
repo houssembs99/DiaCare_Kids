@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     Settings, Camera, User, Mail,
@@ -48,9 +48,43 @@ const InputField = ({ label, placeholder, icon: Icon, type = "text", value, onCh
 );
 
 export default function ClinicSettings() {
+    const [user, setUser] = useState(null);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (storedUser.id) {
+            setUser(storedUser);
+            // Fetch fresh data
+            api.get(`/Users/${storedUser.id}`).then(res => {
+                setUser(res.data);
+                localStorage.setItem('user', JSON.stringify(res.data));
+            }).catch(err => console.error("Error fetching clinic", err));
+        }
+    }, []);
+
+    const handleAvatarUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await api.post(`/Users/upload-avatar/${user.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const updatedUser = { ...user, avatarUrl: res.data.avatarUrl };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            alert("Logo mis à jour !");
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de l'upload.");
+        }
+    };
 
     const handleChangePassword = async () => {
         if (!currentPassword || !newPassword) {
@@ -101,21 +135,26 @@ export default function ClinicSettings() {
                     <SettingsSection title="Informations Clinique" sub="Configurez l'identité publique de votre établissement" icon={<Building2 size={24} />}>
                         <div className="flex flex-col lg:flex-row gap-12">
                             <div className="flex flex-col items-center gap-6">
-                                <div className="relative group/photo">
-                                    <div className="w-40 h-40 rounded-[48px] overflow-hidden border-2 border-dashed border-white/10 flex items-center justify-center bg-white/5 group-hover/photo:border-[#088395] transition-all">
-                                        <Building2 size={60} className="text-white/10 group-hover/photo:text-[#088395] transition-colors" />
-                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-all cursor-pointer">
+                                <label className="relative group/photo cursor-pointer block">
+                                    <div className="w-40 h-40 rounded-[48px] overflow-hidden border-2 border-dashed border-white/10 flex items-center justify-center bg-white/5 group-hover/photo:border-[#088395] transition-all relative">
+                                        {user?.avatarUrl ? (
+                                            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-500" />
+                                        ) : (
+                                            <Building2 size={60} className="text-white/10 group-hover/photo:text-[#088395] transition-colors" />
+                                        )}
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-all">
                                             <Camera size={30} className="text-white" />
                                         </div>
                                     </div>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
                                     <p className="text-[8px] font-black uppercase tracking-widest text-center mt-4 text-white/20 italic">Format: PNG, JPG (SVG recommandé)</p>
-                                </div>
+                                </label>
                             </div>
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <InputField label="Nom de la Clinique" placeholder="EX: CLINIQUE EL AMEL" icon={Building2} value="Clinique Centrale Tunis" />
-                                <InputField label="Email de Contact" placeholder="EX: CONTACT@CLINIC.TN" icon={Mail} value="admin@clinic-central.tn" />
-                                <InputField label="Téléphone" placeholder="+216 -- --- ---" icon={Phone} value="+216 71 000 000" />
-                                <InputField label="Site Web" placeholder="WWW.VOTRESITE.TN" icon={Globe} value="www.clinic-tunis.tn" />
+                                <InputField label="Nom de la Clinique" placeholder="EX: CLINIQUE EL AMEL" icon={Building2} value={user?.fullName || "Clinique Centrale Tunis"} />
+                                <InputField label="Email de Contact" placeholder="EX: CONTACT@CLINIC.TN" icon={Mail} value={user?.email || "admin@clinic-central.tn"} />
+                                <InputField label="Téléphone" placeholder="+216 -- --- ---" icon={Phone} value={user?.contactNumber || "+216 71 000 000"} />
+                                <InputField label="Site Web" placeholder="WWW.VOTRESITE.TN" icon={Globe} value={user?.fileNumber || "www.clinic-tunis.tn"} />
                                 <div className="md:col-span-2">
                                     <InputField label="Adresse Physique" placeholder="RUE DE LA MÉDECINE, TUNIS" icon={MapPin} value="12 Avenue Habib Bourguiba, 1000 Tunis" />
                                 </div>
@@ -180,9 +219,9 @@ export default function ClinicSettings() {
                     {/* Responsible Manager SECTION 10.2 */}
                     <SettingsSection title="Responsable de Clinique" sub="Informations sur le gestionnaire principal" icon={<User size={24} />}>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <InputField label="Prénom & Nom" placeholder="flen" icon={User} value="Houssem Ben Salem" />
-                            <InputField label="Poste / Rôle" placeholder="EX: DIRECTEUR ADM." icon={Shield} value="Responsable Médical" />
-                            <InputField label="Identifiant Système" placeholder="ID-0000" icon={Key} value="USER-CL-9201" />
+                            <InputField label="Prénom & Nom" placeholder="flen" icon={User} value={user?.fullName || "Houssem Ben Salem"} />
+                            <InputField label="Poste / Rôle" placeholder="EX: DIRECTEUR ADM." icon={Shield} value={user?.role || "Responsable Médical"} />
+                            <InputField label="Identifiant Système" placeholder="ID-0000" icon={Key} value={`USER-CL-${user?.id?.slice(-4) || "9201"}`} />
                         </div>
                     </SettingsSection>
 

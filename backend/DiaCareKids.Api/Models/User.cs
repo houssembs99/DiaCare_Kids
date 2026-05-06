@@ -14,6 +14,7 @@ namespace DiaCareKids.Api.Models
         public string FullName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty; // Admin, Clinique, Medecin, Parent, Enfant
         public string Status { get; set; } = "Actif"; // Actif, Bloqué
+        public string? AvatarUrl { get; set; } // Cloudinary URL
         public string? FileNumber { get; set; } // Unique 10-char code for patients
         public DateTime? LastLogin { get; set; }
         
