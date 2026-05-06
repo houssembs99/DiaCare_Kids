@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { XR, createXRStore } from '@react-three/xr';
-import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 const store = createXRStore({
@@ -18,31 +18,28 @@ const ARScene = ({ animationName = "Idle" }) => {
             onClick={() => store.enterAR()}
             className="pointer-events-auto px-12 py-6 bg-[#FFB300] text-[#0b1b2b] rounded-[40px] font-black uppercase tracking-[0.3em] text-xs shadow-2xl border-4 border-white/20 animate-pulse"
           >
-            🌟 Lancer l'AR
+            🚀 LANCER AR (V3)
           </button>
       </div>
 
       <Canvas shadows camera={{ position: [0, 1.6, 2], fov: 50 }}>
         <XR store={store}>
           <Suspense fallback={null}>
-            <ambientLight intensity={2.5} />
-            <pointLight position={[5, 5, 5]} intensity={3} />
+            <ambientLight intensity={3.5} />
+            <pointLight position={[5, 5, 5]} intensity={5} />
             
+            {/* CUBE DE TEST ROUGE - Indispensable pour debug */}
+            <mesh position={[0, 0, -0.5]}>
+              <boxGeometry args={[0.2, 0.2, 0.2]} />
+              <meshBasicMaterial color="red" />
+            </mesh>
+
             <Model 
-              position={[0, -0.4, -1.2]} 
-              scale={1.2} 
+              position={[0, -0.2, -1.0]} 
+              scale={0.8} 
               animationName={animationName} 
             />
 
-            <ContactShadows
-              opacity={0.6}
-              scale={10}
-              blur={2}
-              far={10}
-              resolution={256}
-              color="#000000"
-            />
-            
             <OrbitControls makeDefault />
           </Suspense>
         </XR>
