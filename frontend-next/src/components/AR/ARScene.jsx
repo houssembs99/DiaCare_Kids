@@ -1,14 +1,31 @@
 "use client";
 
-import React, { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { Suspense, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { XR, createXRStore } from '@react-three/xr';
-import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 const store = createXRStore({
   domOverlay: typeof window !== 'undefined' ? { root: document.body } : undefined
 });
+
+const InteractiveModel = ({ animationName }) => {
+  const [rotation, setRotation] = useState([0, 0, 0]);
+
+  return (
+    <group 
+      rotation={rotation}
+      // On permet la rotation via OrbitControls qui est bridge par XR
+    >
+      <Model 
+        position={[0, -0.5, -1.2]} 
+        scale={1.2} 
+        animationName={animationName} 
+      />
+    </group>
+  );
+};
 
 const ARScene = ({ animationName = "Idle" }) => {
   return (
@@ -16,31 +33,37 @@ const ARScene = ({ animationName = "Idle" }) => {
       <div className="absolute inset-0 flex items-center justify-center z-[500] pointer-events-none">
           <button
             onClick={() => store.enterAR()}
-            className="pointer-events-auto px-10 py-5 bg-[#FFB300] text-[#0b1b2b] rounded-[30px] font-black uppercase tracking-[0.2em] text-sm shadow-2xl border-4 border-white/20"
+            className="pointer-events-auto px-12 py-6 bg-[#FFB300] text-[#0b1b2b] rounded-[40px] font-black uppercase tracking-[0.3em] text-xs shadow-2xl border-4 border-white/20 animate-pulse"
           >
-            🔥 DEMARRER AR
+            🌟 Lancer l'AR
           </button>
       </div>
 
       <Canvas shadows camera={{ position: [0, 1.6, 2], fov: 50 }}>
         <XR store={store}>
           <Suspense fallback={null}>
-            <ambientLight intensity={3.0} />
-            <pointLight position={[0, 5, 0]} intensity={5} />
-            
-            {/* CUBE DE TEST - Tres proche (50cm) et tres brillant */}
-            <mesh position={[0, 0, -0.5]}>
-              <boxGeometry args={[0.2, 0.2, 0.2]} />
-              <meshBasicMaterial color="red" />
-            </mesh>
+            <Environment preset="sunset" />
+            <ambientLight intensity={1.5} />
+            <pointLight position={[5, 5, 5]} intensity={2} />
+            <directionalLight position={[0, 10, 0]} intensity={1} castShadow />
 
-            <Model 
-              position={[0, -0.2, -1.0]} 
-              scale={0.8} 
-              animationName={animationName} 
+            <InteractiveModel animationName={animationName} />
+
+            <ContactShadows
+              opacity={0.6}
+              scale={10}
+              blur={2}
+              far={10}
+              resolution={256}
+              color="#000000"
             />
 
-            <OrbitControls makeDefault />
+            <OrbitControls 
+              makeDefault 
+              enablePan={false} 
+              minDistance={1} 
+              maxDistance={5}
+            />
           </Suspense>
         </XR>
       </Canvas>

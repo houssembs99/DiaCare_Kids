@@ -119,25 +119,24 @@ export default function ARPage() {
   const current = statusInfo[currentStatus];
 
   return (
-    <div className="fixed inset-0 bg-[#0b1b2b] flex flex-col overflow-hidden font-sans select-none">
+    <div className="fixed inset-0 flex flex-col overflow-hidden font-sans select-none z-[100]">
       
-      {/* Header / Navbar - Adapté pour les Safe Areas */}
-      <div className="pt-12 pb-4 px-6 flex items-center justify-between z-[200] bg-gradient-to-b from-black/90 to-transparent">
-        <Link href="/kid/dashboard" className="p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl text-white hover:bg-white/20 active:scale-95 transition-all flex items-center gap-3 shadow-lg">
+      {/* Header / Navbar - Très haut z-index */}
+      <div className="pt-12 pb-4 px-6 flex items-center justify-between z-[9999] bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+        <Link href="/kid/dashboard" className="pointer-events-auto p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl text-white hover:bg-white/20 active:scale-95 transition-all flex items-center gap-3 shadow-lg">
           <ChevronLeft size={22} />
           <span className="font-black uppercase tracking-[0.1em] text-[11px]">{lang === 'ar' ? 'خروج' : 'Quitter'}</span>
         </Link>
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col items-end pointer-events-auto">
             <h1 className="text-white font-black italic uppercase tracking-tighter text-2xl leading-none">
                 {lang === 'ar' ? 'حموش' : 'Hamouch'} <span className="text-[#FFB300]">AR</span>
             </h1>
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40 mt-1">DiaCare Experience</span>
         </div>
       </div>
 
-      {/* Capteur de Glycémie - Repositionné pour ne pas gêner */}
-      <div className="px-6 py-2 z-[200]">
-        <div className="flex items-center justify-between bg-black/60 backdrop-blur-2xl border border-white/20 p-4 rounded-[28px] shadow-2xl max-w-sm mx-auto w-full">
+      {/* Capteur de Glycémie */}
+      <div className="px-6 py-2 z-[9999] pointer-events-none">
+        <div className="flex items-center justify-between bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-[28px] shadow-2xl max-w-sm mx-auto w-full pointer-events-auto">
           <div className="flex items-center gap-3">
             <div className="relative">
                 <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
@@ -205,10 +204,10 @@ export default function ARPage() {
       </AnimatePresence>
 
       {/* Barre de contrôle manuelle - Adaptée */}
-      <div className="absolute bottom-10 left-0 right-0 px-6 z-[200] flex justify-center gap-4">
+      <div className="absolute bottom-10 left-0 right-0 px-6 z-[9999] flex justify-center gap-4 pointer-events-none">
         <button 
           onClick={() => { setAnimation("sport"); handleSpeak(t('kid.arEdu.sportDesc')); }}
-          className="bg-black/60 backdrop-blur-2xl border border-white/10 px-6 py-4 rounded-[24px] flex items-center gap-3 text-white hover:bg-[#FFB300] hover:text-[#0b1b2b] active:scale-95 transition-all group shadow-2xl"
+          className="pointer-events-auto bg-black/60 backdrop-blur-2xl border border-white/10 px-6 py-4 rounded-[24px] flex items-center gap-3 text-white hover:bg-[#FFB300] hover:text-[#0b1b2b] active:scale-95 transition-all group shadow-2xl"
         >
           <PlayCircle size={22} className="group-hover:rotate-90 transition-transform" />
           <span className="font-black uppercase tracking-[0.15em] text-[10px]">{t('kid.arEdu.sportTitle')}</span>
@@ -216,14 +215,14 @@ export default function ARPage() {
 
         <button 
           onClick={() => setShowPopup(true)}
-          className="w-16 h-16 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[24px] flex items-center justify-center text-white active:scale-90 shadow-2xl"
+          className="pointer-events-auto w-16 h-16 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[24px] flex items-center justify-center text-white active:scale-90 shadow-2xl"
         >
           <MessageCircle size={24} />
         </button>
       </div>
 
-      {/* PANNEAU DE TEST (Debug) - Plus discret sur mobile */}
-      <div className="absolute top-48 right-4 z-[200] flex flex-col gap-2 opacity-30 hover:opacity-100 transition-opacity">
+      {/* PANNEAU DE TEST (Debug) */}
+      <div className="absolute top-48 right-4 z-[9999] flex flex-col gap-2 opacity-50 hover:opacity-100 transition-opacity">
         <button onClick={() => { setGlucose(50); setAnimation("basgl"); setCurrentStatus("hypo"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-red-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">L</button>
         <button onClick={() => { setGlucose(100); setAnimation("happyidle"); setCurrentStatus("perfect"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-green-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">OK</button>
         <button onClick={() => { setGlucose(250); setAnimation("hautegl"); setCurrentStatus("hyper"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-orange-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">H</button>
