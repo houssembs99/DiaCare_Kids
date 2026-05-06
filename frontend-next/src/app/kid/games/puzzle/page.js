@@ -151,17 +151,17 @@ export default function PuzzleGame() {
             <div className="min-h-screen pb-32 max-w-5xl mx-auto px-6 pt-10 text-white">
                 
                 {/* Header */}
-                <div className="flex items-center justify-between mb-12">
+                <div className="flex flex-col md:flex-row items-center justify-between mb-8 md:mb-12 gap-6">
                     <button 
                         onClick={() => currentLevel ? setCurrentLevel(null) : router.push('/kid/games')}
-                        className="p-4 bg-white/5 rounded-2xl flex items-center gap-2 hover:bg-white/10 transition-all"
+                        className="p-3 md:p-4 bg-white/5 rounded-2xl flex items-center gap-2 hover:bg-white/10 transition-all self-start md:self-auto"
                     >
-                        <ChevronLeft size={24} />
-                        <span className="font-black uppercase tracking-widest text-[10px]">Retour</span>
+                        <ChevronLeft size={20} />
+                        <span className="font-black uppercase tracking-widest text-[9px] md:text-[10px]">Retour</span>
                     </button>
                     
                     <div className="flex flex-col items-center">
-                        <h1 className="text-3xl font-black italic uppercase tracking-tighter">
+                        <h1 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-center">
                             Puzzle <span className="text-[#FFB300]">Champion</span>
                         </h1>
                         <div className="flex items-center gap-2 mt-1">
@@ -170,15 +170,15 @@ export default function PuzzleGame() {
                         </div>
                     </div>
 
-                    <div className="bg-[#FF9500] text-black px-6 py-3 rounded-2xl font-black shadow-xl flex items-center gap-3">
-                        <Trophy size={20} />
-                        <span className="text-xl">{totalScore}</span>
+                    <div className="bg-[#FF9500] text-black px-4 md:px-6 py-2 md:py-3 rounded-2xl font-black shadow-xl flex items-center gap-3">
+                        <Trophy size={18} md:size={20} />
+                        <span className="text-lg md:text-xl">{totalScore}</span>
                     </div>
                 </div>
 
                 {!currentLevel ? (
                     /* Level Selection */
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {LEVELS.map((level) => {
                             const isUnlocked = unlockedLevels.includes(level.id);
                             const isCompleted = completedLevels.includes(level.id);

@@ -25,20 +25,21 @@ const ARScene = ({ animationName = "Idle" }) => {
         <XR store={store}>
           <Suspense fallback={null}>
             <Environment preset="city" />
-            <ambientLight intensity={0.5} />
+            <ambientLight intensity={1.5} />
+            <hemisphereLight intensity={0.5} groundColor="#000000" />
             <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} castShadow />
 
-            {/* Positionné à -2 sur l'axe Z pour être devant l'utilisateur au démarrage */}
+            {/* Positionné à -1.2 pour être plus proche de l'utilisateur au démarrage */}
             <Model 
-              position={[0, 0, -2]} 
-              scale={1.5} 
+              position={[0, -0.5, -1.2]} 
+              scale={1.2} 
               animationName={animationName} 
             />
 
             <ContactShadows
-              opacity={0.4}
+              opacity={0.6}
               scale={10}
-              blur={2}
+              blur={1}
               far={10}
               resolution={256}
               color="#000000"

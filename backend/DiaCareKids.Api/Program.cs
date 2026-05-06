@@ -94,4 +94,28 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// SEED DATA: Create a test doctor if database is empty or user not found
+using (var scope = app.Services.CreateScope())
+{
+    var usersService = scope.ServiceProvider.GetRequiredService<DiaCareKids.Api.Services.UsersService>();
+    var testEmail = "medecin@gmail.com";
+    var existing = await usersService.GetByEmailAsync(testEmail);
+    if (existing == null)
+    {
+        Console.WriteLine($"[SEED] Creating test doctor: {testEmail}");
+        await usersService.CreateAsync(new DiaCareKids.Api.Models.User
+        {
+            Email = testEmail,
+            FullName = "Dr. Ahmed Amor",
+            Role = "Medecin",
+            Status = "Actif",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Medecin123!"),
+            ClinicType = "Endocrinologue Pédiatre",
+            ContactNumber = "+216 22 123 456",
+            FileNumber = "9201-TU-2024",
+            CreatedAt = DateTime.UtcNow
+        });
+    }
+}
+
 app.Run();

@@ -10,6 +10,7 @@
     "chart.js": "^4.5.1",
     "framer-motion": "^12.34.2",
     "lucide-react": "^0.575.0",
+    "mongodb": "^7.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-router-dom": "^7.13.0"
   }

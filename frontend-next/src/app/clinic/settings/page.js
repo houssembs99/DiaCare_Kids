@@ -40,6 +40,7 @@ const InputField = ({ label, placeholder, icon: Icon, type = "text", value, onCh
                 type={type}
                 value={value}
                 onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+                readOnly={!onChange}
                 placeholder={placeholder}
                 className="w-full bg-white/5 border border-white/10 rounded-[22px] py-5 px-16 text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] focus:bg-white/10 transition-all text-white placeholder:text-white/5"
             />
