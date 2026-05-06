@@ -122,7 +122,15 @@ export default function ARPage() {
       
       {/* 1. LA SCENE 3D (Tout au fond) */}
       <div className="absolute inset-0 z-0">
-        <ARScene animationName={animation} />
+        <ARScene 
+            animationName={animation} 
+            onAction={(type) => {
+                if (type === 'sport') {
+                    setAnimation("sport");
+                    handleSpeak(t('kid.arEdu.sportDesc'));
+                }
+            }}
+        />
       </div>
 
       {/* 2. L'INTERFACE (Par-dessus, transparente) */}
