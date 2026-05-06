@@ -64,8 +64,13 @@ export default function AdminUsers() {
         name: '',
         email: '',
         role: 'Admin',
+        newPassword: '',
+        status: 'Actif',
         maxDoctors: 3,
-        maxPatients: 3
+        maxPatients: 3,
+        associatedClinicId: '',
+        associatedDoctorId: '',
+        associatedParentId: ''
     });
 
     const filteredUsers = users.filter(u =>
@@ -74,7 +79,18 @@ export default function AdminUsers() {
     );
 
     const handleAddClick = () => {
-        setFormData({ name: '', email: '', role: 'Admin' });
+        setFormData({ 
+            name: '', 
+            email: '', 
+            role: 'Admin', 
+            newPassword: '', 
+            status: 'Actif',
+            maxDoctors: 3, 
+            maxPatients: 3,
+            associatedClinicId: '',
+            associatedDoctorId: '',
+            associatedParentId: ''
+        });
         setIsAddModalOpen(true);
     };
 
@@ -84,8 +100,13 @@ export default function AdminUsers() {
             name: user.name,
             email: user.email,
             role: user.role,
+            newPassword: '', // Stay empty unless resetting
+            status: user.status,
             maxDoctors: user.subscription?.maxDoctors || 3,
-            maxPatients: user.subscription?.maxPatients || 3
+            maxPatients: user.subscription?.maxPatients || 3,
+            associatedClinicId: user.associatedClinicId || '',
+            associatedDoctorId: user.associatedDoctorId || '',
+            associatedParentId: user.associatedParentId || ''
         });
         setIsEditModalOpen(true);
     };
@@ -131,14 +152,19 @@ export default function AdminUsers() {
                 fullName: formData.name,
                 email: formData.email,
                 role: formData.role,
-                status: "Actif"
+                status: formData.status,
+                newPassword: formData.newPassword,
+                associatedClinicId: formData.associatedClinicId || null,
+                associatedDoctorId: formData.associatedDoctorId || null,
+                associatedParentId: formData.associatedParentId || null
             };
             await api.post('/Users', payload);
-            fetchUsers(); // Refresh the list to get the real DB ID
+            fetchUsers(); 
+            setIsAddModalOpen(false);
         } catch (error) {
             console.error("Erreur lors de l'ajout", error);
+            alert("Erreur lors de la création de l'utilisateur.");
         }
-        setIsAddModalOpen(false);
     };
 
     const saveEdit = async (e) => {
@@ -149,7 +175,11 @@ export default function AdminUsers() {
                 fullName: formData.name,
                 email: formData.email,
                 role: formData.role,
-                status: selectedUser.status,
+                status: formData.status,
+                newPassword: formData.newPassword || null,
+                associatedClinicId: formData.associatedClinicId || null,
+                associatedDoctorId: formData.associatedDoctorId || null,
+                associatedParentId: formData.associatedParentId || null,
                 subscription: selectedUser.subscription ? {
                     ...selectedUser.subscription,
                     maxDoctors: parseInt(formData.maxDoctors),
@@ -164,10 +194,11 @@ export default function AdminUsers() {
             };
             await api.put(`/Users/${selectedUser.id}`, payload);
             fetchUsers();
+            setIsEditModalOpen(false);
         } catch (error) {
             console.error("Erreur d'édition", error);
+            alert("Erreur lors de la mise à jour de l'utilisateur.");
         }
-        setIsEditModalOpen(false);
     };
 
     const exportToCSV = () => {
@@ -365,7 +396,6 @@ export default function AdminUsers() {
                                         </td>
                                         <td className="px-10 py-8 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <ActionButton icon={<Key size={16} />} color="hover:text-yellow-500 text-white/40" onClick={() => alert("Réinitialisation du mot de passe envoyée par email !")} title="Réinitialiser MDP" />
                                                 <ActionButton
                                                     icon={user.status === 'Actif' ? <UserX size={16} /> : <UserCheck size={16} />}
                                                     color={user.status === 'Actif' ? "hover:text-accent text-white/40" : "hover:text-success text-white/40"}
@@ -423,10 +453,31 @@ export default function AdminUsers() {
                                     <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Rôle</label>
                                     <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full bg-[#0b1b2b] border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none cursor-pointer">
                                         <option value="Admin">Admin</option>
-                                        <option value="Admin Secondaire">Admin Secondaire</option>
-                                        <option value="Médecin">Médecin</option>
+                                        <option value="Medecin">Médecin</option>
                                         <option value="Clinique">Clinique</option>
                                         <option value="Parent">Parent</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">
+                                        {isEditModalOpen ? "Nouveau Mot de passe (Laisser vide si inchangé)" : "Mot de passe initial"}
+                                    </label>
+                                    <div className="relative">
+                                        <input 
+                                            type="password" 
+                                            value={formData.newPassword} 
+                                            onChange={e => setFormData({ ...formData, newPassword: e.target.value })} 
+                                            placeholder={isEditModalOpen ? "••••••••" : "DiaCare123!"}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none" 
+                                        />
+                                        <Lock size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Statut</label>
+                                    <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className="w-full bg-[#0b1b2b] border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none cursor-pointer">
+                                        <option value="Actif">Actif</option>
+                                        <option value="Bloqué">Bloqué</option>
                                     </select>
                                 </div>
 

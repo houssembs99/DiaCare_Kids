@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import api from '@/lib/api';
 
 const SettingsSection = ({ title, sub, icon, children }) => (
     <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 lg:p-12 shadow-2xl space-y-10 group hover:border-[#088395]/30 transition-all">
@@ -28,7 +29,7 @@ const SettingsSection = ({ title, sub, icon, children }) => (
     </div>
 );
 
-const InputField = ({ label, placeholder, icon: Icon, type = "text", value }) => (
+const InputField = ({ label, placeholder, icon: Icon, type = "text", value, onChange }) => (
     <div className="space-y-3 group/field">
         <label className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within/field:text-[#088395] transition-colors pl-2">{label}</label>
         <div className="relative">
@@ -37,7 +38,8 @@ const InputField = ({ label, placeholder, icon: Icon, type = "text", value }) =>
             </div>
             <input
                 type={type}
-                defaultValue={value}
+                value={value}
+                onChange={onChange ? (e) => onChange(e.target.value) : undefined}
                 placeholder={placeholder}
                 className="w-full bg-white/5 border border-white/10 rounded-[22px] py-5 px-16 text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] focus:bg-white/10 transition-all text-white placeholder:text-white/5"
             />
@@ -46,6 +48,32 @@ const InputField = ({ label, placeholder, icon: Icon, type = "text", value }) =>
 );
 
 export default function ClinicSettings() {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleChangePassword = async () => {
+        if (!currentPassword || !newPassword) {
+            alert("Veuillez remplir tous les champs.");
+            return;
+        }
+        setLoading(true);
+        try {
+            await api.post('/auth/change-password', {
+                currentPassword,
+                newPassword
+            });
+            alert("Mot de passe modifié avec succès !");
+            setCurrentPassword('');
+            setNewPassword('');
+        } catch (err) {
+            console.error(err);
+            alert(err.response?.data?.message || "Erreur lors du changement de mot de passe.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <DashboardLayout role="Clinique">
             <div className="space-y-12 pb-10 text-white max-w-5xl mx-auto">
@@ -99,10 +127,28 @@ export default function ClinicSettings() {
                     <SettingsSection title="Sécurité & Accès" sub="Protégez votre compte et gérez les autorisations" icon={<Shield size={24} />}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-6">
-                                <InputField label="Changer le Mot de Passe" placeholder="••••••••••••" icon={Lock} type="password" />
-                                <InputField label="Confirmer Mot de Passe" placeholder="••••••••••••" icon={Lock} type="password" />
-                                <button className="w-full py-5 border border-white/10 hover:border-[#1E88E5] hover:text-[#1E88E5] rounded-[22px] text-[10px] font-black uppercase tracking-widest transition-all mt-4">
-                                    Mettre à jour le mot de passe
+                                <InputField 
+                                    label="Mot de passe actuel" 
+                                    placeholder="••••••••••••" 
+                                    icon={Lock} 
+                                    type="password" 
+                                    value={currentPassword}
+                                    onChange={setCurrentPassword}
+                                />
+                                <InputField 
+                                    label="Nouveau mot de passe" 
+                                    placeholder="••••••••••••" 
+                                    icon={Lock} 
+                                    type="password" 
+                                    value={newPassword}
+                                    onChange={setNewPassword}
+                                />
+                                <button 
+                                    onClick={handleChangePassword}
+                                    disabled={loading}
+                                    className="w-full py-5 border border-white/10 hover:border-[#088395] hover:text-[#088395] rounded-[22px] text-[10px] font-black uppercase tracking-widest transition-all mt-4 disabled:opacity-50"
+                                >
+                                    {loading ? "Chargement..." : "Mettre à jour le mot de passe"}
                                 </button>
                             </div>
 

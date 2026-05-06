@@ -11,20 +11,20 @@ export function Model({ animationName = "greeting", ...props }) {
   const group = React.useRef()
   // Chargement du nouvel avatar
   const { scene, animations } = useGLTF('/models/boykidavatar.glb')
-  
+
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene])
   const { nodes, materials } = useGraph(clone)
   const { actions } = useAnimations(animations, group)
 
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
-    
+
     const availableActions = Object.keys(actions);
     let targetAction = actions[animationName];
 
     // Recherche par nom ou fuzzy match
     if (!targetAction) {
-      const fuzzyMatch = availableActions.find(name => 
+      const fuzzyMatch = availableActions.find(name =>
         name.toLowerCase().includes(animationName.toLowerCase())
       );
       if (fuzzyMatch) targetAction = actions[fuzzyMatch];
@@ -32,7 +32,7 @@ export function Model({ animationName = "greeting", ...props }) {
 
     // Fallback sur happyidle si rien n'est trouvé
     if (!targetAction && actions['happyidle']) {
-        targetAction = actions['happyidle'];
+      targetAction = actions['happyidle'];
     }
 
     if (targetAction) {

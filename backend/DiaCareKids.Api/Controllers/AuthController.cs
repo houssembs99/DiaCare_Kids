@@ -5,6 +5,7 @@ using DiaCareKids.Api.Models;
 using DiaCareKids.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DiaCareKids.Api.Controllers
 {
@@ -147,6 +148,34 @@ namespace DiaCareKids.Api.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+                var user = await _usersService.GetAsync(userId);
+                if (user == null) return NotFound();
+
+                if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+                {
+                    return BadRequest(new { message = "Le mot de passe actuel est incorrect." });
+                }
+
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                await _usersService.UpdateAsync(userId, user);
+
+                return Ok(new { message = "Mot de passe modifié avec succès." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Erreur interne du serveur: {ex.Message}" });
+            }
+        }
+
         private string GenerateJwtToken(User user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -177,6 +206,12 @@ namespace DiaCareKids.Api.Controllers
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string CurrentPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
     }
 
     public class RegisterRequest

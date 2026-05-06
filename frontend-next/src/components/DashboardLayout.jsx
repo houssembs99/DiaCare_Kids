@@ -273,12 +273,16 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
 
                             {/* User Profile */}
                             <div className="p-8">
-                                <div className="px-6 py-8 bg-white/5 rounded-[32px] border border-white/10 relative overflow-hidden group">
-                                    <div className="absolute top-[-20px] left-[-20px] p-8 text-white/5 group-hover:rotate-12 transition-transform duration-1000">
+                                <Link 
+                                    href={role === 'Parent' ? '/parent/profile' : `/${rolePath}/settings`}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className="px-6 py-8 bg-white/5 rounded-[32px] border border-white/10 relative overflow-hidden group/profile hover:bg-white/10 transition-all block"
+                                >
+                                    <div className="absolute top-[-20px] left-[-20px] p-8 text-white/5 group-hover/profile:rotate-12 transition-transform duration-1000">
                                         <ShieldCheck size={80} />
                                     </div>
                                     <div className="flex items-center gap-4 relative z-10">
-                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#1E88E5] font-black text-xl shadow-2xl">
+                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#1E88E5] font-black text-xl shadow-2xl group-hover/profile:scale-110 transition-transform">
                                             {user.fullName?.charAt(0)}
                                         </div>
                                         <div className="flex flex-col min-w-0">
@@ -286,7 +290,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
                                             <span className="text-[9px] font-extrabold text-white/40 uppercase tracking-widest mt-2">{role} Expert</span>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
 
                             {/* Navigation Links */}

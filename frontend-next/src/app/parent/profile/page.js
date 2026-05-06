@@ -12,9 +12,15 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import { AnimatePresence } from 'framer-motion';
+import { X, Save } from 'lucide-react';
 
-const ProfileItem = ({ icon: Icon, label, value, color = "text-white/40" }) => (
-    <div className="flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-3xl group hover:border-white/20 transition-all">
+const ProfileItem = ({ icon: Icon, label, value, color = "text-white/40", onClick }) => (
+    <div 
+        onClick={onClick}
+        className={cn("flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-3xl group hover:border-white/20 transition-all", onClick && "cursor-pointer")}
+    >
         <div className="flex items-center gap-5">
             <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center bg-white/5", color)}>
                 <Icon size={20} />
@@ -31,6 +37,35 @@ const ProfileItem = ({ icon: Icon, label, value, color = "text-white/40" }) => (
 export default function ParentProfile() {
     const { t } = useLanguage();
     const router = useRouter();
+
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        if (!currentPassword || !newPassword) {
+            alert("Veuillez remplir tous les champs.");
+            return;
+        }
+        setLoading(true);
+        try {
+            await api.post('/auth/change-password', {
+                currentPassword,
+                newPassword
+            });
+            alert("Mot de passe modifié avec succès !");
+            setIsPasswordModalOpen(false);
+            setCurrentPassword('');
+            setNewPassword('');
+        } catch (err) {
+            console.error(err);
+            alert(err.response?.data?.message || "Erreur lors du changement de mot de passe.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -101,7 +136,12 @@ export default function ParentProfile() {
                 <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 pl-4">Préférences l'application</h3>
                     <div className="grid grid-cols-1 gap-3">
-                        <ProfileItem icon={Lock} label="Sécurité" value="Changer mon mot de passe" />
+                        <ProfileItem 
+                            icon={Lock} 
+                            label="Sécurité" 
+                            value="Changer mon mot de passe" 
+                            onClick={() => setIsPasswordModalOpen(true)}
+                        />
                         <ProfileItem icon={Globe} label="Langue" value="Français (FR)" />
                         <ProfileItem icon={Bell} label="Notifications" value="Activées" />
                         <ProfileItem icon={Smartphone} label="Appareils" value="iPhone 15 Pro" />
@@ -122,6 +162,68 @@ export default function ParentProfile() {
                 </div>
 
             </div>
+
+            {/* Password Change Modal */}
+            <AnimatePresence>
+                {isPasswordModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }} 
+                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            onClick={() => setIsPasswordModalOpen(false)}
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+                            animate={{ scale: 1, opacity: 1, y: 0 }} 
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative z-10 shadow-2xl"
+                        >
+                            <button 
+                                onClick={() => setIsPasswordModalOpen(false)} 
+                                className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                            <h2 className="text-xl font-black uppercase italic tracking-tighter mb-8 text-white flex items-center gap-3">
+                                <Lock size={20} className="text-[#088395]" /> Sécurité
+                            </h2>
+                            <form onSubmit={handleChangePassword} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-white/20 pl-2">Mot de passe actuel</label>
+                                    <input 
+                                        type="password" 
+                                        required 
+                                        value={currentPassword} 
+                                        onChange={e => setCurrentPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#088395] outline-none" 
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-white/20 pl-2">Nouveau mot de passe</label>
+                                    <input 
+                                        type="password" 
+                                        required 
+                                        value={newPassword} 
+                                        onChange={e => setNewPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#088395] outline-none" 
+                                    />
+                                </div>
+                                <button 
+                                    type="submit" 
+                                    disabled={loading}
+                                    className="w-full py-5 bg-[#088395] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#066a7a] transition-all disabled:opacity-50 mt-4 shadow-[0_10px_20px_rgba(8,131,149,0.2)]"
+                                >
+                                    <Save size={18} /> {loading ? "Mise à jour..." : "Confirmer"}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </DashboardLayout>
     );
 }
