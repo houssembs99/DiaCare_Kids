@@ -171,7 +171,7 @@ export default function PuzzleGame() {
                     </div>
 
                     <div className="bg-[#FF9500] text-black px-4 md:px-6 py-2 md:py-3 rounded-2xl font-black shadow-xl flex items-center gap-3">
-                        <Trophy size={18} md:size={20} />
+                        <Trophy size={20} />
                         <span className="text-lg md:text-xl">{totalScore}</span>
                     </div>
                 </div>
