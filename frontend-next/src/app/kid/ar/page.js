@@ -119,24 +119,24 @@ export default function ARPage() {
   const current = statusInfo[currentStatus];
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden font-sans select-none z-[100]">
+    <div className="fixed inset-0 flex flex-col overflow-hidden font-sans select-none z-[9999] bg-transparent">
       
-      {/* Header / Navbar - Très haut z-index */}
-      <div className="pt-12 pb-4 px-6 flex items-center justify-between z-[9999] bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
-        <Link href="/kid/dashboard" className="pointer-events-auto p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl text-white hover:bg-white/20 active:scale-95 transition-all flex items-center gap-3 shadow-lg">
+      {/* Header / Navbar - Priorité absolue */}
+      <div className="pt-12 pb-4 px-6 flex items-center justify-between z-[10000] bg-gradient-to-b from-black/40 to-transparent pointer-events-none">
+        <Link href="/kid/dashboard" className="pointer-events-auto p-4 bg-white/20 backdrop-blur-xl border border-white/20 rounded-2xl text-white hover:bg-white/30 active:scale-95 transition-all flex items-center gap-3 shadow-2xl">
           <ChevronLeft size={22} />
           <span className="font-black uppercase tracking-[0.1em] text-[11px]">{lang === 'ar' ? 'خروج' : 'Quitter'}</span>
         </Link>
         <div className="flex flex-col items-end pointer-events-auto">
-            <h1 className="text-white font-black italic uppercase tracking-tighter text-2xl leading-none">
+            <h1 className="text-white font-black italic uppercase tracking-tighter text-2xl leading-none drop-shadow-lg">
                 {lang === 'ar' ? 'حموش' : 'Hamouch'} <span className="text-[#FFB300]">AR</span>
             </h1>
         </div>
       </div>
 
       {/* Capteur de Glycémie */}
-      <div className="px-6 py-2 z-[9999] pointer-events-none">
-        <div className="flex items-center justify-between bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-[28px] shadow-2xl max-w-sm mx-auto w-full pointer-events-auto">
+      <div className="px-6 py-2 z-[10000] pointer-events-none">
+        <div className="flex items-center justify-between bg-black/50 backdrop-blur-2xl border border-white/20 p-4 rounded-[28px] shadow-2xl max-w-sm mx-auto w-full pointer-events-auto">
           <div className="flex items-center gap-3">
             <div className="relative">
                 <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
