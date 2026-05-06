@@ -1,40 +1,18 @@
 "use client";
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { XR, createXRStore } from '@react-three/xr';
-import { Environment, ContactShadows } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 const store = createXRStore({
   domOverlay: typeof window !== 'undefined' ? { root: document.body } : undefined
 });
 
-const InteractiveModel = ({ animationName }) => {
-  const [rotation, setRotation] = useState([0, 0, 0]);
-
-  return (
-    <group 
-      rotation={rotation}
-      onPointerMove={(e) => {
-        if (e.buttons === 1 || e.nativeEvent.touches) {
-          // Calcul simple pour faire pivoter sur l'axe Y
-          setRotation([0, rotation[1] + e.deltaX * 0.01, 0]);
-        }
-      }}
-    >
-      <Model 
-        position={[0, -0.4, -1.2]} 
-        scale={1.2} 
-        animationName={animationName} 
-      />
-    </group>
-  );
-};
-
 const ARScene = ({ animationName = "Idle" }) => {
   return (
-    <div className="w-full h-full relative" id="ar-container">
+    <div className="w-full h-full relative">
       <div className="absolute inset-0 flex items-center justify-center z-[500] pointer-events-none">
           <button
             onClick={() => store.enterAR()}
@@ -47,20 +25,22 @@ const ARScene = ({ animationName = "Idle" }) => {
       <Canvas shadows camera={{ position: [0, 1.6, 2], fov: 50 }}>
         <XR store={store}>
           <Suspense fallback={null}>
-            <ambientLight intensity={1.5} />
-            <pointLight position={[5, 5, 5]} intensity={2} />
-            <directionalLight position={[0, 10, 0]} intensity={1} castShadow />
+            <ambientLight intensity={3.0} />
+            <pointLight position={[5, 5, 5]} intensity={5} />
+            
+            {/* CUBE DE TEST - Si vous voyez ça, la 3D marche ! */}
+            <mesh position={[0, 0.2, -0.8]}>
+              <boxGeometry args={[0.1, 0.1, 0.1]} />
+              <meshBasicMaterial color="red" />
+            </mesh>
 
-            <InteractiveModel animationName={animationName} />
-
-            <ContactShadows
-              opacity={0.6}
-              scale={10}
-              blur={2}
-              far={10}
-              resolution={256}
-              color="#000000"
+            <Model 
+              position={[0, -0.4, -1.2]} 
+              scale={1.0} 
+              animationName={animationName} 
             />
+
+            <OrbitControls makeDefault />
           </Suspense>
         </XR>
       </Canvas>

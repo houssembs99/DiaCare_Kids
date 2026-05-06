@@ -118,115 +118,122 @@ export default function ARPage() {
 
   const current = statusInfo[currentStatus];
 
-  return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden font-sans select-none z-[9999] bg-transparent">
+  return (    <div className="fixed inset-0 bg-[#0b1b2b] overflow-hidden font-sans select-none">
       
-      {/* Header / Navbar - Priorité absolue */}
-      <div className="pt-12 pb-4 px-6 flex items-center justify-between z-[10000] bg-gradient-to-b from-black/40 to-transparent pointer-events-none">
-        <Link href="/kid/dashboard" className="pointer-events-auto p-4 bg-white/20 backdrop-blur-xl border border-white/20 rounded-2xl text-white hover:bg-white/30 active:scale-95 transition-all flex items-center gap-3 shadow-2xl">
-          <ChevronLeft size={22} />
-          <span className="font-black uppercase tracking-[0.1em] text-[11px]">{lang === 'ar' ? 'خروج' : 'Quitter'}</span>
-        </Link>
-        <div className="flex flex-col items-end pointer-events-auto">
-            <h1 className="text-white font-black italic uppercase tracking-tighter text-2xl leading-none drop-shadow-lg">
-                {lang === 'ar' ? 'حموش' : 'Hamouch'} <span className="text-[#FFB300]">AR</span>
-            </h1>
-        </div>
-      </div>
-
-      {/* Capteur de Glycémie */}
-      <div className="px-6 py-2 z-[10000] pointer-events-none">
-        <div className="flex items-center justify-between bg-black/50 backdrop-blur-2xl border border-white/20 p-4 rounded-[28px] shadow-2xl max-w-sm mx-auto w-full pointer-events-auto">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
-                <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping opacity-40" />
-            </div>
-            <span className="text-white/70 text-[10px] font-black uppercase tracking-widest">Glycémie en Direct</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[#FFB300] text-2xl font-black tracking-tight">{glucose}</span>
-            <span className="text-white/40 text-[10px] font-black">mg/dL</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Zone AR */}
-      <div className="flex-1 relative">
+      {/* 1. LA SCENE 3D (Tout au fond) */}
+      <div className="absolute inset-0 z-0">
         <ARScene animationName={animation} />
       </div>
 
-      {/* Popups Éducatifs */}
-      <AnimatePresence>
-        {showPopup && (
-          <motion.div 
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="absolute bottom-40 left-6 right-6 z-[150]"
-          >
-            <div className={`bg-gradient-to-br ${current.color} backdrop-blur-2xl border border-white/20 p-6 rounded-[40px] shadow-2xl relative overflow-hidden`}>
-                <div className="absolute top-0 right-0 p-4 opacity-10">{current.icon}</div>
-                
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white">
-                        {current.icon}
-                    </div>
-                    <h2 className="text-white font-black uppercase italic tracking-tight text-lg">
-                        {isGreeting ? "Bienvenue !" : current.title}
-                    </h2>
-                </div>
-
-                <p className={`text-white/80 leading-relaxed mb-6 font-medium ${lang === 'ar' ? 'text-right font-arabic' : 'text-sm'}`}>
-                    {isGreeting ? t('kid.arEdu.greeting') : current.desc}
-                </p>
-
-                {current.action && !isGreeting && (
-                    <button 
-                        onClick={() => handleAction(current.action.type)}
-                        className="w-full bg-white text-[#0b1b2b] py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-xl animate-bounce"
-                    >
-                        {current.action.label}
-                    </button>
-                )}
-
-                {!current.action && !isGreeting && (
-                     <button 
-                        onClick={() => setShowPopup(false)}
-                        className="w-full bg-white/10 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm"
-                     >
-                        Compris !
-                     </button>
-                )}
+      {/* 2. L'INTERFACE (Par-dessus, transparente) */}
+      <div className="absolute inset-0 z-50 pointer-events-none flex flex-col">
+        
+        {/* Header */}
+        <div className="pt-12 pb-4 px-6 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
+            <Link href="/kid/dashboard" className="pointer-events-auto p-4 bg-white/20 backdrop-blur-xl border border-white/20 rounded-2xl text-white hover:bg-white/30 active:scale-95 transition-all flex items-center gap-3 shadow-2xl">
+                <ChevronLeft size={22} />
+                <span className="font-black uppercase tracking-[0.1em] text-[11px]">{lang === 'ar' ? 'خروج' : 'Quitter'}</span>
+            </Link>
+            <div className="flex flex-col items-end">
+                <h1 className="text-white font-black italic uppercase tracking-tighter text-2xl leading-none drop-shadow-lg">
+                    {lang === 'ar' ? 'حموش' : 'Hamouch'} <span className="text-[#FFB300]">AR</span>
+                </h1>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
 
-      {/* Barre de contrôle manuelle - Adaptée */}
-      <div className="absolute bottom-10 left-0 right-0 px-6 z-[9999] flex justify-center gap-4 pointer-events-none">
-        <button 
-          onClick={() => { setAnimation("sport"); handleSpeak(t('kid.arEdu.sportDesc')); }}
-          className="pointer-events-auto bg-black/60 backdrop-blur-2xl border border-white/10 px-6 py-4 rounded-[24px] flex items-center gap-3 text-white hover:bg-[#FFB300] hover:text-[#0b1b2b] active:scale-95 transition-all group shadow-2xl"
-        >
-          <PlayCircle size={22} className="group-hover:rotate-90 transition-transform" />
-          <span className="font-black uppercase tracking-[0.15em] text-[10px]">{t('kid.arEdu.sportTitle')}</span>
-        </button>
+        {/* Glycémie */}
+        <div className="px-6 py-2">
+            <div className="flex items-center justify-between bg-black/50 backdrop-blur-2xl border border-white/20 p-4 rounded-[28px] shadow-2xl max-w-sm mx-auto w-full pointer-events-auto">
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                        <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping opacity-40" />
+                    </div>
+                    <span className="text-white/70 text-[10px] font-black uppercase tracking-widest">Direct</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-[#FFB300] text-2xl font-black tracking-tight">{glucose}</span>
+                    <span className="text-white/40 text-[10px] font-black">mg/dL</span>
+                </div>
+            </div>
+        </div>
 
-        <button 
-          onClick={() => setShowPopup(true)}
-          className="pointer-events-auto w-16 h-16 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[24px] flex items-center justify-center text-white active:scale-90 shadow-2xl"
-        >
-          <MessageCircle size={24} />
-        </button>
+        {/* Espace vide central pour voir l'avatar */}
+        <div className="flex-1" />
+
+        {/* Popups Éducatifs */}
+        <AnimatePresence>
+            {showPopup && (
+            <motion.div 
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                className="px-6 pb-32 pointer-events-auto"
+            >
+                <div className={`bg-gradient-to-br ${current.color} backdrop-blur-2xl border border-white/20 p-6 rounded-[40px] shadow-2xl relative overflow-hidden`}>
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white">
+                            {current.icon}
+                        </div>
+                        <h2 className="text-white font-black uppercase italic tracking-tight text-lg">
+                            {isGreeting ? "Bienvenue !" : current.title}
+                        </h2>
+                    </div>
+
+                    <p className={`text-white/80 leading-relaxed mb-6 font-medium ${lang === 'ar' ? 'text-right font-arabic' : 'text-sm'}`}>
+                        {isGreeting ? t('kid.arEdu.greeting') : current.desc}
+                    </p>
+
+                    {current.action && !isGreeting && (
+                        <button 
+                            onClick={() => handleAction(current.action.type)}
+                            className="w-full bg-white text-[#0b1b2b] py-4 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl animate-bounce"
+                        >
+                            {current.action.label}
+                        </button>
+                    )}
+
+                    {(!current.action || isGreeting) && (
+                        <button 
+                            onClick={() => setShowPopup(false)}
+                            className="w-full bg-white/10 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm"
+                        >
+                            Compris !
+                        </button>
+                    )}
+                </div>
+            </motion.div>
+            )}
+        </AnimatePresence>
+
+        {/* Footer Controls */}
+        <div className="absolute bottom-10 left-0 right-0 px-6 flex justify-center gap-4 pointer-events-none">
+            <button 
+                onClick={() => { setAnimation("sport"); handleSpeak(t('kid.arEdu.sportDesc')); }}
+                className="pointer-events-auto bg-black/60 backdrop-blur-2xl border border-white/10 px-6 py-4 rounded-[24px] flex items-center gap-3 text-white hover:bg-[#FFB300] hover:text-[#0b1b2b] active:scale-95 transition-all shadow-2xl"
+            >
+                <PlayCircle size={22} />
+                <span className="font-black uppercase tracking-[0.15em] text-[10px]">{t('kid.arEdu.sportTitle')}</span>
+            </button>
+
+            <button 
+                onClick={() => setShowPopup(true)}
+                className="pointer-events-auto w-16 h-16 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[24px] flex items-center justify-center text-white active:scale-90 shadow-2xl"
+            >
+                <MessageCircle size={24} />
+            </button>
+        </div>
+
+        {/* Debug Buttons */}
+        <div className="absolute top-48 right-4 flex flex-col gap-2 opacity-30 hover:opacity-100 transition-opacity pointer-events-none">
+            <button onClick={() => { setGlucose(50); setAnimation("basgl"); setCurrentStatus("hypo"); setIsGreeting(false); setShowPopup(true); }} className="pointer-events-auto w-10 h-10 bg-red-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">L</button>
+            <button onClick={() => { setGlucose(100); setAnimation("happyidle"); setCurrentStatus("perfect"); setIsGreeting(false); setShowPopup(true); }} className="pointer-events-auto w-10 h-10 bg-green-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">OK</button>
+            <button onClick={() => { setGlucose(250); setAnimation("hautegl"); setCurrentStatus("hyper"); setIsGreeting(false); setShowPopup(true); }} className="pointer-events-auto w-10 h-10 bg-orange-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">H</button>
+        </div>
+
       </div>
-
-      {/* PANNEAU DE TEST (Debug) */}
-      <div className="absolute top-48 right-4 z-[9999] flex flex-col gap-2 opacity-50 hover:opacity-100 transition-opacity">
-        <button onClick={() => { setGlucose(50); setAnimation("basgl"); setCurrentStatus("hypo"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-red-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">L</button>
-        <button onClick={() => { setGlucose(100); setAnimation("happyidle"); setCurrentStatus("perfect"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-green-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">OK</button>
-        <button onClick={() => { setGlucose(250); setAnimation("hautegl"); setCurrentStatus("hyper"); setIsGreeting(false); setShowPopup(true); }} className="w-10 h-10 bg-orange-500/80 rounded-full text-white text-[8px] font-bold flex items-center justify-center">H</button>
-      </div>
+    </div>
+v>
 
     </div>
   );
