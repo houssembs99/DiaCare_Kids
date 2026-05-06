@@ -135,102 +135,117 @@ export default function ARPage() {
   if (!isMounted) return null;
 
   return (
-    <div id="ar-ui-root" className="fixed inset-0 flex flex-col overflow-hidden font-sans select-none bg-transparent">
-      <div className="h-[120px] pt-16 px-6 flex items-center justify-center z-[100] bg-[#0b1b2b]">
-        <div className="w-24 h-1.5 bg-white/5 rounded-full" />
+    <div className="fixed inset-0 bg-[#0b1b2b] overflow-hidden font-sans select-none">
+      
+      {/* SCÈNE AR (EN ARRIÈRE-PLAN) */}
+      <div className="absolute inset-0 z-0">
+        <ARScene animationName={animation} />
       </div>
 
-      <div className="h-[100px] px-4 flex items-center justify-between z-[100] bg-[#0b1b2b]/95 backdrop-blur-md border-b border-white/10 gap-2">
-        <div className="flex items-center gap-2 shrink-0">
-            <Link href="/kid/dashboard" className="p-3 bg-white/10 border border-white/10 rounded-xl text-white">
-                <ChevronLeft size={18} />
-            </Link>
-            <button 
-                onClick={() => { 
-                    if (animation === "sport") {
-                        setAnimation("happyidle");
-                        handleSpeak(lang === 'ar' ? 'توقفنا عن الرياضة' : 'On arrête le sport !');
-                    } else {
-                        if (glucose > 250) {
-                            setGameMessage(lang === 'ar' ? 
-                                'خطر! سكري مرتفع جداً (>250). يجب أخذ الأنسولين وتجنب الرياضة الآن لتجنب الحموضة الكيتونية.' : 
-                                'STOP ! Mon sucre est trop haut (>250). Je dois prendre de l’insuline et éviter le sport pour ne pas être malade (cétones).');
-                            setShowPopup(true);
-                            handleSpeak(lang === 'ar' ? 'سكري مرتفع جداً' : 'Mon sucre est trop haut !');
-                        } else {
-                            setAnimation("sport"); 
-                            if (glucose > 180) {
-                                setGameMessage(lang === 'ar' ? 'سكري مرتفع قليلاً، سأمارس الرياضة بحذر.' : 'Mon sucre est un peu haut, je vais faire du sport prudemment.');
-                                setShowPopup(true);
-                            }
-                            handleSpeak(t('kid.arEdu.sportDesc')); 
-                        }
-                    }
-                }}
-                className={`p-3 rounded-xl flex items-center gap-2 transition-all border ${
-                    animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300]" : "bg-white/5 text-white border-white/10"
-                }`}
-            >
-                <PlayCircle size={18} className={animation === "sport" ? "animate-spin" : ""} />
-            </button>
-            <button onClick={() => store.enterAR()} className="bg-[#FFB300] text-[#0b1b2b] p-3 rounded-xl shadow-lg">
-                <Sparkles size={18} />
-            </button>
+      {/* INTERFACE DE CONTRÔLE (L'OVERLAY) */}
+      <div id="ar-ui-overlay" className="absolute inset-0 z-[100] flex flex-col pointer-events-none">
+        
+        {/* 1. NAVBAR IDENTITY */}
+        <div className="h-[100px] pt-12 px-6 flex items-center justify-center bg-gradient-to-b from-[#0b1b2b] to-transparent">
+            <div className="w-24 h-1.5 bg-white/10 rounded-full" />
         </div>
 
-        <div className="flex-1 flex justify-center">
-            <div className={`flex items-center justify-between border-2 px-4 py-2 rounded-2xl shadow-2xl w-full max-w-[120px] ${
-                currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10' : 
-                currentStatus === 'hypo' ? 'border-red-500/50 bg-red-500/10' : 'border-orange-500/50 bg-orange-500/10'
-            }`}>
-                <span className={`text-xl font-black ${currentStatus === 'perfect' ? 'text-green-400' : 'text-red-400'}`}>{glucose}</span>
+        {/* 2. BARRE D'INTERACTION */}
+        <div className="px-4 pointer-events-auto">
+            <div className="h-[90px] px-4 flex items-center justify-between bg-[#0b1b2b]/80 backdrop-blur-md border border-white/10 rounded-[30px] shadow-2xl gap-2">
+                {/* GAUCHE : Quitter + Sport + Magie */}
+                <div className="flex items-center gap-2">
+                    <Link href="/kid/dashboard" className="p-3 bg-white/10 border border-white/10 rounded-xl text-white">
+                        <ChevronLeft size={18} />
+                    </Link>
+                    <button 
+                        onClick={() => { 
+                            if (animation === "sport") {
+                                setAnimation("happyidle");
+                                handleSpeak(lang === 'ar' ? 'توقفنا عن الرياضة' : 'On arrête le sport !');
+                            } else {
+                                if (glucose > 250) {
+                                    setGameMessage(lang === 'ar' ? 'خطر! سكري مرتفع جداً (>250). يجب أخذ الأنسولين وتجنب الرياضة الآن.' : 'STOP ! Mon sucre est trop haut (>250). Je dois prendre de l’insuline et éviter le sport.');
+                                    setShowPopup(true);
+                                    handleSpeak(lang === 'ar' ? 'سكري مرتفع جداً' : 'Mon sucre est trop haut !');
+                                } else {
+                                    setAnimation("sport"); 
+                                    if (glucose > 180) {
+                                        setGameMessage(lang === 'ar' ? 'سكري مرتفع قليلاً، سأمارس الرياضة بحذر.' : 'Mon sucre est un peu haut, je vais faire du sport prudemment.');
+                                        setShowPopup(true);
+                                    }
+                                    handleSpeak(t('kid.arEdu.sportDesc')); 
+                                }
+                            }
+                        }}
+                        className={`p-3 rounded-xl flex items-center gap-2 transition-all border ${
+                            animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300]" : "bg-white/5 text-white border-white/10"
+                        }`}
+                    >
+                        <PlayCircle size={18} className={animation === "sport" ? "animate-spin" : ""} />
+                    </button>
+                    <button onClick={() => store.enterAR()} className="bg-[#FFB300] text-[#0b1b2b] p-3 rounded-xl shadow-lg">
+                        <Sparkles size={18} />
+                    </button>
+                </div>
+
+                {/* CENTRE : Glycémie */}
+                <div className="flex-1 flex justify-center">
+                    <div className={`flex items-center justify-center border-2 px-4 py-2 rounded-2xl shadow-xl min-w-[80px] ${
+                        currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10 text-green-400' : 
+                        currentStatus === 'hypo' ? 'border-red-500/50 bg-red-500/10 text-red-400' : 'border-orange-500/50 bg-orange-500/10 text-orange-400'
+                    }`}>
+                        <span className="text-xl font-black">{glucose}</span>
+                    </div>
+                </div>
+
+                {/* DROITE : Objets */}
+                <div className="flex items-center gap-2">
+                    <button onClick={() => handleItemClick('apple')} className="p-3 bg-green-500/20 border border-green-500/30 rounded-xl text-green-400">
+                        <Apple size={18} />
+                    </button>
+                    <button onClick={() => handleItemClick('insulin')} className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-xl text-blue-400">
+                        <Syringe size={18} />
+                    </button>
+                    <button onClick={() => handleItemClick('candy')} className="p-3 bg-pink-500/20 border border-pink-500/30 rounded-xl text-pink-400">
+                        <Candy size={18} />
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-            <button onClick={() => handleItemClick('apple')} className="p-3 bg-green-500/20 border border-green-500/30 rounded-xl text-green-400">
-                <Apple size={18} />
-            </button>
-            <button onClick={() => handleItemClick('insulin')} className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-xl text-blue-400">
-                <Syringe size={18} />
-            </button>
-            <button onClick={() => handleItemClick('candy')} className="p-3 bg-pink-500/20 border border-pink-500/30 rounded-xl text-pink-400">
-                <Candy size={18} />
-            </button>
-        </div>
-      </div>
-
-      <div className="flex-1 relative z-0 overflow-hidden bg-black/20 pt-6">
-        <ARScene animationName={animation} />
-        
-        <AnimatePresence>
-            {showPopup && (
-            <motion.div 
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 50, opacity: 0 }}
-                className="absolute bottom-10 left-6 right-6 z-[200]"
-            >
-                <div className={`bg-gradient-to-br from-[#0b1b2b] to-[#1a2a3a] border-2 ${
-                    currentStatus === 'perfect' ? 'border-green-500/30' : 'border-red-500/30'
-                } p-6 rounded-[35px] shadow-2xl relative overflow-hidden`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        {currentStatus === 'hypo' ? <Candy size={80} /> : <Apple size={80} />}
+        {/* POPUPS (FLOATING) */}
+        <div className="flex-1 relative">
+            <AnimatePresence>
+                {showPopup && (
+                <motion.div 
+                    initial={{ y: 50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 50, opacity: 0 }}
+                    className="absolute bottom-10 left-6 right-6 z-[200] pointer-events-auto"
+                >
+                    <div className="bg-gradient-to-br from-[#0b1b2b] to-[#1a2a3a] border-2 border-white/10 p-6 rounded-[35px] shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            {currentStatus === 'hypo' ? <Candy size={80} /> : <Apple size={80} />}
+                        </div>
+                        <p className={`text-white leading-relaxed font-black text-sm relative z-10 ${lang === 'ar' ? 'text-right font-arabic' : ''}`}>
+                            {gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
+                        </p>
+                        <button 
+                            onClick={() => setShowPopup(false)}
+                            className="mt-4 w-full bg-white/10 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px]"
+                        >
+                            Continuer
+                        </button>
                     </div>
-                    <p className={`text-white leading-relaxed font-black text-sm relative z-10 ${lang === 'ar' ? 'text-right font-arabic' : ''}`}>
-                        {gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
-                    </p>
-                    <button 
-                        onClick={() => setShowPopup(false)}
-                        className="mt-4 w-full bg-white/10 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px]"
-                    >
-                        Continuer
-                    </button>
-                </div>
-            </motion.div>
-            )}
-        </AnimatePresence>
+                </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+
       </div>
     </div>
+  );
+}
   );
 }
