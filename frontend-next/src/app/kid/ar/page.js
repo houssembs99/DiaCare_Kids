@@ -189,22 +189,25 @@ export default function ARPage() {
   if (!isMounted) return null;
 
   return (
-    <div id="ar-game-container" className="fixed inset-0 bg-[#0b1b2b] overflow-hidden font-sans select-none z-[9999]">
+    <div id="ar-game-container" className={`fixed inset-0 overflow-hidden font-sans select-none z-[9999] transition-colors duration-1000 ${viewMode === 'ar' ? 'bg-transparent pointer-events-none' : 'bg-[#0b1b2b]'}`}>
       
       {/* 1. Écran de Sélection */}
       {viewMode === 'selection' && (
-        <ModeSelection 
-          onSelect={(mode) => mode === 'ar' ? handleLaunchAR() : setViewMode('magie')} 
-          onBack={() => window.history.back()} 
-        />
+        <div className="pointer-events-auto">
+          <ModeSelection 
+            onSelect={(mode) => mode === 'ar' ? handleLaunchAR() : setViewMode('magie')} 
+            onBack={() => window.history.back()} 
+          />
+        </div>
       )}
 
       {/* 2. Scène 3D (Toujours montée en arrière-plan pour éviter la perte de contexte WebGL) */}
-      <div className={`fixed inset-0 transition-colors duration-1000 ${viewMode === 'ar' ? 'bg-transparent' : 'bg-[#0b1b2b]'}`}>
+      <div className="fixed inset-0 pointer-events-none">
         <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} isARMode={viewMode === 'ar'} />
         
         {/* Interface MAGIE */}
-        <div style={{ display: viewMode === 'magie' ? 'block' : 'none' }} className="absolute inset-0 z-[100]">
+        {viewMode === 'magie' && (
+          <div className="absolute inset-0 z-[100] pointer-events-auto">
           <MagieInterface 
             glucose={glucose}
             currentStatus={currentStatus}
@@ -223,24 +226,27 @@ export default function ARPage() {
             handleSpeak={handleSpeak}
           />
         </div>
+        )}
 
         {/* Interface AR */}
-        <div style={{ display: viewMode === 'ar' ? 'block' : 'none' }} className="absolute inset-0 z-[1000]">
-          <ARInterface 
-            glucose={glucose}
-            currentStatus={currentStatus}
-            animation={animation}
-            setAnimation={setAnimation}
-            onItemClick={handleItemClick}
-            onExit={handleExitAR}
-            showPopup={showPopup}
-            setShowPopup={setShowPopup}
-            gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
-            t={t}
-            lang={lang}
-            handleSpeak={handleSpeak}
-          />
-        </div>
+        {viewMode === 'ar' && (
+          <div className="absolute inset-0 z-[1000] pointer-events-auto">
+            <ARInterface 
+              glucose={glucose}
+              currentStatus={currentStatus}
+              animation={animation}
+              setAnimation={setAnimation}
+              onItemClick={handleItemClick}
+              onExit={handleExitAR}
+              showPopup={showPopup}
+              setShowPopup={setShowPopup}
+              gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
+              t={t}
+              lang={lang}
+              handleSpeak={handleSpeak}
+            />
+          </div>
+        )}
       </div>
 
     </div>

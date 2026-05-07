@@ -13,7 +13,19 @@ export function Model({ animationName = "greeting", ...props }) {
 
   const clone = useMemo(() => {
     if (!scene) return null;
-    return SkeletonUtils.clone(scene);
+    const clonedScene = SkeletonUtils.clone(scene);
+    
+    // WebXR Fix: Désactiver le frustum culling car les SkinnedMeshes ont souvent
+    // des bounding boxes incorrectes et disparaissent quand on bouge la caméra en AR.
+    clonedScene.traverse((node) => {
+      if (node.isMesh) {
+        node.frustumCulled = false;
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
+    });
+    
+    return clonedScene;
   }, [scene])
 
   const { nodes, materials } = useGraph(clone || new THREE.Group())

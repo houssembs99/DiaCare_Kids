@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Activity, Mail, Phone, MapPin, Heart, Instagram, Twitter, Linkedin } from 'lucide-react';
+import { Activity, Mail, Phone, MapPin, Heart, } from 'lucide-react';
 
 const Footer = () => {
     return (
@@ -21,11 +21,7 @@ const Footer = () => {
                         <p className="text-cyan-100/60 text-sm leading-relaxed max-w-xs font-medium italic">
                             "Redonner le sourire aux petits champions à travers l'innovation et l'éducation intelligente."
                         </p>
-                        <div className="flex gap-4">
-                            <SocialIcon icon={<Instagram size={18} />} />
-                            <SocialIcon icon={<Twitter size={18} />} />
-                            <SocialIcon icon={<Linkedin size={18} />} />
-                        </div>
+
                     </div>
 
                     {/* Navigation */}
@@ -39,7 +35,7 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    
+
                     {/* Contact */}
                     <div className="space-y-6">
                         <h4 className="text-sm font-bold uppercase tracking-widest text-white">Nous Joindre</h4>
