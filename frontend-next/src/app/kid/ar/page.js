@@ -204,7 +204,7 @@ export default function ARPage() {
         <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} isARMode={viewMode === 'ar'} />
         
         {/* Interface MAGIE */}
-        {viewMode === 'magie' && (
+        <div style={{ display: viewMode === 'magie' ? 'block' : 'none' }} className="absolute inset-0 z-[100]">
           <MagieInterface 
             glucose={glucose}
             currentStatus={currentStatus}
@@ -222,10 +222,10 @@ export default function ARPage() {
             lang={lang}
             handleSpeak={handleSpeak}
           />
-        )}
+        </div>
 
         {/* Interface AR */}
-        {viewMode === 'ar' && (
+        <div style={{ display: viewMode === 'ar' ? 'block' : 'none' }} className="absolute inset-0 z-[1000]">
           <ARInterface 
             glucose={glucose}
             currentStatus={currentStatus}
@@ -240,7 +240,7 @@ export default function ARPage() {
             lang={lang}
             handleSpeak={handleSpeak}
           />
-        )}
+        </div>
       </div>
 
     </div>
