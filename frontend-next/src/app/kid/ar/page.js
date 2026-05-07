@@ -142,121 +142,98 @@ export default function ARPage() {
   if (!isMounted) return null;
 
   return (
-    <div id="ar-ui-overlay" className="fixed inset-0 bg-transparent flex flex-col overflow-hidden font-sans select-none z-[9999]">
+    <div className="fixed inset-0 bg-transparent flex flex-col overflow-hidden font-sans select-none z-[9999]">
       
-      {/* 1. ZONE DE CONTRÔLE (HAUT) */}
-      <div className="bg-[#0b1b2b] border-b border-white/10 z-[100] pb-4 shrink-0">
-        <div className="h-[80px] pt-10 px-6 flex items-center justify-center">
-            <div className="w-24 h-1.5 bg-white/10 rounded-full" />
-        </div>
+      {/* ZONE DÉDIÉE À L'OVERLAY XR (C'est ici que le système AR va puiser les boutons) */}
+      <div id="xr-ui-controls" className="absolute inset-0 flex flex-col pointer-events-none z-[10000]">
+        
+        {/* 1. ZONE DE CONTRÔLE (HAUT) */}
+        <div className="bg-[#0b1b2b] border-b border-white/10 pb-4 shrink-0 pointer-events-auto">
+            <div className="h-[80px] pt-10 px-6 flex items-center justify-center">
+                <div className="w-24 h-1.5 bg-white/10 rounded-full" />
+            </div>
 
-        <div className="px-4">
-            <div className="h-[80px] px-4 flex items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-[25px] shadow-xl gap-2">
-                <div className="flex items-center gap-2">
-                    <Link href="/kid/dashboard" className="p-3 bg-white/10 border border-white/10 rounded-xl text-white active:scale-95 transition-all">
-                        <ChevronLeft size={18} />
-                    </Link>
-                    <button 
-                        onClick={() => { 
-                            if (animation === "sport") {
-                                setAnimation("happyidle");
-                                handleSpeak(lang === 'ar' ? 'توقفنا عن الرياضة' : 'On arrête le sport !');
-                            } else {
-                                if (glucose > 250) {
-                                    setGameMessage(lang === 'ar' ? 'خطر! سكري مرتفع جداً (>250).' : 'STOP ! Mon sucre est trop haut (>250).');
-                                    setShowPopup(true);
+            <div className="px-4">
+                <div className="h-[80px] px-4 flex items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-[25px] shadow-xl gap-2">
+                    {/* GAUCHE */}
+                    <div className="flex items-center gap-2">
+                        <Link href="/kid/dashboard" className="p-3 bg-white/10 border border-white/10 rounded-xl text-white">
+                            <ChevronLeft size={18} />
+                        </Link>
+                        <button 
+                            onClick={() => { 
+                                if (animation === "sport") {
+                                    setAnimation("happyidle");
+                                    handleSpeak(lang === 'ar' ? 'توقفنا عن الرياضة' : 'On arrête le sport !');
                                 } else {
-                                    setAnimation("sport"); 
-                                    handleSpeak(t('kid.arEdu.sportDesc')); 
+                                    if (glucose > 250) {
+                                        setGameMessage(lang === 'ar' ? 'خطر! سكري مرتفع جداً (>250).' : 'STOP ! Mon sucre est trop haut (>250).');
+                                        setShowPopup(true);
+                                    } else {
+                                        setAnimation("sport"); 
+                                        handleSpeak(t('kid.arEdu.sportDesc')); 
+                                    }
                                 }
-                            }
-                        }}
-                        className={`p-3 rounded-xl flex items-center gap-2 transition-all border ${
-                            animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300]" : "bg-white/5 text-white border-white/10"
-                        }`}
-                    >
-                        <Dumbbell size={18} className={animation === "sport" ? "animate-bounce" : ""} />
-                    </button>
-                    <button onClick={() => store.enterAR()} className="bg-[#FFB300] text-[#0b1b2b] p-3 rounded-xl shadow-lg active:scale-90 transition-all">
-                        <Sparkles size={18} />
-                    </button>
-                </div>
-
-                <div className="flex-1 flex justify-center px-2">
-                    <div className={`flex items-center justify-center border-2 px-4 py-2 rounded-2xl min-w-[70px] ${
-                        currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10 text-green-400' : 
-                        currentStatus === 'hypo' ? 'border-red-500/50 bg-red-500/10 text-red-400' : 'border-orange-500/50 bg-orange-500/10 text-orange-400'
-                    }`}>
-                        <span className="text-xl font-black">{glucose}</span>
+                            }}
+                            className={`p-3 rounded-xl flex items-center gap-2 transition-all border ${
+                                animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300]" : "bg-white/5 text-white border-white/10"
+                            }`}
+                        >
+                            <Dumbbell size={18} className={animation === "sport" ? "animate-bounce" : ""} />
+                        </button>
+                        <button onClick={() => store.enterAR()} className="bg-[#FFB300] text-[#0b1b2b] p-3 rounded-xl shadow-lg">
+                            <Sparkles size={18} />
+                        </button>
                     </div>
-                </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => handleItemClick('apple')} className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400"><Apple size={16} /></button>
-                    <button onClick={() => handleItemClick('insulin')} className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400"><Syringe size={16} /></button>
-                    <button onClick={() => handleItemClick('candy')} className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-lg text-pink-400"><Candy size={16} /></button>
-                    <div className="hidden xs:block text-right ml-2 border-l border-white/10 pl-2">
-                        <h1 className="text-white font-black italic uppercase tracking-tighter text-[10px] leading-none">
-                            HAMOUCH <span className="text-[#FFB300]">AR</span>
-                        </h1>
+                    {/* CENTRE */}
+                    <div className="flex-1 flex justify-center px-2">
+                        <div className={`flex items-center justify-center border-2 px-4 py-2 rounded-2xl min-w-[70px] ${
+                            currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10 text-green-400' : 
+                            currentStatus === 'hypo' ? 'border-red-500/50 bg-red-500/10 text-red-400' : 'border-orange-500/50 bg-orange-500/10 text-orange-400'
+                        }`}>
+                            <span className="text-xl font-black">{glucose}</span>
+                        </div>
+                    </div>
+
+                    {/* DROITE */}
+                    <div className="flex items-center gap-1 shrink-0">
+                        <button onClick={() => handleItemClick('apple')} className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400"><Apple size={16} /></button>
+                        <button onClick={() => handleItemClick('insulin')} className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400"><Syringe size={16} /></button>
+                        <button onClick={() => handleItemClick('candy')} className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-lg text-pink-400"><Candy size={16} /></button>
                     </div>
                 </div>
             </div>
         </div>
-      </div>
 
-      {/* 2. ZONE AVATAR (BAS) */}
-      <div className="flex-1 relative bg-black/20 overflow-hidden">
-        <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} />
-        
-        {/* CONTRÔLES DE TRANSFORMATION FLOTTANTS */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 z-[150]">
-            <button 
-                onClick={() => setModelScale(prev => Math.min(prev + 0.2, 3))}
-                className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white active:scale-90"
-            >
-                <ZoomIn size={20} />
-            </button>
-            <button 
-                onClick={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))}
-                className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white active:scale-90"
-            >
-                <ZoomOut size={20} />
-            </button>
-            <button 
-                onClick={() => setModelRotation(prev => prev + Math.PI / 4)}
-                className="p-3 bg-[#FFB300] border border-white/20 rounded-full text-[#0b1b2b] active:rotate-45 transition-transform"
-            >
-                <RotateCcw size={20} />
-            </button>
-        </div>
+        {/* 2. ZONE POPUPS ET TRANSFORMATION (FLOTTANT AU MILIEU) */}
+        <div className="flex-1 relative">
+            {/* Contrôles Zoom/Rotation (Magie AR) */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto">
+                <button onClick={() => setModelScale(prev => Math.min(prev + 0.2, 3))} className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white"><ZoomIn size={20} /></button>
+                <button onClick={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))} className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white"><ZoomOut size={20} /></button>
+                <button onClick={() => setModelRotation(prev => prev + Math.PI / 4)} className="p-3 bg-[#FFB300] border border-white/20 rounded-full text-[#0b1b2b]"><RotateCcw size={20} /></button>
+            </div>
 
-        <AnimatePresence>
-            {showPopup && (
-            <motion.div 
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 50, opacity: 0 }}
-                className="absolute bottom-10 left-6 right-6 z-[200]"
-            >
-                <div className="bg-gradient-to-br from-[#0b1b2b] to-[#1a2a3a] border-2 border-white/20 p-6 rounded-[35px] shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        {currentStatus === 'hypo' ? <Candy size={80} /> : <Apple size={80} />}
+            <AnimatePresence>
+                {showPopup && (
+                <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="absolute bottom-10 left-6 right-6 pointer-events-auto">
+                    <div className="bg-[#0b1b2b] border-2 border-white/20 p-6 rounded-[35px] shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">{currentStatus === 'hypo' ? <Candy size={80} /> : <Apple size={80} />}</div>
+                        <p className={`text-white leading-relaxed font-black text-sm relative z-10 ${lang === 'ar' ? 'text-right font-arabic' : ''}`}>{gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}</p>
+                        <button onClick={() => setShowPopup(false)} className="mt-4 w-full bg-white/10 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px]">Continuer</button>
                     </div>
-                    <p className={`text-white leading-relaxed font-black text-sm relative z-10 ${lang === 'ar' ? 'text-right font-arabic' : ''}`}>
-                        {gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
-                    </p>
-                    <button 
-                        onClick={() => setShowPopup(false)}
-                        className="mt-4 w-full bg-white/10 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px]"
-                    >
-                        Continuer
-                    </button>
-                </div>
-            </motion.div>
-            )}
-        </AnimatePresence>
+                </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
       </div>
+
+      {/* ZONE SCÈNE (EN DESSOUS - TOUJOURS ACTIVE) */}
+      <div className="flex-1 absolute inset-0 z-0">
+        <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} />
+      </div>
+
     </div>
   );
 }

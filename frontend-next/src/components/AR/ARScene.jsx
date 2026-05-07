@@ -7,7 +7,9 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 export const store = createXRStore({
-  domOverlay: typeof window !== 'undefined' ? { root: document.body } : undefined,
+  domOverlay: typeof window !== 'undefined' ? { 
+    root: () => document.getElementById('xr-ui-controls') || document.body 
+  } : undefined,
   hitTest: true
 });
 
