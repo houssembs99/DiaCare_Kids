@@ -31,7 +31,7 @@ export default function ARPage() {
   const [gameMessage, setGameMessage] = useState("");
   const [modelScale, setModelScale] = useState(1.3);
   const [modelRotation, setModelRotation] = useState(0);
-  const [isARActive, setIsARActive] = useState(false);
+  const [isXR, setIsXR] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -46,6 +46,26 @@ export default function ARPage() {
         }
     };
   }, []);
+
+  // Détection du mode AR pour cacher le fond bleu
+  useEffect(() => {
+    const checkXR = () => {
+        if (typeof window !== 'undefined' && navigator.xr) {
+            // On peut s'abonner aux changements de session si besoin
+        }
+    };
+    checkXR();
+  }, []);
+
+  const handleLaunchAR = async () => {
+    setIsXR(true);
+    await store.enterAR();
+  };
+
+  const handleExitAR = () => {
+    store.exitAR();
+    setIsXR(false);
+  };
 
   useEffect(() => {
     let interval;
@@ -86,7 +106,7 @@ export default function ARPage() {
                 'DANGER ! L’insuline baisse encore plus le sucre. En hypo, il faut du sucre, pas d’insuline !');
         } else {
             setGameMessage(lang === 'ar' ? 
-                'التفاح صحي، لكنer بطيء. في حالة الطوارئ (<70)، الحلوى أسرع!' : 
+                'التفاح صحي، لكنه بطيء. في حالة الطوارئ (<70)، الحلوى أسرع!' : 
                 'La pomme est saine mais lente. En urgence (<70), le bonbon est plus rapide !');
         }
     } else if (item === 'candy') {
@@ -140,121 +160,89 @@ export default function ARPage() {
     }
   };
 
-  const handleLaunchAR = async () => {
-    await store.enterAR();
-    setIsARActive(true);
-  };
-
-  const handleExitAR = () => {
-    store.exitAR();
-    setIsARActive(false);
-  };
-
   if (!isMounted) return null;
 
   return (
-    <div className={`fixed inset-0 flex flex-col overflow-hidden font-sans select-none z-[9999] transition-colors duration-700 ${isARActive ? 'bg-transparent' : 'bg-[#0b1b2b]'}`}>
+    <div id="ar-game-container" className="fixed inset-0 bg-transparent flex flex-col overflow-hidden font-sans select-none z-[9999]">
       
-      {/* 1. INTERFACE "MAGIE AR" (PREVIEW / MENU) */}
-      {!isARActive && (
-        <div className="absolute inset-0 z-[200] flex flex-col pointer-events-auto">
-            {/* Header Magie AR */}
-            <div className="h-[100px] pt-12 px-6 flex items-center justify-between">
-                <Link href="/kid/dashboard" className="p-3 bg-white/10 border border-white/20 rounded-xl text-white">
-                    <ChevronLeft size={20} />
-                </Link>
-                <div className="text-right">
-                    <h1 className="text-white font-black italic uppercase tracking-tighter text-xl">
-                        MAGIE <span className="text-[#FFB300]">AR</span>
-                    </h1>
-                </div>
-            </div>
-            
-            {/* Content Preview */}
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="mb-8"
-                >
-                    <div className="bg-white/5 border-2 border-white/10 p-6 rounded-[40px] backdrop-blur-xl">
-                        <p className="text-white/60 font-medium mb-2 uppercase tracking-widest text-[10px]">Prêt à jouer avec</p>
-                        <h2 className="text-white text-4xl font-black italic uppercase tracking-tighter">HAMOUCH</h2>
-                    </div>
-                </motion.div>
-
-                {/* Transform Controls in Preview */}
-                <div className="flex gap-4 mb-8">
-                    <button onClick={() => setModelScale(prev => Math.min(prev + 0.2, 3))} className="p-4 bg-white/10 rounded-full text-white"><ZoomIn size={24} /></button>
-                    <button onClick={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))} className="p-4 bg-white/10 rounded-full text-white"><ZoomOut size={24} /></button>
-                    <button onClick={() => setModelRotation(prev => prev + Math.PI / 4)} className="p-4 bg-[#FFB300] rounded-full text-[#0b1b2b]"><RotateCcw size={24} /></button>
-                </div>
-
-                <button 
-                    onClick={handleLaunchAR}
-                    className="group relative px-12 py-6 bg-[#FFB300] rounded-full shadow-[0_0_50px_rgba(255,179,0,0.3)] active:scale-95 transition-all"
-                >
-                    <div className="flex items-center gap-4">
-                        <Sparkles className="text-[#0b1b2b] animate-pulse" size={32} />
-                        <span className="text-[#0b1b2b] text-2xl font-black italic uppercase tracking-tighter">Lancer l'AR</span>
-                    </div>
-                </button>
-                <p className="text-white/30 mt-6 text-xs font-bold uppercase tracking-widest animate-bounce italic">Vise le sol de ta chambre !</p>
-            </div>
-        </div>
-      )}
-
-      {/* 2. INTERFACE "MODE AR" (IMMERSIVE HUD) */}
-      <div id="xr-ui-controls" className={`absolute inset-0 flex flex-col pointer-events-none z-[10000] ${isARActive ? 'opacity-100 pointer-events-auto' : 'opacity-0'}`}>
+      {/* 1. MASTER OVERLAY (Tout ce qui doit être visible en AR) */}
+      <div id="xr-ui-controls" className="absolute inset-0 flex flex-col pointer-events-none z-[10000]">
         
-        {/* Barre d'interaction AR */}
-        <div className="bg-[#0b1b2b]/90 backdrop-blur-xl border-b border-white/10 pb-4 shrink-0 pointer-events-auto">
-            <div className="h-[60px] pt-6 flex items-center justify-center opacity-30">
-                <div className="w-16 h-1 bg-white rounded-full" />
+        {/* BARRE DE CONTRÔLE FIXE (HAUT) */}
+        <div className="bg-[#0b1b2b] border-b border-white/10 pb-4 shrink-0 pointer-events-auto">
+            <div className="h-[80px] pt-10 px-6 flex items-center justify-center opacity-30">
+                <div className="w-24 h-1.5 bg-white/10 rounded-full" />
             </div>
 
-            <div className="px-4 flex items-center justify-between gap-2">
-                {/* GAUCHE : Quitter AR */}
-                <div className="flex items-center gap-2">
-                    <button onClick={handleExitAR} className="p-3 bg-red-500/20 border border-red-500/20 rounded-xl text-red-400">
-                        <ChevronLeft size={18} />
-                    </button>
-                    <button 
-                        onClick={() => { 
-                            if (animation === "sport") { setAnimation("happyidle"); } 
-                            else { setAnimation("sport"); handleSpeak(t('kid.arEdu.sportDesc')); }
-                        }}
-                        className={`p-3 rounded-xl border ${animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b]" : "bg-white/5 text-white border-white/10"}`}
-                    >
-                        <Dumbbell size={18} className={animation === "sport" ? "animate-bounce" : ""} />
-                    </button>
-                </div>
+            <div className="px-4">
+                <div className="h-[80px] px-4 flex items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-[25px] shadow-xl gap-2">
+                    <div className="flex items-center gap-2">
+                        <Link href="/kid/dashboard" className="p-3 bg-white/10 border border-white/10 rounded-xl text-white">
+                            <ChevronLeft size={18} />
+                        </Link>
+                        <button 
+                            onClick={() => { 
+                                if (animation === "sport") {
+                                    setAnimation("happyidle");
+                                } else {
+                                    if (glucose > 250) {
+                                        setGameMessage(lang === 'ar' ? 'خطر! سكري مرتفع جداً (>250).' : 'STOP ! Mon sucre est trop haut (>250).');
+                                        setShowPopup(true);
+                                    } else {
+                                        setAnimation("sport"); 
+                                        handleSpeak(t('kid.arEdu.sportDesc')); 
+                                    }
+                                }
+                            }}
+                            className={`p-3 rounded-xl flex items-center gap-2 transition-all border ${
+                                animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300]" : "bg-white/5 text-white border-white/10"
+                            }`}
+                        >
+                            <Dumbbell size={18} className={animation === "sport" ? "animate-bounce" : ""} />
+                        </button>
+                        <button onClick={handleLaunchAR} className="bg-[#FFB300] text-[#0b1b2b] p-3 rounded-xl shadow-lg border border-[#FFB300]">
+                            <Sparkles size={18} />
+                        </button>
+                    </div>
 
-                {/* CENTRE : Glycémie */}
-                <div className={`flex items-center justify-center border-2 px-4 py-2 rounded-2xl min-w-[70px] ${
-                    currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-red-500/50 bg-red-500/10 text-red-400'
-                }`}>
-                    <span className="text-xl font-black">{glucose}</span>
-                </div>
+                    <div className="flex-1 flex justify-center px-2">
+                        <div className={`flex items-center justify-center border-2 px-4 py-2 rounded-2xl min-w-[70px] ${
+                            currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10 text-green-400' : 
+                            currentStatus === 'hypo' ? 'border-red-500/50 bg-red-500/10 text-red-400' : 'border-orange-500/50 bg-orange-500/10 text-orange-400'
+                        }`}>
+                            <span className="text-xl font-black">{glucose}</span>
+                        </div>
+                    </div>
 
-                {/* DROITE : Objets */}
-                <div className="flex items-center gap-1">
-                    <button onClick={() => handleItemClick('apple')} className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400"><Apple size={16} /></button>
-                    <button onClick={() => handleItemClick('insulin')} className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400"><Syringe size={16} /></button>
-                    <button onClick={() => handleItemClick('candy')} className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-lg text-pink-400"><Candy size={16} /></button>
+                    <div className="flex items-center gap-1 shrink-0">
+                        <button onClick={() => handleItemClick('apple')} className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400"><Apple size={16} /></button>
+                        <button onClick={() => handleItemClick('insulin')} className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400"><Syringe size={16} /></button>
+                        <button onClick={() => handleItemClick('candy')} className="p-2 bg-pink-500/10 border border-pink-500/20 rounded-lg text-pink-400"><Candy size={16} /></button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {/* Popups pendant AR */}
+        {/* ZONE DE POPUPS ET TRANSFORMATIONS (FLOTTANT) */}
         <div className="flex-1 relative">
+            {/* Contrôles de transformation (Visibles en AR aussi) */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 pointer-events-auto">
+                <button onClick={() => setModelScale(prev => Math.min(prev + 0.2, 3))} className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white"><ZoomIn size={20} /></button>
+                <button onClick={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))} className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white"><ZoomOut size={20} /></button>
+                <button onClick={() => setModelRotation(prev => prev + Math.PI / 4)} className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white"><RotateCcw size={20} /></button>
+            </div>
+
             <AnimatePresence>
                 {showPopup && (
-                <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="absolute bottom-10 left-6 right-6 pointer-events-auto">
+                <motion.div 
+                    initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+                    className="absolute bottom-10 left-6 right-6 pointer-events-auto"
+                >
                     <div className="bg-[#0b1b2b] border-2 border-white/20 p-6 rounded-[35px] shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">{currentStatus === 'hypo' ? <Candy size={80} /> : <Apple size={80} />}</div>
-                        <p className={`text-white leading-relaxed font-black text-sm ${lang === 'ar' ? 'text-right font-arabic' : ''}`}>{gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}</p>
-                        <button onClick={() => setShowPopup(false)} className="mt-4 w-full bg-white/10 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px]">C'est compris !</button>
+                        <p className={`text-white leading-relaxed font-black text-sm ${lang === 'ar' ? 'text-right font-arabic' : ''}`}>
+                            {gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
+                        </p>
+                        <button onClick={() => setShowPopup(false)} className="mt-4 w-full bg-white/10 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px]">OK</button>
                     </div>
                 </motion.div>
                 )}
@@ -262,8 +250,8 @@ export default function ARPage() {
         </div>
       </div>
 
-      {/* 3. SCÈNE 3D COMMUNE (FOND) */}
-      <div className="absolute inset-0 z-0">
+      {/* 2. ZONE DE RENDU 3D (FOND) */}
+      <div className={`flex-1 relative overflow-hidden transition-colors duration-500 ${isXR ? 'bg-transparent' : 'bg-[#0b1b2b]'}`}>
         <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} />
       </div>
 
