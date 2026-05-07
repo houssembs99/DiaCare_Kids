@@ -1,0 +1,101 @@
+"use client";
+
+import React from 'react';
+import { X, Apple, Syringe, Candy, Dumbbell } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const ARInterface = ({ 
+  glucose, 
+  currentStatus, 
+  animation, 
+  setAnimation, 
+  onItemClick, 
+  onExit,
+  showPopup,
+  setShowPopup,
+  gameMessage,
+  t,
+  lang,
+  handleSpeak
+}) => {
+  return (
+    <div className="absolute inset-0 flex flex-col pointer-events-none p-6">
+      {/* Top Bar - Minimalist for AR with Avatar */}
+      <div className="flex items-center justify-between pointer-events-auto mt-8">
+        <button 
+          onClick={onExit}
+          className="p-4 bg-black/40 backdrop-blur-md border border-white/20 rounded-full text-white hover:bg-white/60 transition-colors"
+        >
+          <X size={28} />
+        </button>
+
+        {/* Bloc Avatar Hamouch */}
+        <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md p-3 pr-8 rounded-full border border-white/10 shadow-2xl">
+            <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center overflow-hidden bg-gradient-to-br ${
+                currentStatus === 'perfect' ? 'border-green-500 from-green-500/20 to-green-900/40' : 'border-red-500 from-red-500/20 to-red-900/40'
+            }`}>
+                <span className="text-2xl">👦</span>
+            </div>
+            <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-white/50 uppercase tracking-widest">Hamouch</span>
+                    <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${currentStatus === 'perfect' ? 'bg-green-400' : 'bg-red-400'}`} />
+                </div>
+                <div className="flex items-baseline gap-1">
+                    <span className={`text-3xl font-black leading-none ${currentStatus === 'perfect' ? 'text-green-400' : 'text-red-400'}`}>
+                        {glucose.toFixed(2)}
+                    </span>
+                    <span className="text-xs font-bold text-white/30 tracking-tighter ml-1">g/L</span>
+                </div>
+            </div>
+        </div>
+
+        <button 
+          onClick={() => { 
+            if (animation === "sport") { setAnimation("happyidle"); } 
+            else { setAnimation("sport"); handleSpeak(lang === 'ar' ? 'لنلعب قليلاً!' : 'Jouons un peu !'); }
+          }}
+          className={`p-4 rounded-full border backdrop-blur-md transition-all ${animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300] shadow-[0_0_20px_rgba(255,179,0,0.6)]" : "bg-black/40 text-white border-white/20"}`}
+        >
+          <Dumbbell size={28} className={animation === "sport" ? "animate-bounce" : ""} />
+        </button>
+      </div>
+
+      {/* Floating Actions (Right Side) */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 pointer-events-auto">
+        <motion.button whileTap={{ scale: 0.9 }} onClick={() => onItemClick('apple')} className="p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-green-400 shadow-2xl"><Apple size={32} /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} onClick={() => onItemClick('insulin')} className="p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-blue-400 shadow-2xl"><Syringe size={32} /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} onClick={() => onItemClick('candy')} className="p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-pink-400 shadow-2xl"><Candy size={32} /></motion.button>
+      </div>
+
+      {/* Bubble Message (Bottom) */}
+      <AnimatePresence>
+        {showPopup && (
+          <div className="mt-auto mb-12 pointer-events-auto">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-black/60 backdrop-blur-xl border border-white/20 p-6 rounded-[30px] relative"
+            >
+                {/* Arrow */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-black/60 rotate-45 border-r border-b border-white/20" />
+                
+                <p className={`text-white text-center font-bold ${lang === 'ar' ? 'font-arabic' : ''}`}>
+                    {gameMessage}
+                </p>
+                <button 
+                    onClick={() => setShowPopup(false)}
+                    className="mt-4 w-full py-2 bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/60 hover:bg-white/20 transition-colors"
+                >
+                    Fermer
+                </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default ARInterface;
