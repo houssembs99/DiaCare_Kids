@@ -10,12 +10,11 @@ export const store = createXRStore({
   domOverlay: { root: typeof document !== 'undefined' ? document.body : null },
 });
 
-const ARScene = ({ animationName = "Idle", modelScale = 1.3, modelRotation = 0, children }) => {
+const ARScene = ({ animationName = "Idle", modelScale = 1.3, modelRotation = 0 }) => {
   return (
     <div className="w-full h-full relative">
       <Canvas shadows camera={{ position: [0, 1.5, 3], fov: 45 }} className="bg-transparent">
         <XR store={store}>
-          {children}
           <Suspense fallback={null}>
             <ambientLight intensity={3.5} />
             <pointLight position={[10, 10, 10]} intensity={4} />
