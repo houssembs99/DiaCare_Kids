@@ -7,8 +7,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
 export const store = createXRStore({
-  // Test: On retire temporairement le domOverlay pour voir si l'AR (caméra) se lance seule.
-  // Cela permet de savoir si c'est l'interface HTML qui bloque ou le WebXR entier.
+  domOverlay: typeof document !== 'undefined' ? { root: document.body } : undefined,
 });
 
 const ARScene = ({ animationName = "Idle", modelScale = 1.3, modelRotation = 0 }) => {

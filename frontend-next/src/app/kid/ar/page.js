@@ -184,51 +184,49 @@ export default function ARPage() {
         />
       )}
 
-      {/* 2. Scène 3D (Toujours présente si on n'est pas dans le menu) */}
-      {viewMode !== 'selection' && (
-        <div className={`fixed inset-0 transition-colors duration-1000 ${viewMode === 'ar' ? 'bg-transparent' : 'bg-[#0b1b2b]'}`}>
-          <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} />
-          
-          {/* Interface MAGIE */}
-          {viewMode === 'magie' && (
-            <MagieInterface 
-              glucose={glucose}
-              currentStatus={currentStatus}
-              animation={animation}
-              setAnimation={setAnimation}
-              onItemClick={handleItemClick}
-              onBack={() => setViewMode('selection')}
-              onZoomIn={() => setModelScale(prev => Math.min(prev + 0.2, 3))}
-              onZoomOut={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))}
-              onRotate={() => setModelRotation(prev => prev + Math.PI / 4)}
-              showPopup={showPopup}
-              setShowPopup={setShowPopup}
-              gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
-              t={t}
-              lang={lang}
-              handleSpeak={handleSpeak}
-            />
-          )}
+      {/* 2. Scène 3D (Toujours montée en arrière-plan pour éviter la perte de contexte WebGL) */}
+      <div className={`fixed inset-0 transition-colors duration-1000 ${viewMode === 'ar' ? 'bg-transparent' : 'bg-[#0b1b2b]'}`}>
+        <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} />
+        
+        {/* Interface MAGIE */}
+        {viewMode === 'magie' && (
+          <MagieInterface 
+            glucose={glucose}
+            currentStatus={currentStatus}
+            animation={animation}
+            setAnimation={setAnimation}
+            onItemClick={handleItemClick}
+            onBack={() => setViewMode('selection')}
+            onZoomIn={() => setModelScale(prev => Math.min(prev + 0.2, 3))}
+            onZoomOut={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))}
+            onRotate={() => setModelRotation(prev => prev + Math.PI / 4)}
+            showPopup={showPopup}
+            setShowPopup={setShowPopup}
+            gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
+            t={t}
+            lang={lang}
+            handleSpeak={handleSpeak}
+          />
+        )}
 
-          {/* Interface AR */}
-          {viewMode === 'ar' && (
-            <ARInterface 
-              glucose={glucose}
-              currentStatus={currentStatus}
-              animation={animation}
-              setAnimation={setAnimation}
-              onItemClick={handleItemClick}
-              onExit={handleExitAR}
-              showPopup={showPopup}
-              setShowPopup={setShowPopup}
-              gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
-              t={t}
-              lang={lang}
-              handleSpeak={handleSpeak}
-            />
-          )}
-        </div>
-      )}
+        {/* Interface AR */}
+        {viewMode === 'ar' && (
+          <ARInterface 
+            glucose={glucose}
+            currentStatus={currentStatus}
+            animation={animation}
+            setAnimation={setAnimation}
+            onItemClick={handleItemClick}
+            onExit={handleExitAR}
+            showPopup={showPopup}
+            setShowPopup={setShowPopup}
+            gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
+            t={t}
+            lang={lang}
+            handleSpeak={handleSpeak}
+          />
+        )}
+      </div>
 
     </div>
   );
