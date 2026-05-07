@@ -23,36 +23,43 @@ const MagieInterface = ({
 }) => {
   return (
     <div className="absolute inset-0 flex flex-col pointer-events-none">
-      {/* Barre de Status - Design Magie (Fond bleu nuit) */}
-      <div className="p-6 pt-12 bg-gradient-to-b from-[#0b1b2b] to-transparent pointer-events-auto">
-        <div className="flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-[30px] shadow-2xl">
-          <button 
-            onClick={onBack}
-            className="p-4 bg-white/10 rounded-2xl text-white"
-          >
-            <ChevronLeft size={24} />
-          </button>
+      {/* Barre de Status - Responsive (Adaptable mobile) */}
+      <div className="p-4 pt-10 sm:p-6 sm:pt-12 bg-gradient-to-b from-[#0b1b2b] to-transparent pointer-events-auto">
+        <div className="flex flex-wrap items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 p-3 sm:p-4 rounded-[25px] sm:rounded-[35px] shadow-2xl gap-3">
+          
+          {/* Bloc Gauche : Retour et Glycémie */}
+          <div className="flex items-center gap-3">
+            <button 
+                onClick={onBack}
+                className="p-3 sm:p-4 bg-white/10 rounded-2xl text-white active:scale-95 transition-transform"
+            >
+                <ChevronLeft size={24} />
+            </button>
 
-          <div className={`flex flex-col items-center px-8 py-3 rounded-2xl border-2 ${
-            currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-red-500/50 bg-red-500/10 text-red-400'
-          }`}>
-            <span className="text-[10px] uppercase font-black tracking-widest opacity-50">Glycémie (g/L)</span>
-            <span className="text-3xl font-black">{glucose.toFixed(2)}</span>
+            <div className={`flex flex-col items-center px-4 sm:px-8 py-2 sm:py-3 rounded-2xl border-2 ${
+                currentStatus === 'perfect' ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-red-500/50 bg-red-500/10 text-red-400'
+            }`}>
+                <span className="text-[8px] sm:text-[10px] uppercase font-black tracking-widest opacity-50">Glycémie (g/L)</span>
+                <span className="text-xl sm:text-3xl font-black">{glucose.toFixed(2)}</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button onClick={() => onItemClick('apple')} title="Pomme" className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 hover:bg-green-500/20 transition-colors"><Apple size={22} /></button>
-            <button onClick={() => onItemClick('insulin')} title="Insuline" className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 hover:bg-blue-500/20 transition-colors"><Syringe size={22} /></button>
-            <button onClick={() => onItemClick('candy')} title="Bonbon" className="p-4 bg-pink-500/10 border border-pink-500/20 rounded-xl text-pink-400 hover:bg-pink-500/20 transition-colors"><Candy size={22} /></button>
+          {/* Bloc Droit : Actions regroupées */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+                <button onClick={() => onItemClick('apple')} title="Pomme" className="p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 active:scale-90 transition-all"><Apple size={22} /></button>
+                <button onClick={() => onItemClick('insulin')} title="Insuline" className="p-3 sm:p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 active:scale-90 transition-all"><Syringe size={22} /></button>
+                <button onClick={() => onItemClick('candy')} title="Bonbon" className="p-3 sm:p-4 bg-pink-500/10 border border-pink-500/20 rounded-xl text-pink-400 active:scale-90 transition-all"><Candy size={22} /></button>
+            </div>
             
-            <div className="w-px h-10 bg-white/10 mx-1" /> {/* Séparateur */}
+            <div className="hidden sm:block w-px h-10 bg-white/10 mx-1" />
 
             <button 
                 onClick={() => { 
                     if (animation === "sport") { setAnimation("happyidle"); } 
                     else { setAnimation("sport"); handleSpeak(t('kid.arEdu.sportDesc')); }
                 }}
-                className={`p-4 rounded-xl border transition-all ${animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300] shadow-[0_0_20px_rgba(255,179,0,0.4)]" : "bg-white/5 text-white border-white/10"}`}
+                className={`p-3 sm:p-4 rounded-xl border transition-all active:scale-90 ${animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300] shadow-[0_0_20px_rgba(255,179,0,0.4)]" : "bg-white/5 text-white border-white/10"}`}
             >
                 <Dumbbell size={22} className={animation === "sport" ? "animate-bounce" : ""} />
             </button>

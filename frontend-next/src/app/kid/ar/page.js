@@ -50,7 +50,6 @@ export default function ARPage() {
     };
   }, []);
 
-  // Gestion de l'AR
   const handleLaunchAR = async () => {
     try {
       setViewMode('ar');
@@ -58,6 +57,13 @@ export default function ARPage() {
     } catch (error) {
       console.error("Failed to enter AR:", error);
       setViewMode('selection');
+      alert(
+        "Impossible de lancer la Réalité Augmentée.\n\n" +
+        "Raison probable :\n" +
+        "1. Vous n'êtes pas en HTTPS (obligatoire pour WebXR). Utilisez un tunnel (ex: ngrok).\n" +
+        "2. Votre navigateur ne supporte pas l'AR (Utilisez Chrome sur Android, WebXR Viewer sur iOS).\n\n" +
+        "Détail de l'erreur : " + error.message
+      );
     }
   };
 

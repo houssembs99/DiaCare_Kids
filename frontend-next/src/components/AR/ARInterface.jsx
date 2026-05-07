@@ -20,32 +20,32 @@ const ARInterface = ({
 }) => {
   return (
     <div className="absolute inset-0 flex flex-col pointer-events-none p-6">
-      {/* Top Bar - Minimalist for AR with Avatar */}
-      <div className="flex items-center justify-between pointer-events-auto mt-8">
+      {/* Top Bar - Responsive with Avatar */}
+      <div className="flex flex-wrap items-center justify-between pointer-events-auto mt-4 sm:mt-8 gap-3">
         <button 
           onClick={onExit}
-          className="p-4 bg-black/40 backdrop-blur-md border border-white/20 rounded-full text-white hover:bg-white/60 transition-colors"
+          className="p-3 sm:p-4 bg-black/40 backdrop-blur-md border border-white/20 rounded-full text-white active:scale-95 transition-all"
         >
-          <X size={28} />
+          <X className="w-6 h-6 sm:w-7 sm:h-7" />
         </button>
 
-        {/* Bloc Avatar Hamouch */}
-        <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md p-3 pr-8 rounded-full border border-white/10 shadow-2xl">
-            <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center overflow-hidden bg-gradient-to-br ${
+        {/* Bloc Avatar Hamouch - Taille adaptable */}
+        <div className="flex items-center gap-2 sm:gap-3 bg-black/40 backdrop-blur-md p-2 sm:p-3 pr-4 sm:pr-8 rounded-full border border-white/10 shadow-2xl">
+            <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 flex items-center justify-center overflow-hidden bg-gradient-to-br ${
                 currentStatus === 'perfect' ? 'border-green-500 from-green-500/20 to-green-900/40' : 'border-red-500 from-red-500/20 to-red-900/40'
             }`}>
-                <span className="text-2xl">👦</span>
+                <span className="text-xl sm:text-2xl">👦</span>
             </div>
             <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-white/50 uppercase tracking-widest">Hamouch</span>
-                    <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${currentStatus === 'perfect' ? 'bg-green-400' : 'bg-red-400'}`} />
+                    <span className="text-[10px] sm:text-xs font-black text-white/50 uppercase tracking-widest">Hamouch</span>
+                    <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full animate-pulse ${currentStatus === 'perfect' ? 'bg-green-400' : 'bg-red-400'}`} />
                 </div>
                 <div className="flex items-baseline gap-1">
-                    <span className={`text-3xl font-black leading-none ${currentStatus === 'perfect' ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className={`text-xl sm:text-3xl font-black leading-none ${currentStatus === 'perfect' ? 'text-green-400' : 'text-red-400'}`}>
                         {glucose.toFixed(2)}
                     </span>
-                    <span className="text-xs font-bold text-white/30 tracking-tighter ml-1">g/L</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-white/30 tracking-tighter ml-1">g/L</span>
                 </div>
             </div>
         </div>
@@ -55,9 +55,9 @@ const ARInterface = ({
             if (animation === "sport") { setAnimation("happyidle"); } 
             else { setAnimation("sport"); handleSpeak(lang === 'ar' ? 'لنلعب قليلاً!' : 'Jouons un peu !'); }
           }}
-          className={`p-4 rounded-full border backdrop-blur-md transition-all ${animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300] shadow-[0_0_20px_rgba(255,179,0,0.6)]" : "bg-black/40 text-white border-white/20"}`}
+          className={`p-3 sm:p-4 rounded-full border backdrop-blur-md transition-all active:scale-95 ${animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300] shadow-[0_0_20px_rgba(255,179,0,0.6)]" : "bg-black/40 text-white border-white/20"}`}
         >
-          <Dumbbell size={28} className={animation === "sport" ? "animate-bounce" : ""} />
+          <Dumbbell className={`w-6 h-6 sm:w-7 sm:h-7 ${animation === "sport" ? "animate-bounce" : ""}`} />
         </button>
       </div>
 
