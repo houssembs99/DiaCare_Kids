@@ -19,7 +19,7 @@ const ARInterface = ({
   handleSpeak
 }) => {
   return (
-    <div className="absolute inset-0 flex flex-col pointer-events-none p-6">
+    <div className="absolute inset-0 flex flex-col pointer-events-none p-6 z-[1000]">
       {/* Top Bar - Responsive with Avatar */}
       <div className="flex flex-wrap items-center justify-between pointer-events-auto mt-4 sm:mt-8 gap-3">
         <button 

@@ -171,10 +171,25 @@ export default function ARPage() {
     }
   };
 
+  useEffect(() => {
+    // Vérifier si la session WebXR a été fermée nativement (ex: bouton retour Android)
+    let interval;
+    if (viewMode === 'ar') {
+        interval = setInterval(() => {
+            try {
+                if (store.getState && !store.getState().session) {
+                    setViewMode('selection');
+                }
+            } catch (e) {}
+        }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [viewMode]);
+
   if (!isMounted) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#0b1b2b] overflow-hidden font-sans select-none z-[9999]">
+    <div id="ar-game-container" className="fixed inset-0 bg-[#0b1b2b] overflow-hidden font-sans select-none z-[9999]">
       
       {/* 1. Écran de Sélection */}
       {viewMode === 'selection' && (
@@ -186,7 +201,7 @@ export default function ARPage() {
 
       {/* 2. Scène 3D (Toujours montée en arrière-plan pour éviter la perte de contexte WebGL) */}
       <div className={`fixed inset-0 transition-colors duration-1000 ${viewMode === 'ar' ? 'bg-transparent' : 'bg-[#0b1b2b]'}`}>
-        <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} />
+        <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} isARMode={viewMode === 'ar'} />
         
         {/* Interface MAGIE */}
         {viewMode === 'magie' && (
