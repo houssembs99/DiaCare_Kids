@@ -6,12 +6,7 @@ import { XR, createXRStore } from '@react-three/xr';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
-export const store = createXRStore({
-  domOverlay: typeof window !== 'undefined' ? { 
-    root: () => document.getElementById('xr-ui-controls') || document.body 
-  } : undefined,
-  // On retire hitTest: true ici s'il bloque, ou on le gère plus bas
-});
+export const store = createXRStore();
 
 const ARScene = ({ animationName = "Idle", modelScale = 1.3, modelRotation = 0 }) => {
   return (

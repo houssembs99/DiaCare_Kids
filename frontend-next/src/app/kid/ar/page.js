@@ -62,9 +62,12 @@ export default function ARPage() {
     await store.enterAR();
   };
 
-  const handleExitAR = () => {
-    store.exitAR();
-    setIsXR(false);
+  const handleExitAR = async () => {
+    await store.exitAR();
+    // Petit délai pour laisser le moteur 3D se stabiliser avant de changer le fond
+    setTimeout(() => {
+        setIsXR(false);
+    }, 150);
   };
 
   useEffect(() => {

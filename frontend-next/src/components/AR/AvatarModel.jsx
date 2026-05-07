@@ -9,15 +9,18 @@ import { SkeletonUtils } from 'three-stdlib'
 
 export function Model({ animationName = "greeting", ...props }) {
   const group = React.useRef()
-  // Chargement du nouvel avatar
   const { scene, animations } = useGLTF('/models/boykidavatar.glb')
 
-  const clone = useMemo(() => SkeletonUtils.clone(scene), [scene])
-  const { nodes, materials } = useGraph(clone)
+  const clone = useMemo(() => {
+    if (!scene) return null;
+    return SkeletonUtils.clone(scene);
+  }, [scene])
+
+  const { nodes, materials } = useGraph(clone || new THREE.Group())
   const { actions } = useAnimations(animations, group)
 
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
+    if (!actions || !clone || Object.keys(actions).length === 0) return;
 
     const availableActions = Object.keys(actions);
     let targetAction = actions[animationName];
