@@ -142,7 +142,7 @@ export default function ARPage() {
   if (!isMounted) return null;
 
   return (
-    <div id="ar-ui-overlay" className="fixed inset-0 bg-[#0b1b2b] flex flex-col overflow-hidden font-sans select-none z-[9999]">
+    <div id="ar-ui-overlay" className="fixed inset-0 bg-transparent flex flex-col overflow-hidden font-sans select-none z-[9999]">
       
       {/* 1. ZONE DE CONTRÔLE (HAUT) */}
       <div className="bg-[#0b1b2b] border-b border-white/10 z-[100] pb-4 shrink-0">
