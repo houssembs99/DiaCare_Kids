@@ -6,7 +6,12 @@ import { XR, createXRStore } from '@react-three/xr';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
-export const store = createXRStore();
+export const store = createXRStore({
+  hand: true,
+  meshDetection: true,
+  planes: true,
+  domOverlay: { root: typeof document !== 'undefined' ? document.body : null },
+});
 
 const ARScene = ({ animationName = "Idle", modelScale = 1.3, modelRotation = 0 }) => {
   return (
@@ -19,7 +24,7 @@ const ARScene = ({ animationName = "Idle", modelScale = 1.3, modelRotation = 0 }
             <directionalLight position={[0, 10, 0]} intensity={1} />
             
             {/* Hamouch est placé ici */}
-            <group rotation={[0, modelRotation, 0]} position={[0, -1, -2]}>
+            <group rotation={[0, modelRotation, 0]} position={[0, -0.5, -1.5]}>
                 <Model 
                   scale={modelScale} 
                   animationName={animationName} 

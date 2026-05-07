@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, Sparkles, MapPin, Phone, Mail, X, Building2,
@@ -34,7 +35,17 @@ export default function LandingPage() {
     <div className={cn("flex flex-col bg-[#0b1b2b] text-white overflow-x-hidden", lang === 'ar' && "font-arabic")}>
 
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-screen pt-40 pb-20 px-6 flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen pt-40 pb-20 px-6 flex flex-col items-center justify-center overflow-hidden">
+        <div className="w-full max-w-5xl mb-12 relative z-10">
+          <Image
+            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1200"
+            alt="DiaCare Kids Hero Image"
+            width={1200}
+            height={400}
+            priority
+            className="rounded-3xl object-cover w-full h-[400px] shadow-2xl border border-white/10"
+          />
+        </div>
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#088395]/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#FFB300]/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
 
