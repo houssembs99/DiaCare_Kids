@@ -11,12 +11,12 @@ const ARScene = ({ store, animationName = "Idle", modelScale = 1.3, modelRotatio
 
   return (
     <div className="w-full h-full relative">
-      <Canvas shadows camera={{ position: [0, 1.5, 3], fov: 45 }} className="bg-transparent">
+      <Canvas dpr={[1, 2]} gl={{ antialias: true }} shadows camera={{ position: [0, 1.5, 3], fov: 45 }} className="bg-transparent">
         <XR store={store}>
           <Suspense fallback={null}>
             <ambientLight intensity={3.5} />
             <pointLight position={[10, 10, 10]} intensity={4} />
-            <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={3} castShadow />
+            <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={3} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0001} />
             <directionalLight position={[-5, 5, 5]} intensity={2} />
             {/* En AR, on place le modèle sur le sol (y=0) et à 2.5m devant pour qu'il soit bien visible dans le cadre de la caméra */}
             <group rotation={[0, modelRotation, 0]} position={[0 + modelPositionOffset.x, isARMode ? 0 : -0.2, isARMode ? -2.5 + modelPositionOffset.z : -1.2 + modelPositionOffset.z]}>
