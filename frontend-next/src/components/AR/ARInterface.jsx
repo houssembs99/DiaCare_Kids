@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { X, Apple, Syringe, Candy, Dumbbell } from 'lucide-react';
+import { X, Apple, Syringe, Candy, Dumbbell, ZoomIn, ZoomOut, RotateCcw, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ARInterface = ({ 
@@ -11,6 +11,10 @@ const ARInterface = ({
   setAnimation, 
   onItemClick, 
   onExit,
+  onZoomIn,
+  onZoomOut,
+  onRotate,
+  onMove,
   showPopup,
   setShowPopup,
   gameMessage,
@@ -62,10 +66,27 @@ const ARInterface = ({
       </div>
 
       {/* Floating Actions (Right Side) */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 pointer-events-auto">
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 pointer-events-auto z-10">
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => onItemClick('apple')} className="p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-green-400 shadow-2xl"><Apple size={32} /></motion.button>
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => onItemClick('insulin')} className="p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-blue-400 shadow-2xl"><Syringe size={32} /></motion.button>
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => onItemClick('candy')} className="p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-pink-400 shadow-2xl"><Candy size={32} /></motion.button>
+      </div>
+
+      {/* Contrôles de Vue (Zoom/Rotate) à gauche */}
+      <div className="absolute left-6 top-1/4 -translate-y-1/2 flex flex-col gap-5 pointer-events-auto z-10">
+        <button onClick={onZoomIn} className="p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white shadow-xl active:scale-95 transition-all"><ZoomIn size={24} /></button>
+        <button onClick={onZoomOut} className="p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white shadow-xl active:scale-95 transition-all"><ZoomOut size={24} /></button>
+        <button onClick={onRotate} className="p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white shadow-xl active:scale-95 transition-all"><RotateCcw size={24} /></button>
+      </div>
+
+      {/* D-Pad de Déplacement en bas à gauche */}
+      <div className="absolute left-6 bottom-28 flex flex-col items-center gap-2 pointer-events-auto z-10">
+        <button onClick={() => onMove('up')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowUp size={24} /></button>
+        <div className="flex gap-2">
+          <button onClick={() => onMove('left')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowLeft size={24} /></button>
+          <button onClick={() => onMove('down')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowDown size={24} /></button>
+          <button onClick={() => onMove('right')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowRight size={24} /></button>
+        </div>
       </div>
 
       {/* Bubble Message (Bottom) */}

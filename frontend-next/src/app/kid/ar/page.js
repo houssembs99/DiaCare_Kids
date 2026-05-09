@@ -35,6 +35,7 @@ export default function ARPage() {
   const [gameMessage, setGameMessage] = useState("");
   const [modelScale, setModelScale] = useState(1.3);
   const [modelRotation, setModelRotation] = useState(0);
+  const [modelPositionOffset, setModelPositionOffset] = useState({ x: 0, z: 0 });
   const [isGreeting, setIsGreeting] = useState(true);
 
   useEffect(() => {
@@ -182,6 +183,19 @@ export default function ARPage() {
     }
   };
 
+  const handleMove = (direction) => {
+    const step = 0.2; // Déplacement de 20cm par clic
+    setModelPositionOffset(prev => {
+      switch(direction) {
+        case 'up': return { ...prev, z: prev.z - step };
+        case 'down': return { ...prev, z: prev.z + step };
+        case 'left': return { ...prev, x: prev.x - step };
+        case 'right': return { ...prev, x: prev.x + step };
+        default: return prev;
+      }
+    });
+  };
+
   useEffect(() => {
     // Vérifier si la session WebXR a été fermée nativement (ex: bouton retour Android)
     let interval;
@@ -214,7 +228,7 @@ export default function ARPage() {
 
       {/* 2. Scène 3D (Toujours montée en arrière-plan pour éviter la perte de contexte WebGL) */}
       <div className="fixed inset-0 pointer-events-none">
-        {store && <ARScene store={store} animationName={animation} modelScale={modelScale} modelRotation={modelRotation} isARMode={viewMode === 'ar'} />}
+        {store && <ARScene store={store} animationName={animation} modelScale={modelScale} modelRotation={modelRotation} modelPositionOffset={modelPositionOffset} isARMode={viewMode === 'ar'} />}
         
         {/* Interface MAGIE */}
         {viewMode === 'magie' && (
@@ -249,6 +263,10 @@ export default function ARPage() {
               setAnimation={setAnimation}
               onItemClick={handleItemClick}
               onExit={handleExitAR}
+              onZoomIn={() => setModelScale(prev => Math.min(prev + 0.2, 3))}
+              onZoomOut={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))}
+              onRotate={() => setModelRotation(prev => prev + Math.PI / 4)}
+              onMove={handleMove}
               showPopup={showPopup}
               setShowPopup={setShowPopup}
               gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}

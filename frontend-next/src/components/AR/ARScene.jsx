@@ -6,7 +6,7 @@ import { XR, createXRStore } from '@react-three/xr';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { Model } from './AvatarModel';
 
-const ARScene = ({ store, animationName = "Idle", modelScale = 1.3, modelRotation = 0, isARMode = false }) => {
+const ARScene = ({ store, animationName = "Idle", modelScale = 1.3, modelRotation = 0, isARMode = false, modelPositionOffset = { x: 0, z: 0 } }) => {
   if (!store) return null;
 
   return (
@@ -19,7 +19,7 @@ const ARScene = ({ store, animationName = "Idle", modelScale = 1.3, modelRotatio
             <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={3} castShadow />
             <directionalLight position={[-5, 5, 5]} intensity={2} />
             {/* En AR, on place le modèle sur le sol (y=0) et à 2.5m devant pour qu'il soit bien visible dans le cadre de la caméra */}
-            <group rotation={[0, modelRotation, 0]} position={[0, isARMode ? 0 : -0.2, isARMode ? -2.5 : -1.2]}>
+            <group rotation={[0, modelRotation, 0]} position={[0 + modelPositionOffset.x, isARMode ? 0 : -0.2, isARMode ? -2.5 + modelPositionOffset.z : -1.2 + modelPositionOffset.z]}>
                 <Model 
                   scale={modelScale} 
                   animationName={animationName} 
