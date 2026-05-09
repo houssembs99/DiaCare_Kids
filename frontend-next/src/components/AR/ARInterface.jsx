@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { X, Apple, Syringe, Candy, Dumbbell, ZoomIn, ZoomOut, RotateCcw, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import React, { useRef } from 'react';
+import { X, Apple, Syringe, Candy, Dumbbell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ARInterface = ({ 
@@ -15,6 +15,10 @@ const ARInterface = ({
   onZoomOut,
   onRotate,
   onMove,
+  onMoveDelta,
+  onScaleRotateAbsolute,
+  currentScale,
+  currentRotation,
   showPopup,
   setShowPopup,
   gameMessage,
@@ -22,8 +26,76 @@ const ARInterface = ({
   lang,
   handleSpeak
 }) => {
+  const touchRef = useRef({
+    fingers: 0,
+    lastPanX: 0,
+    lastPanY: 0,
+    startDist: 0,
+    startAngle: 0,
+    baseScale: 1,
+    baseRotation: 0,
+  });
+
+  const handleTouchStart = (e) => {
+    if (e.target.closest('button')) return; // Ne pas bloquer les boutons
+    if (e.touches.length === 1) {
+      touchRef.current.fingers = 1;
+      touchRef.current.lastPanX = e.touches[0].clientX;
+      touchRef.current.lastPanY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+      touchRef.current.fingers = 2;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      touchRef.current.startDist = Math.sqrt(dx * dx + dy * dy);
+      touchRef.current.startAngle = Math.atan2(dy, dx);
+      touchRef.current.baseScale = currentScale || 1.3;
+      touchRef.current.baseRotation = currentRotation || 0;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.target.closest('button')) return;
+    
+    if (e.touches.length === 1 && touchRef.current.fingers === 1) {
+      const clientX = e.touches[0].clientX;
+      const clientY = e.touches[0].clientY;
+      
+      // 1 doigt: rotation horizontale, déplacement vertical
+      const deltaX = (clientX - touchRef.current.lastPanX) * 0.01;
+      const deltaY = (clientY - touchRef.current.lastPanY) * 0.01;
+      
+      if (onScaleRotateAbsolute) {
+         onScaleRotateAbsolute(currentScale, currentRotation + deltaX);
+      }
+      if (onMoveDelta) {
+         // Déplacer d'avant en arrière
+         onMoveDelta(0, deltaY * 2);
+      }
+      
+      touchRef.current.lastPanX = clientX;
+      touchRef.current.lastPanY = clientY;
+    } else if (e.touches.length === 2 && touchRef.current.fingers === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      const scaleFactor = dist / (touchRef.current.startDist || 1);
+      
+      if (onScaleRotateAbsolute) {
+        onScaleRotateAbsolute(
+          touchRef.current.baseScale * scaleFactor,
+          touchRef.current.baseRotation
+        );
+      }
+    }
+  };
+
   return (
-    <div className="absolute inset-0 flex flex-col pointer-events-none p-6 z-[1000]">
+    <div 
+      className="absolute inset-0 flex flex-col pointer-events-auto p-6 z-[1000]"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+    >
       {/* Top Bar - Responsive with Avatar */}
       <div className="flex flex-wrap items-center justify-between pointer-events-auto mt-4 sm:mt-8 gap-3">
         <button 
@@ -72,22 +144,7 @@ const ARInterface = ({
         <motion.button whileTap={{ scale: 0.9 }} onClick={() => onItemClick('candy')} className="p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-pink-400 shadow-2xl"><Candy size={32} /></motion.button>
       </div>
 
-      {/* Contrôles de Vue (Zoom/Rotate) à gauche */}
-      <div className="absolute left-6 top-1/4 -translate-y-1/2 flex flex-col gap-5 pointer-events-auto z-10">
-        <button onClick={onZoomIn} className="p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white shadow-xl active:scale-95 transition-all"><ZoomIn size={24} /></button>
-        <button onClick={onZoomOut} className="p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white shadow-xl active:scale-95 transition-all"><ZoomOut size={24} /></button>
-        <button onClick={onRotate} className="p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white shadow-xl active:scale-95 transition-all"><RotateCcw size={24} /></button>
-      </div>
-
-      {/* D-Pad de Déplacement en bas à gauche */}
-      <div className="absolute left-6 bottom-28 flex flex-col items-center gap-2 pointer-events-auto z-10">
-        <button onClick={() => onMove('up')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowUp size={24} /></button>
-        <div className="flex gap-2">
-          <button onClick={() => onMove('left')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowLeft size={24} /></button>
-          <button onClick={() => onMove('down')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowDown size={24} /></button>
-          <button onClick={() => onMove('right')} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white active:bg-white/30 transition-all"><ArrowRight size={24} /></button>
-        </div>
-      </div>
+      {/* Les contrôles manuels par boutons sont retirés car remplacés par les gestes tactiles sur l'écran */}
 
       {/* Bubble Message (Bottom) */}
       <AnimatePresence>

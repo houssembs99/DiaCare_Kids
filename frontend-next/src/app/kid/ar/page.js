@@ -198,6 +198,15 @@ export default function ARPage() {
     });
   };
 
+  const handleMoveDelta = (dx, dz) => {
+    setModelPositionOffset(prev => ({ x: prev.x + dx, z: prev.z + dz }));
+  };
+
+  const handleScaleRotateAbsolute = (newScale, newRotation) => {
+    setModelScale(Math.max(0.2, Math.min(newScale, 5)));
+    setModelRotation(newRotation);
+  };
+
   useEffect(() => {
     // Vérifier si la session WebXR a été fermée nativement (ex: bouton retour Android)
     let interval;
@@ -269,6 +278,10 @@ export default function ARPage() {
               onZoomOut={() => setModelScale(prev => Math.max(prev - 0.2, 0.5))}
               onRotate={() => setModelRotation(prev => prev + Math.PI / 4)}
               onMove={handleMove}
+              onMoveDelta={handleMoveDelta}
+              onScaleRotateAbsolute={handleScaleRotateAbsolute}
+              currentScale={modelScale}
+              currentRotation={modelRotation}
               showPopup={showPopup}
               setShowPopup={setShowPopup}
               gameMessage={gameMessage || (isGreeting ? t('kid.arEdu.greeting') : "")}
