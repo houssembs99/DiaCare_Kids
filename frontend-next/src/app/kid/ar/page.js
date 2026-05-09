@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useLanguage } from '@/lib/LanguageContext';
-import { store } from '@/components/AR/ARScene';
+import { createXRStore } from '@react-three/xr';
 
 // Nouveaux composants découplés
 import ModeSelection from '@/components/AR/ModeSelection';
@@ -30,6 +30,7 @@ export default function ARPage() {
   const [showPopup, setShowPopup] = useState(false);
   const [currentStatus, setCurrentStatus] = useState("perfect");
   const [isMounted, setIsMounted] = useState(false);
+  const [store, setStore] = useState(null);
   const [candyClicks, setCandyClicks] = useState(0);
   const [gameMessage, setGameMessage] = useState("");
   const [modelScale, setModelScale] = useState(1.3);
@@ -50,7 +51,16 @@ export default function ARPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isMounted && !store) {
+      setStore(createXRStore({
+        domOverlay: { root: document.getElementById('ar-game-container') }
+      }));
+    }
+  }, [isMounted, store]);
+
   const handleLaunchAR = async () => {
+    if (!store) return;
     try {
       setViewMode('ar');
       await store.enterAR();
@@ -68,6 +78,7 @@ export default function ARPage() {
   };
 
   const handleExitAR = async () => {
+    if (!store) return;
     try {
       await store.exitAR();
       setViewMode('selection');
@@ -177,7 +188,7 @@ export default function ARPage() {
     if (viewMode === 'ar') {
         interval = setInterval(() => {
             try {
-                if (store.getState && !store.getState().session) {
+                if (store && store.getState && !store.getState().session) {
                     setViewMode('selection');
                 }
             } catch (e) {}
@@ -203,7 +214,7 @@ export default function ARPage() {
 
       {/* 2. Scène 3D (Toujours montée en arrière-plan pour éviter la perte de contexte WebGL) */}
       <div className="fixed inset-0 pointer-events-none">
-        <ARScene animationName={animation} modelScale={modelScale} modelRotation={modelRotation} isARMode={viewMode === 'ar'} />
+        {store && <ARScene store={store} animationName={animation} modelScale={modelScale} modelRotation={modelRotation} isARMode={viewMode === 'ar'} />}
         
         {/* Interface MAGIE */}
         {viewMode === 'magie' && (
