@@ -24,7 +24,7 @@ const ARScene = ({ store, animationName = "Idle", modelScale = 1.3, modelRotatio
                   scale={modelScale} 
                   animationName={animationName} 
                 />
-                <ContactShadows opacity={0.8} scale={15} blur={1} far={10} resolution={512} color="#000000" />
+                <ContactShadows opacity={0.6} scale={3} blur={2} far={10} resolution={2048} color="#000000" />
             </group>
             
             {/* Désactiver OrbitControls en mode AR pour ne pas interférer avec le tracking du téléphone */}
