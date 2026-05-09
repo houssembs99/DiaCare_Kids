@@ -18,8 +18,8 @@ const ARScene = ({ store, animationName = "Idle", modelScale = 1.3, modelRotatio
             <pointLight position={[10, 10, 10]} intensity={4} />
             <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={3} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0001} />
             <directionalLight position={[-5, 5, 5]} intensity={2} />
-            {/* En AR, on place le modèle sur le sol (y=0) et à 2.5m devant pour qu'il soit bien visible dans le cadre de la caméra */}
-            <group rotation={[0, modelRotation, 0]} position={[0 + modelPositionOffset.x, isARMode ? 0 : -0.2, isARMode ? -2.5 + modelPositionOffset.z : -1.2 + modelPositionOffset.z]}>
+            {/* En AR avec 'local', (0,0,0) est la caméra. On le place 80cm plus bas (-0.8) et 2m devant (-2.0). On le tourne aussi vers l'enfant. */}
+            <group rotation={[0, modelRotation + (isARMode ? 0 : 0), 0]} position={[0 + modelPositionOffset.x, isARMode ? -0.8 : -0.2, isARMode ? -2.0 + modelPositionOffset.z : -1.2 + modelPositionOffset.z]}>
                 <Model 
                   scale={modelScale} 
                   animationName={animationName} 

@@ -55,7 +55,9 @@ export default function ARPage() {
   useEffect(() => {
     if (isMounted && !store) {
       setStore(createXRStore({
-        domOverlay: document.getElementById('ar-game-container')
+        domOverlay: document.getElementById('ar-game-container'),
+        referenceSpace: 'local', // Garanti que l'origine est exactement là où regarde le téléphone
+        foveation: 0 // Désactive le flou périphérique WebXR
       }));
     }
   }, [isMounted, store]);
