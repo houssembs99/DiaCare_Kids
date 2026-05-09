@@ -54,7 +54,7 @@ export default function ARPage() {
   useEffect(() => {
     if (isMounted && !store) {
       setStore(createXRStore({
-        domOverlay: { root: document.getElementById('ar-game-container') }
+        domOverlay: document.getElementById('ar-game-container')
       }));
     }
   }, [isMounted, store]);
