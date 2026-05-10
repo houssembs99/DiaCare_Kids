@@ -129,7 +129,7 @@ const ARInterface = ({
         <button 
           onClick={() => { 
             if (animation === "sport") { setAnimation("happyidle"); } 
-            else { setAnimation("sport"); handleSpeak(lang === 'ar' ? 'لنلعب قليلاً!' : 'Jouons un peu !'); }
+            else { setAnimation("sport"); handleSpeak(lang === 'ar' ? 'قبل ممارسة الرياضة، تحقق من نسبة السكر في دمك!' : 'Avant de faire du sport, vérifie ta glycémie !'); }
           }}
           className={`p-3 sm:p-4 rounded-full border backdrop-blur-md transition-all active:scale-95 ${animation === "sport" ? "bg-[#FFB300] text-[#0b1b2b] border-[#FFB300] shadow-[0_0_20px_rgba(255,179,0,0.6)]" : "bg-black/40 text-white border-white/20"}`}
         >

@@ -156,7 +156,7 @@ export const translations = {
                 perfectTitle: "Energie Parfaite !",
                 perfectDesc: "Regarde comme Hamouch est en forme ! C'est le moment ideal pour jouer ou apprendre.",
                 sportTitle: "Mode Sport",
-                sportDesc: "Avant de courir, verifions si on a assez de carburant !"
+                sportDesc: "Mange une petite collation avec du sucre avant de faire du sport pour garder ton energie !"
             }
         },
         doctor: {
@@ -560,7 +560,7 @@ export const translations = {
                 perfectTitle: "طاقة مثالية!",
                 perfectDesc: "انظر كم حموش نشيط! هذا هو الوقت المثالي للعب أو التعلم.",
                 sportTitle: "وضع الرياضة",
-                sportDesc: "قبل الجري، لنفحص إذا كان لدينا وقود كافٍ!"
+                sportDesc: "تناول وجبة خفيفة مع السكر قبل ممارسة الرياضة للحفاظ على طاقتك!"
             }
         },
         doctor: {
