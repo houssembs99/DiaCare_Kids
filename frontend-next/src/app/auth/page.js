@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Mail, Lock, User, ArrowRight, Loader2, ChevronLeft, Stethoscope, Home, Globe, ShieldCheck, Baby } from 'lucide-react';
+import { Activity, Mail, Lock, User, ArrowRight, Loader2, ChevronLeft, Stethoscope, Home, Globe, ShieldCheck, Baby, Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -97,7 +97,8 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="min-h-screen pt-32 pb-20 px-6 flex items-center justify-center bg-[#0b1b2b] relative">
+        <div className="min-h-screen pt-32 pb-20 px-6 flex flex-col lg:flex-row items-center justify-center bg-[#0b1b2b] relative overflow-x-hidden">
+            <TestCredentials />
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
             <motion.div
@@ -151,11 +152,10 @@ export default function AuthPage() {
                                 <motion.div
                                     key="role-selector"
                                     initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
-                                    className="grid grid-cols-2 gap-4"
+                                    className="grid grid-cols-1 sm:grid-cols-3 gap-4"
                                 >
                                     <RoleButton icon={<Stethoscope />} label={t('auth.doctor')} onClick={() => setRole('Medecin')} />
                                     <RoleButton icon={<Home />} label={t('auth.parent')} onClick={() => setRole('Parent')} />
-                                    <RoleButton icon={<ShieldCheck />} label={t('auth.admin')} onClick={() => setRole('Admin')} />
                                     <RoleButton icon={<Globe />} label={t('auth.clinic')} onClick={() => setRole('Clinique')} />
                                 </motion.div>
                             ) : (
@@ -318,21 +318,36 @@ export default function AuthPage() {
     );
 }
 
-const AuthInput = ({ icon, type, placeholder, value, onChange }) => (
-    <div className="relative group">
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-white transition-colors">
-            {React.cloneElement(icon, { size: 20 })}
+const AuthInput = ({ icon, type, placeholder, value, onChange }) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const isPassword = type === 'password';
+    const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
+
+    return (
+        <div className="relative group">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-white transition-colors">
+                {React.cloneElement(icon, { size: 20 })}
+            </div>
+            <input
+                type={inputType}
+                placeholder={placeholder}
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 focus:border-white/20 focus:bg-white/10 rounded-2xl py-6 pl-16 pr-16 text-lg font-medium text-white placeholder:text-white/20 transition-all outline-none"
+                required
+            />
+            {isPassword && (
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+                >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+            )}
         </div>
-        <input
-            type={type}
-            placeholder={placeholder}
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 focus:border-white/20 focus:bg-white/10 rounded-2xl py-6 pl-16 pr-8 text-lg font-medium text-white placeholder:text-white/20 transition-all outline-none"
-            required
-        />
-    </div>
-);
+    );
+};
 
 const RoleButton = ({ icon, label, onClick }) => (
     <button
@@ -345,3 +360,53 @@ const RoleButton = ({ icon, label, onClick }) => (
         <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{label}</span>
     </button>
 );
+
+const TestCredentials = () => {
+    const [copied, setCopied] = useState('');
+
+    const handleCopy = (text) => {
+        navigator.clipboard.writeText(text);
+        setCopied(text);
+        setTimeout(() => setCopied(''), 2000);
+    };
+
+    const CopyButton = ({ text }) => (
+        <button 
+            type="button"
+            onClick={() => handleCopy(text)}
+            className="p-1 hover:bg-white/20 rounded-md transition-colors"
+        >
+            {copied === text ? <Check size={14} className="text-green-500" /> : <Copy size={14} className="text-white/60" />}
+        </button>
+    );
+
+    const creds = [
+        { role: 'Agent Clinique', email: 'agentclinique@gmail.com', pass: 'agentclinique10' },
+        { role: 'Médecin', email: 'medmed@gmail.com', pass: 'med12345' },
+        { role: 'Parent', email: 'ahmed@gmail.com', pass: 'ahmed2020' },
+        { role: 'Enfant', email: 'anas@gmail.com', pass: 'anas30' }
+    ];
+
+    return (
+        <div className="relative lg:absolute lg:top-24 lg:left-6 w-full lg:w-auto mb-8 lg:mb-0 bg-[#088395]/10 backdrop-blur-xl border border-[#088395]/30 p-4 rounded-2xl z-50 shadow-2xl">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#088395] mb-4 flex items-center gap-2">
+                <Activity size={14} /> Panel de Test
+            </h3>
+            <div className="space-y-4 text-white">
+                {creds.map(c => (
+                    <div key={c.role} className="space-y-1">
+                        <div className="font-bold text-[#088395] text-[9px] uppercase tracking-widest">{c.role}</div>
+                        <div className="flex items-center justify-between gap-6 bg-black/40 p-2 rounded-lg border border-white/5">
+                            <span className="font-mono text-[10px] opacity-80">{c.email}</span>
+                            <CopyButton text={c.email} />
+                        </div>
+                        <div className="flex items-center justify-between gap-6 bg-black/40 p-2 rounded-lg border border-white/5">
+                            <span className="font-mono text-[10px] opacity-80">{c.pass}</span>
+                            <CopyButton text={c.pass} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};

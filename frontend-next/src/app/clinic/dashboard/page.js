@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     Users, Stethoscope, Baby, AlertTriangle,
@@ -54,6 +55,19 @@ const ClinicStatCard = ({ title, value, icon, tendency, tendencyType, isAlert })
 
 export default function ClinicDashboard() {
     const [timeFilter, setTimeFilter] = useState('7d');
+    const [stats, setStats] = useState({ usedDoctors: 0, usedPatients: 0, type: '', clinicName: '' });
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await api.get('/clinic-management/stats');
+                setStats(res.data);
+            } catch (err) {
+                console.error("Erreur lors de la récupération des statistiques de la clinique", err);
+            }
+        };
+        fetchStats();
+    }, []);
 
     const lineData = {
         labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
@@ -146,11 +160,11 @@ export default function ClinicDashboard() {
 
                 {/* Stats Cards Grid SECTION 3.2 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    <ClinicStatCard title="Médecins Actifs" value="12" icon={<Stethoscope size={24} />} tendency="+2" tendencyType="up" />
-                    <ClinicStatCard title="Total Patients" value="156" icon={<Baby size={24} />} tendency="+12%" tendencyType="up" />
-                    <ClinicStatCard title="Alertes Critiques" value="08" icon={<ShieldAlert size={24} />} tendency="-5%" tendencyType="down" isAlert />
-                    <ClinicStatCard title="Hypos du Jour" value="04" icon={<Droplets size={24} />} tendency="Stable" tendencyType="none" />
-                    <ClinicStatCard title="Hypers du Jour" value="11" icon={<Zap size={24} />} tendency="+3" tendencyType="up" />
+                    <ClinicStatCard title="Médecins Actifs" value={stats.usedDoctors < 10 ? `0${stats.usedDoctors}` : stats.usedDoctors.toString()} icon={<Stethoscope size={24} />} tendency="En ligne" tendencyType="none" />
+                    <ClinicStatCard title="Familles Inscrites" value={stats.usedPatients < 10 ? `0${stats.usedPatients}` : stats.usedPatients.toString()} icon={<Users size={24} />} tendency="Total" tendencyType="none" />
+                    <ClinicStatCard title="Alertes Critiques" value="00" icon={<ShieldAlert size={24} />} tendency="Aujourd'hui" tendencyType="none" isAlert />
+                    <ClinicStatCard title="Hypos du Jour" value="00" icon={<Droplets size={24} />} tendency="Stable" tendencyType="none" />
+                    <ClinicStatCard title="Hypers du Jour" value="00" icon={<Zap size={24} />} tendency="Stable" tendencyType="none" />
                 </div>
 
                 {/* Charts Section SECTION 3.2 */}

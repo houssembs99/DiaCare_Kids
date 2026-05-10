@@ -82,24 +82,7 @@ export default function EducationPage() {
                     ))}
                 </div>
 
-                {/* Featured Video Section */}
-                <div className="bg-white group relative rounded-[40px] overflow-hidden shadow-2xl h-[220px] cursor-pointer">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
-                    <img
-                        src="https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=1000"
-                        alt="Education"
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-50"
-                    />
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-4">
-                        <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/30 group-hover:bg-[#088395] transition-all">
-                            <PlayCircle size={32} />
-                        </div>
-                        <div className="text-center">
-                            <h4 className="text-sm font-black uppercase tracking-widest">Vidéo : Utiliser le Stylo</h4>
-                            <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-1">Guide pratique (2 min)</p>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Quick Tips List */}
                 <div className="space-y-6">
