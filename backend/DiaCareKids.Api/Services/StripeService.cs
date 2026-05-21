@@ -18,7 +18,7 @@ namespace DiaCareKids.Api.Services
             StripeConfiguration.ApiKey = _stripeSettings.SecretKey;
         }
 
-        public async Task<Session> CreateSubscriptionCheckoutSessionAsync(string userEmail, string planName, long priceAmount)
+        public async Task<Session> CreateSubscriptionCheckoutSessionAsync(string userEmail, string planName, long priceAmount, string currency = "eur")
         {
             var options = new SessionCreateOptions
             {
@@ -30,7 +30,7 @@ namespace DiaCareKids.Api.Services
                         PriceData = new SessionLineItemPriceDataOptions
                         {
                             UnitAmount = priceAmount, // in cents (e.g. 5000 = 50.00)
-                            Currency = "eur",
+                            Currency = currency.ToLower(),
                             ProductData = new SessionLineItemPriceDataProductDataOptions
                             {
                                 Name = planName,
@@ -53,7 +53,7 @@ namespace DiaCareKids.Api.Services
             return await service.CreateAsync(options);
         }
 
-        public async Task<Invoice> SendInvoiceAsync(string userEmail, string description, long amount)
+        public async Task<Invoice> SendInvoiceAsync(string userEmail, string description, long amount, string currency = "eur")
         {
             // 1. Create or get customer
             var customerService = new CustomerService();
@@ -77,7 +77,7 @@ namespace DiaCareKids.Api.Services
             {
                 Customer = customer.Id,
                 Amount = amount,
-                Currency = "eur",
+                Currency = currency.ToLower(),
                 Description = description,
             };
             await invoiceItemService.CreateAsync(invoiceItemOptions);
@@ -96,12 +96,12 @@ namespace DiaCareKids.Api.Services
             return await invoiceService.SendInvoiceAsync(invoice.Id);
         }
 
-        public async Task<PaymentIntent> CreatePaymentIntentAsync(long amount)
+        public async Task<PaymentIntent> CreatePaymentIntentAsync(long amount, string currency = "eur")
         {
             var options = new PaymentIntentCreateOptions
             {
                 Amount = amount,
-                Currency = "eur",
+                Currency = currency.ToLower(),
                 PaymentMethodTypes = new List<string> { "card" },
             };
 

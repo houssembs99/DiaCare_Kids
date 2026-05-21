@@ -27,6 +27,7 @@ namespace DiaCareKids.Api.Controllers
         {
             public string PlanName { get; set; } = string.Empty;
             public long Amount { get; set; } // Amount in cents
+            public string Currency { get; set; } = "eur";
         }
 
         [HttpPost("create-checkout-session")]
@@ -41,7 +42,7 @@ namespace DiaCareKids.Api.Controllers
 
             try
             {
-                var session = await _stripeService.CreateSubscriptionCheckoutSessionAsync(userEmail, request.PlanName, request.Amount);
+                var session = await _stripeService.CreateSubscriptionCheckoutSessionAsync(userEmail, request.PlanName, request.Amount, request.Currency);
                 return Ok(new { url = session.Url });
             }
             catch (System.Exception ex)
@@ -55,6 +56,7 @@ namespace DiaCareKids.Api.Controllers
             public string Email { get; set; } = string.Empty;
             public string Description { get; set; } = string.Empty;
             public long Amount { get; set; } // Amount in cents
+            public string Currency { get; set; } = "eur";
         }
 
         [HttpPost("send-invoice")]
@@ -63,7 +65,7 @@ namespace DiaCareKids.Api.Controllers
         {
             try
             {
-                var invoice = await _stripeService.SendInvoiceAsync(request.Email, request.Description, request.Amount);
+                var invoice = await _stripeService.SendInvoiceAsync(request.Email, request.Description, request.Amount, request.Currency);
                 return Ok(new { message = "Invoice sent successfully.", invoiceUrl = invoice.HostedInvoiceUrl });
             }
             catch (System.Exception ex)
@@ -75,6 +77,7 @@ namespace DiaCareKids.Api.Controllers
         public class PaymentIntentRequest
         {
             public long Amount { get; set; } // Amount in cents
+            public string Currency { get; set; } = "eur";
         }
 
         [HttpPost("create-payment-intent")]
@@ -83,7 +86,7 @@ namespace DiaCareKids.Api.Controllers
         {
             try
             {
-                var paymentIntent = await _stripeService.CreatePaymentIntentAsync(request.Amount);
+                var paymentIntent = await _stripeService.CreatePaymentIntentAsync(request.Amount, request.Currency);
                 return Ok(new { clientSecret = paymentIntent.ClientSecret });
             }
             catch (System.Exception ex)

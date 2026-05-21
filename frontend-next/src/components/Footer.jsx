@@ -54,7 +54,7 @@ const Footer = () => {
                     </p>
                     <div className="flex items-center gap-2">
                         <Heart size={14} className="text-accent fill-accent" />
-                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Made with love in Tunisia</span>
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Made with love by HBS</span>
                     </div>
                 </div>
             </div>
