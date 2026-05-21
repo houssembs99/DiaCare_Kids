@@ -60,7 +60,7 @@ export default function ClinicDashboard() {
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await api.get('/clinic-management/stats');
+                const res = await api.get('/ClinicManagement/stats');
                 setStats(res.data);
             } catch (err) {
                 console.error("Erreur lors de la récupération des statistiques de la clinique", err);
@@ -70,10 +70,10 @@ export default function ClinicDashboard() {
     }, []);
 
     const lineData = {
-        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'], // In a real app we'd compute the last 7 days names
         datasets: [{
             label: 'Patients Actifs',
-            data: [42, 45, 44, 48, 52, 50, 55],
+            data: stats.charts?.evolution || [0, 0, 0, 0, 0, 0, 0],
             borderColor: '#088395',
             backgroundColor: 'rgba(8, 131, 149, 0.1)',
             fill: true,
@@ -90,7 +90,7 @@ export default function ClinicDashboard() {
         labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
         datasets: [{
             label: 'Alertes Critiques',
-            data: [4, 7, 3, 8, 5, 2, 4],
+            data: stats.charts?.alerts || [0, 0, 0, 0, 0, 0, 0],
             backgroundColor: 'rgba(255, 112, 67, 0.8)',
             borderRadius: 12,
             hoverBackgroundColor: '#FF7043'
@@ -98,10 +98,10 @@ export default function ClinicDashboard() {
     };
 
     const doughnutData = {
-        labels: ['Dr. Amor', 'Dr. Jomaa', 'Dr. Belhadj'],
+        labels: stats.charts?.distribution?.labels || ['Aucun'],
         datasets: [{
-            data: [25, 15, 15],
-            backgroundColor: ['#088395', '#1E88E5', '#34C759'],
+            data: stats.charts?.distribution?.data?.length ? stats.charts.distribution.data : [1],
+            backgroundColor: ['#088395', '#1E88E5', '#34C759', '#FFB300', '#9C27B0', '#FF5722'],
             borderWidth: 0,
             hoverOffset: 20
         }]
@@ -162,9 +162,9 @@ export default function ClinicDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     <ClinicStatCard title="Médecins Actifs" value={stats.usedDoctors < 10 ? `0${stats.usedDoctors}` : stats.usedDoctors.toString()} icon={<Stethoscope size={24} />} tendency="En ligne" tendencyType="none" />
                     <ClinicStatCard title="Familles Inscrites" value={stats.usedPatients < 10 ? `0${stats.usedPatients}` : stats.usedPatients.toString()} icon={<Users size={24} />} tendency="Total" tendencyType="none" />
-                    <ClinicStatCard title="Alertes Critiques" value="00" icon={<ShieldAlert size={24} />} tendency="Aujourd'hui" tendencyType="none" isAlert />
-                    <ClinicStatCard title="Hypos du Jour" value="00" icon={<Droplets size={24} />} tendency="Stable" tendencyType="none" />
-                    <ClinicStatCard title="Hypers du Jour" value="00" icon={<Zap size={24} />} tendency="Stable" tendencyType="none" />
+                    <ClinicStatCard title="Alertes Critiques" value={stats.todayStats?.criticalAlerts < 10 ? `0${stats.todayStats?.criticalAlerts || 0}` : stats.todayStats?.criticalAlerts?.toString() || "00"} icon={<ShieldAlert size={24} />} tendency="Aujourd'hui" tendencyType="none" isAlert />
+                    <ClinicStatCard title="Hypos du Jour" value={stats.todayStats?.hypos < 10 ? `0${stats.todayStats?.hypos || 0}` : stats.todayStats?.hypos?.toString() || "00"} icon={<Droplets size={24} />} tendency="Stable" tendencyType="none" />
+                    <ClinicStatCard title="Hypers du Jour" value={stats.todayStats?.hypers < 10 ? `0${stats.todayStats?.hypers || 0}` : stats.todayStats?.hypers?.toString() || "00"} icon={<Zap size={24} />} tendency="Stable" tendencyType="none" />
                 </div>
 
                 {/* Charts Section SECTION 3.2 */}
@@ -192,7 +192,7 @@ export default function ClinicDashboard() {
                         <div className="h-[250px] relative">
                             <Doughnut data={doughnutData} options={{ ...chartOptions, cutout: '70%' }} />
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-3xl font-black italic">55</span>
+                                <span className="text-3xl font-black italic">{stats.usedPatients}</span>
                                 <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">Total</span>
                             </div>
                         </div>
@@ -221,7 +221,7 @@ export default function ClinicDashboard() {
                         <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest mb-8">Dernières actions système et médicales</p>
 
                         <div className="space-y-4">
-                            {[].map((item, idx) => (
+                            {(stats.recentActivity || []).map((item, idx) => (
                                 <div key={idx} className="flex items-center gap-6 p-5 bg-white/5 border border-white/5 rounded-3xl hover:bg-white/10 transition-colors group">
                                     <div className={cn(
                                         "w-2 h-2 rounded-full",

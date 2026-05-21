@@ -7,16 +7,23 @@ import {
     MoreVertical, Eye, Edit3, Mail,
     CheckCircle2, AlertCircle, Baby,
     UserPlus, Shield, X, Save,
-    ArrowRight, Stethoscope
+    ArrowRight, Stethoscope, Calendar, Clock, CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 
+const getRemainingDays = (expiryDate) => {
+    if (!expiryDate) return null;
+    const diff = new Date(expiryDate).getTime() - new Date().getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)));
+};
+
 export default function ClinicPatients() {
     const [patientGroups, setPatientGroups] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [filterStatus, setFilterStatus] = useState("Tous");
     const [isLoading, setIsLoading] = useState(true);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -26,11 +33,16 @@ export default function ClinicPatients() {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const [patientsRes, staffRes] = await Promise.all([
+            const [patientsRes, pendingRes, staffRes] = await Promise.all([
                 api.get('/ClinicManagement/patients'),
+                api.get('/ClinicManagement/pending-parents'),
                 api.get('/ClinicManagement/staff')
             ]);
-            setPatientGroups(patientsRes.data);
+            
+            // Combine active and pending parents
+            const allParents = [...patientsRes.data, ...pendingRes.data];
+            setPatientGroups(allParents);
+            
             setDoctors(staffRes.data.filter(d => d.status === "Actif"));
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -66,12 +78,37 @@ export default function ClinicPatients() {
         }
     };
 
+    const handleApproveParent = async (id) => {
+        try {
+            await api.post(`/ClinicManagement/approve-parent/${id}`);
+            fetchData();
+        } catch (error) {
+            alert(error.response?.data?.message || "Erreur lors de l'approbation");
+        }
+    };
+
+    const handleRejectParent = async (id) => {
+        if (!confirm("Voulez-vous vraiment rejeter la demande de ce parent ?")) return;
+        try {
+            await api.post(`/ClinicManagement/reject-parent/${id}`);
+            fetchData();
+        } catch (error) {
+            alert("Erreur lors du rejet");
+        }
+    };
+
     const filteredGroups = patientGroups.filter(group => {
         if (!group || !group.parent) return false;
+        
+        const statusMatch = filterStatus === "Tous" ? true :
+                            filterStatus === "Actifs" ? group.parent.status === "Actif" :
+                            filterStatus === "En Attente" ? (group.parent.status === "Enattente" || group.parent.status === "En Attente") : false;
+
         const parentName = (group.parent.fullName || "").toLowerCase();
         const childrenNames = (group.children || []).map(c => (c?.fullName || "").toLowerCase()).join(" ");
         const query = searchQuery.toLowerCase();
-        return parentName.includes(query) || childrenNames.includes(query);
+        
+        return statusMatch && (parentName.includes(query) || childrenNames.includes(query));
     });
 
     return (
@@ -91,16 +128,33 @@ export default function ClinicPatients() {
                     </div>
                 </div>
 
-                {/* Search */}
-                <div className="relative group">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-hover:text-[#1E88E5] transition-colors" size={20} />
-                    <input
-                        type="text"
-                        placeholder="RECHERCHER PARENT OU ENFANT..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-[#1E88E5] focus:bg-white/10 transition-all placeholder:text-white/10"
-                    />
+                {/* Search & Filters */}
+                <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="relative group flex-1">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-hover:text-[#1E88E5] transition-colors" size={20} />
+                        <input
+                            type="text"
+                            placeholder="RECHERCHER PARENT OU ENFANT..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-[#1E88E5] focus:bg-white/10 transition-all placeholder:text-white/10"
+                        />
+                    </div>
+                    
+                    <div className="flex gap-3 p-2 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-xl shrink-0">
+                        {['Tous', 'En Attente', 'Actifs'].map(s => (
+                            <button
+                                key={s}
+                                onClick={() => setFilterStatus(s)}
+                                className={cn(
+                                    "px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                    filterStatus === s ? "bg-white text-[#1E88E5] shadow-xl" : "text-white/40 hover:text-white"
+                                )}
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Patient List */}
@@ -126,13 +180,76 @@ export default function ClinicPatients() {
                                             {group.parent.fullName?.charAt(0)}
                                         </div>
                                         <div>
-                                            <div className="text-xs font-black uppercase tracking-widest text-[#1E88E5]">Parent / Tuteur</div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className="text-xs font-black uppercase tracking-widest text-[#1E88E5]">Parent / Tuteur</div>
+                                                <div className={cn(
+                                                    "px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border",
+                                                    group.parent.status === 'Actif' ? "bg-success/10 text-success border-success/20" :
+                                                    (group.parent.status === 'Enattente' || group.parent.status === 'En Attente') ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" :
+                                                    "bg-accent/10 text-accent border-accent/20"
+                                                )}>
+                                                    {group.parent.status === 'Enattente' ? 'En Attente' : group.parent.status}
+                                                </div>
+                                            </div>
                                             <div className="text-xl font-black uppercase tracking-tighter italic">{group.parent.fullName}</div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 text-white/40 text-[10px] uppercase font-bold tracking-widest pl-2">
                                         <Mail size={12} /> {group.parent.email}
                                     </div>
+
+                                    {/* Subscription INFO */}
+                                    <div className="pt-4 border-t border-white/5 mt-4 space-y-3">
+                                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/50 uppercase tracking-widest">
+                                            <CreditCard size={14} className="text-white/40" />
+                                            Abonnement: <span className="text-white font-black">{group.parent.subscription?.planType || 'Non spécifié'}</span>
+                                        </div>
+                                        
+                                        {(group.parent.status === 'Enattente' || group.parent.status === 'En Attente') ? (
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-white/50 uppercase tracking-widest">
+                                                <Calendar size={14} className="text-yellow-500" />
+                                                Demande le: <span className="text-white font-black">{group.parent.createdAt ? new Date(group.parent.createdAt).toLocaleDateString('fr-FR') : 'N/A'}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col xl:flex-row xl:items-center gap-2 xl:gap-4">
+                                                <div className="flex items-center gap-2 text-[10px] font-bold text-white/50 uppercase tracking-widest">
+                                                    <Calendar size={14} className="text-[#1E88E5]" />
+                                                    Expire: <span className="text-white font-black">
+                                                        {group.parent.subscription?.expiryDate ? new Date(group.parent.subscription.expiryDate).toLocaleDateString('fr-FR') : 'N/A'}
+                                                    </span>
+                                                </div>
+                                                
+                                                {group.parent.subscription?.expiryDate && (
+                                                    <div className={cn(
+                                                        "flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest w-fit border",
+                                                        getRemainingDays(group.parent.subscription.expiryDate) <= 10 
+                                                            ? "bg-accent/10 text-accent border-accent/20" 
+                                                            : "bg-success/10 text-success border-success/20"
+                                                    )}>
+                                                        <Clock size={10} />
+                                                        {getRemainingDays(group.parent.subscription.expiryDate)} j res.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {(group.parent.status === 'Enattente' || group.parent.status === 'En Attente') && (
+                                        <div className="flex gap-3 pt-4 border-t border-white/5 mt-4">
+                                            <button
+                                                onClick={() => handleApproveParent(group.parent.id)}
+                                                className="flex-1 py-3 bg-success hover:bg-success/80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircle2 size={14} /> Approuver
+                                            </button>
+                                            <button
+                                                onClick={() => handleRejectParent(group.parent.id)}
+                                                className="flex-1 py-3 bg-accent hover:bg-accent/80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
+                                            >
+                                                <X size={14} /> Refuser
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Children Info */}

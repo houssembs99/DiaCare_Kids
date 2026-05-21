@@ -12,6 +12,8 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@react-three/xr": "^6.6.29",
+    "@stripe/react-stripe-js": "^6.4.0",
+    "@stripe/stripe-js": "^9.6.0",
     "axios": "^1.13.5",
     "chart.js": "^4.5.1",
     "clsx": "^2.1.1",

@@ -20,17 +20,22 @@ builder.Services.AddScoped(s =>
 });
 
 builder.Services.AddScoped<DiaCareKids.Api.Services.UsersService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.PlansService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.PatientsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.MedicalRecordsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.ClinicsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.DoctorsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.MessagesService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.TransactionsService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.ClinicPackagesService>();
 builder.Services.AddSingleton<DiaCareKids.Api.Services.DecisionSupportService>();
 builder.Services.AddSingleton<DiaCareKids.Api.Services.GlucosePredictionService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
-
+// Stripe Configuration
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("StripeSettings"));
+builder.Services.AddScoped<StripeService>();
 
 // Auth Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -97,6 +102,9 @@ app.MapControllers();
 // SEED DATA: Create a test doctor if database is empty or user not found
 using (var scope = app.Services.CreateScope())
 {
+    var plansService = scope.ServiceProvider.GetRequiredService<DiaCareKids.Api.Services.PlansService>();
+    await plansService.SeedAsync();
+
     var usersService = scope.ServiceProvider.GetRequiredService<DiaCareKids.Api.Services.UsersService>();
     var testEmail = "medecin@gmail.com";
     var existing = await usersService.GetByEmailAsync(testEmail);

@@ -3,16 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
-    Wallet, Download, Search, Filter,
-    FileText, CheckCircle2, Clock,
-    ArrowUpRight, CreditCard, ExternalLink,
+    Wallet, Download, Search, FileText, CheckCircle2,
     ChevronLeft, ChevronRight, User as UserIcon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 
-export default function ClinicPayments() {
+export default function DoctorPayments() {
     const [payments, setPayments] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -21,8 +19,7 @@ export default function ClinicPayments() {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const parsed = JSON.parse(storedUser);
-            // Pour la clinique, on récupère ses propres transactions ET celles de ses médecins/parents associés
-            api.get(`/Transactions/clinic/${parsed.id}`)
+            api.get(`/Transactions/user/${parsed.id}`)
                 .then(res => {
                     setPayments(res.data);
                     setIsLoading(false);
@@ -36,36 +33,32 @@ export default function ClinicPayments() {
 
     const filteredPayments = payments.filter(p => 
         p.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.userFullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.planName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.role?.toLowerCase().includes(searchQuery.toLowerCase())
+        p.planName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const totalAmount = payments.reduce((acc, curr) => acc + curr.amount, 0);
 
     return (
-        <DashboardLayout role="Clinique">
+        <DashboardLayout role="Medecin">
             <div className="space-y-12 pb-10 text-white">
 
-                {/* Header SECTION 8.1 */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
                             <Wallet size={24} className="text-[#088395]" />
                             <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none uppercase italic">
-                                Historique <span className="text-white/40">Paiements</span>
+                                Mes <span className="text-white/40">Paiements</span>
                             </h1>
                         </div>
-                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Consultez les paiements de la clinique, de vos médecins et de vos patients</p>
+                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Consultez et téléchargez vos reçus d'abonnement DiaCare</p>
                     </div>
 
                     <button className="flex items-center gap-3 px-8 py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all">
                         <Download size={18} />
-                        Exporter (CSV/Excel)
+                        Exporter (CSV)
                     </button>
                 </div>
 
-                {/* Filters Row */}
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="flex-1 relative group">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-hover:text-[#088395] transition-colors" size={20} />
@@ -73,20 +66,17 @@ export default function ClinicPayments() {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="RECHERCHER PAR NOM, ROLE, FORFAIT OU ID..."
+                            placeholder="RECHERCHER PAR FORFAIT OU ID..."
                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] transition-all placeholder:text-white/20"
                         />
                     </div>
                 </div>
 
-                {/* Payments Table SECTION 8.1 */}
                 <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-white/5">
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Utilisateur</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Rôle</th>
                                     <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Forfait</th>
                                     <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Date</th>
                                     <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Montant</th>
@@ -96,17 +86,9 @@ export default function ClinicPayments() {
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {isLoading ? (
-                                    <tr>
-                                        <td colSpan="7" className="px-10 py-16 text-center text-white/40 font-bold uppercase tracking-widest text-xs">
-                                            Chargement des transactions...
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan="5" className="px-10 py-16 text-center text-white/40 font-bold uppercase tracking-widest text-xs">Chargement...</td></tr>
                                 ) : filteredPayments.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="7" className="px-10 py-16 text-center text-white/40 font-bold uppercase tracking-widest text-xs">
-                                            Aucune transaction trouvée.
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan="5" className="px-10 py-16 text-center text-white/40 font-bold uppercase tracking-widest text-xs">Aucun paiement trouvé.</td></tr>
                                 ) : (
                                     filteredPayments.map((pay, idx) => (
                                         <motion.tr
@@ -117,31 +99,13 @@ export default function ClinicPayments() {
                                             className="group hover:bg-white/5 transition-colors"
                                         >
                                             <td className="px-10 py-8">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-white/10 text-white/60 flex items-center justify-center font-bold text-xs">
-                                                        <UserIcon size={14} />
-                                                    </div>
-                                                    <span className="text-sm font-black uppercase tracking-tighter leading-none text-white">{pay.userFullName || "Anonyme"}</span>
-                                                </div>
+                                                <span className="text-sm font-black uppercase tracking-tight text-white">{pay.planName}</span>
                                             </td>
                                             <td className="px-10 py-8">
-                                                <span className={cn(
-                                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                                                    pay.role === 'Clinique' ? "bg-accent/10 border-accent/20 text-accent" :
-                                                    pay.role === 'Medecin' ? "bg-[#1E88E5]/10 border-[#1E88E5]/20 text-[#1E88E5]" :
-                                                    "bg-success/10 border-success/20 text-success"
-                                                )}>
-                                                    {pay.role || "Utilisateur"}
-                                                </span>
+                                                <span className="text-xs font-bold text-white/40">{new Date(pay.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                                             </td>
                                             <td className="px-10 py-8">
-                                                <span className="text-xs font-bold text-white/80">{pay.planName}</span>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <span className="text-xs font-bold text-white/40">{new Date(pay.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <div className="text-lg font-black italic tracking-tighter text-[#088395]">
+                                                <div className="text-lg font-black italic tracking-tighter text-[#1E88E5]">
                                                     {(pay.amount / 100).toFixed(2)} €
                                                 </div>
                                             </td>
@@ -153,11 +117,10 @@ export default function ClinicPayments() {
                                             </td>
                                             <td className="px-10 py-8 text-right">
                                                 <button 
-                                                    onClick={() => alert(`Facture ID: ${pay.id}\nMontant: ${(pay.amount/100).toFixed(2)}€`)}
-                                                    className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-2xl text-white/40 transition-all group/btn shadow-xl border border-white/5"
-                                                    title="Voir facture"
+                                                    onClick={() => alert(`Reçu ID: ${pay.id}\nMontant: ${(pay.amount/100).toFixed(2)}€`)}
+                                                    className="p-4 bg-white/5 hover:bg-white hover:text-[#1E88E5] rounded-2xl text-white/40 transition-all shadow-xl border border-white/5"
                                                 >
-                                                    <FileText size={18} className="group-hover/btn:scale-110 transition-transform" />
+                                                    <FileText size={18} />
                                                 </button>
                                             </td>
                                         </motion.tr>
@@ -167,19 +130,9 @@ export default function ClinicPayments() {
                         </table>
                     </div>
 
-                    {/* Footer */}
                     <div className="p-10 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6">
                         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">
-                            Total Facturé: <span className="text-white">{(totalAmount / 100).toFixed(2)} €</span>
-                        </div>
-                        <div className="flex gap-2">
-                            <button className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-xl text-white/40 transition-all border border-white/10 group">
-                                <ChevronLeft size={20} className="group-active:-translate-x-1 transition-transform" />
-                            </button>
-                            <button className="w-12 h-12 rounded-xl text-[10px] font-black bg-[#088395] text-white border border-transparent shadow-[0_10px_30px_rgba(8,131,149,0.3)]">1</button>
-                            <button className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-xl text-white/40 transition-all border border-white/10 group">
-                                <ChevronRight size={20} className="group-active:translate-x-1 transition-transform" />
-                            </button>
+                            Total Payé: <span className="text-white">{(totalAmount / 100).toFixed(2)} €</span>
                         </div>
                     </div>
                 </div>

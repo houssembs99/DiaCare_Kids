@@ -14,11 +14,15 @@ namespace DiaCareKids.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UsersService _usersService;
+        private readonly PlansService _plansService;
+        private readonly ClinicPackagesService _clinicPackagesService;
         private readonly IConfiguration _configuration;
 
-        public AuthController(UsersService usersService, IConfiguration configuration)
+        public AuthController(UsersService usersService, PlansService plansService, ClinicPackagesService clinicPackagesService, IConfiguration configuration)
         {
             _usersService = usersService;
+            _plansService = plansService;
+            _clinicPackagesService = clinicPackagesService;
             _configuration = configuration;
         }
 
@@ -30,18 +34,23 @@ namespace DiaCareKids.Api.Controllers
                 if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password) || 
                     string.IsNullOrEmpty(request.FullName) || string.IsNullOrEmpty(request.Role))
                 {
+                    Console.WriteLine("[AUTH BAD_REQUEST] Tous les champs sont obligatoires.");
                     return BadRequest(new { message = "Tous les champs sont obligatoires." });
                 }
 
                 if (request.Role == "Enfant")
                 {
+                    Console.WriteLine("[AUTH BAD_REQUEST] Les comptes enfants doivent être créés par un parent.");
                     return BadRequest(new { message = "Les comptes enfants doivent être créés par un parent." });
                 }
 
                 var emailLower = request.Email.ToLower();
                 var existingUser = await _usersService.GetByEmailAsync(emailLower);
                 if (existingUser != null)
+                {
+                    Console.WriteLine($"[AUTH BAD_REQUEST] Cet utilisateur existe déjà: {emailLower}");
                     return BadRequest(new { message = "Cet utilisateur existe déjà." });
+                }
 
                 var user = new User
                 {
@@ -54,27 +63,123 @@ namespace DiaCareKids.Api.Controllers
 
                 if (request.Role == "Parent")
                 {
-                    user.AssociatedClinicId = request.AssociatedClinicId;
-                    user.Subscription = new SubscriptionDetails
+                    if (request.SubscriptionPlan == "Sous Clinique" || !string.IsNullOrEmpty(request.AssociatedClinicId))
                     {
-                        PlanType = request.SubscriptionPlan ?? "Mensuel",
-                        MaxKids = request.MaxKids > 0 ? request.MaxKids : 1,
-                        ExpiryDate = (request.SubscriptionPlan == "Annuel") ? DateTime.UtcNow.AddYears(1) : DateTime.UtcNow.AddMonths(1),
-                        IsActive = true
-                    };
+                        if (string.IsNullOrEmpty(request.AssociatedClinicId))
+                        {
+                            Console.WriteLine("[AUTH BAD_REQUEST] Vous devez choisir une clinique.");
+                            return BadRequest(new { message = "Vous devez choisir une clinique." });
+                        }
+                        var clinic = await _usersService.GetAsync(request.AssociatedClinicId);
+                        if (clinic == null)
+                        {
+                            Console.WriteLine($"[AUTH BAD_REQUEST] La clinique sélectionnée est introuvable: {request.AssociatedClinicId}");
+                            return BadRequest(new { message = "La clinique sélectionnée est introuvable." });
+                        }
+                        if (clinic.Status != "Actif" || clinic.Subscription == null || !clinic.Subscription.IsActive)
+                        {
+                            Console.WriteLine($"[AUTH BAD_REQUEST] Cette clinique n'est pas active pour le moment: {clinic.Id} (Status: {clinic.Status}, SubActive: {clinic.Subscription?.IsActive})");
+                            return BadRequest(new { message = "Cette clinique n'est pas active pour le moment." });
+                        }
+                        
+                        // Check Clinic Capacity Quota
+                        var allClinicUsers = await _usersService.GetByClinicIdAsync(clinic.Id!);
+                        var activeParents = allClinicUsers.Count(u => u.Role == "Parent" && u.Status == "Actif");
+                        var maxPatients = clinic.Subscription.MaxPatients == 0 ? 3 : clinic.Subscription.MaxPatients;
+                        
+                        if (maxPatients != -1 && activeParents >= maxPatients)
+                        {
+                            Console.WriteLine($"[AUTH BAD_REQUEST] La clinique sélectionnée a atteint son quota maximal de patients: {activeParents} >= {maxPatients}");
+                            return BadRequest(new { message = "La clinique sélectionnée a atteint son quota maximal de patients." });
+                        }
+
+                        user.AssociatedClinicId = request.AssociatedClinicId;
+                        user.Status = "En Attente"; // Free parent waits for clinic approval
+                        
+                        var subscriptionName = "Sous Clinique";
+                        var maxKidsForParent = request.MaxKids > 0 ? request.MaxKids : 1;
+
+                        if (!string.IsNullOrEmpty(request.ClinicPackageId))
+                        {
+                            var clinicPackage = await _clinicPackagesService.GetAsync(request.ClinicPackageId);
+                            if (clinicPackage != null && clinicPackage.ClinicId == request.AssociatedClinicId)
+                            {
+                                subscriptionName = clinicPackage.Name;
+                                maxKidsForParent = clinicPackage.MaxKidsPerParent;
+                            }
+                        }
+
+                        user.Subscription = new SubscriptionDetails
+                        {
+                            PlanType = subscriptionName,
+                            MaxKids = maxKidsForParent,
+                            ExpiryDate = clinic.Subscription.ExpiryDate,
+                            IsActive = false
+                        };
+                    }
+                    else
+                    {
+                        // Personal Plan (Solo, Duo, Famille)
+                        var planName = request.SubscriptionPlan ?? "Solo";
+                        var plan = await _plansService.GetByNameAndRoleAsync(planName, "Parent");
+                        int maxKids = 1;
+                        if (plan != null)
+                        {
+                            maxKids = plan.MaxKids;
+                        }
+                        else
+                        {
+                            if (planName.ToLower() == "duo") maxKids = 2;
+                            else if (planName.ToLower() == "famille") maxKids = 3;
+                        }
+
+                        user.Status = "Actif"; // Active account but inactive subscription until paid
+                        user.Subscription = new SubscriptionDetails
+                        {
+                            PlanType = planName,
+                            MaxKids = maxKids,
+                            ExpiryDate = DateTime.UtcNow.AddMonths(1),
+                            IsActive = false // Demands Stripe online payment
+                        };
+                    }
                 }
                 else if (request.Role == "Clinique")
                 {
+                    var planName = request.SubscriptionPlan ?? "Basic";
+                    var plan = await _plansService.GetByNameAndRoleAsync(planName, "Clinique");
+                    int maxDocs = 3;
+                    int maxPats = 3;
+                    if (plan != null)
+                    {
+                        maxDocs = plan.MaxDoctors;
+                        maxPats = plan.MaxPatients;
+                    }
+                    else
+                    {
+                        if (planName.ToLower() == "pro") { maxDocs = 10; maxPats = 500; }
+                        else if (planName.ToLower() == "premium") { maxDocs = 50; maxPats = -1; }
+                    }
+
                     user.ClinicType = request.ClinicType;
                     user.Address = request.Address;
                     user.ContactNumber = request.ContactNumber;
+
+                    if (request.PaymentMethod?.ToLower() == "presentiel")
+                    {
+                        user.Status = "En Attente"; // Offline payment pending approval
+                    }
+                    else
+                    {
+                        user.Status = "Actif"; // Stripe checkout session path
+                    }
+
                     user.Subscription = new SubscriptionDetails
                     {
-                        PlanType = request.SubscriptionPlan ?? "Mensuel",
-                        MaxDoctors = request.MaxDoctors,
-                        MaxPatients = request.MaxPatients,
-                        ExpiryDate = (request.SubscriptionPlan == "Annuel") ? DateTime.UtcNow.AddYears(1) : DateTime.UtcNow.AddMonths(1),
-                        IsActive = true
+                        PlanType = planName,
+                        MaxDoctors = maxDocs,
+                        MaxPatients = maxPats,
+                        ExpiryDate = DateTime.UtcNow.AddMonths(1),
+                        IsActive = false // Payment activates it
                     };
                 }
                 else if (request.Role == "Medecin")
@@ -128,7 +233,12 @@ namespace DiaCareKids.Api.Controllers
                 if (user.Status == "En Attente")
                 {
                     Console.WriteLine($"[AUTH LOG] Pending account login attempt: {emailLower}");
-                    return Unauthorized(new { message = "Votre compte est en attente d'approbation par la clinique choisie." });
+                    if (user.Role == "Clinique")
+                        return Unauthorized(new { message = "Votre clinique est en attente de validation administrative suite à un choix de paiement en présentiel." });
+                    else if (user.Role == "Parent")
+                        return Unauthorized(new { message = "Votre compte parent est en attente d'approbation par la clinique choisie." });
+                    else
+                        return Unauthorized(new { message = "Votre compte est en attente d'approbation par la clinique choisie." });
                 }
 
                 if (user.Status == "Bloqué" || user.Status == "Rejeté")
@@ -220,9 +330,11 @@ namespace DiaCareKids.Api.Controllers
         public string Password { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
-        public string? SubscriptionPlan { get; set; } // Mensuel, Annuel
+        public string? SubscriptionPlan { get; set; } // Basic, Pro, Premium, Solo, Duo, Famille, Sous Clinique
+        public string? PaymentMethod { get; set; } // stripe, presentiel
         public int MaxKids { get; set; } // 1, 2, 3
         public string? AssociatedClinicId { get; set; }
+        public string? ClinicPackageId { get; set; }
         
         // Clinic registration fields
         public string? ClinicType { get; set; }

@@ -66,8 +66,12 @@ export default function AdminUsers() {
         role: 'Admin',
         newPassword: '',
         status: 'Actif',
+        planType: 'Mensuel',
         maxDoctors: 3,
         maxPatients: 3,
+        maxKids: 1,
+        subscriptionIsActive: false,
+        expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
         associatedClinicId: '',
         associatedDoctorId: '',
         associatedParentId: ''
@@ -85,8 +89,12 @@ export default function AdminUsers() {
             role: 'Admin', 
             newPassword: '', 
             status: 'Actif',
+            planType: 'Mensuel',
             maxDoctors: 3, 
             maxPatients: 3,
+            maxKids: 1,
+            subscriptionIsActive: false,
+            expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
             associatedClinicId: '',
             associatedDoctorId: '',
             associatedParentId: ''
@@ -102,8 +110,12 @@ export default function AdminUsers() {
             role: user.role,
             newPassword: '', // Stay empty unless resetting
             status: user.status,
-            maxDoctors: user.subscription?.maxDoctors || 3,
-            maxPatients: user.subscription?.maxPatients || 3,
+            planType: user.subscription?.planType || 'Mensuel',
+            maxDoctors: user.subscription?.maxDoctors ?? 3,
+            maxPatients: user.subscription?.maxPatients ?? 3,
+            maxKids: user.subscription?.maxKids ?? 1,
+            subscriptionIsActive: user.subscription?.isActive || false,
+            expiryDate: user.subscription?.expiryDate ? new Date(user.subscription.expiryDate).toISOString().split('T')[0] : new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
             associatedClinicId: user.associatedClinicId || '',
             associatedDoctorId: user.associatedDoctorId || '',
             associatedParentId: user.associatedParentId || ''
@@ -170,6 +182,22 @@ export default function AdminUsers() {
     const saveEdit = async (e) => {
         e.preventDefault();
         try {
+            const isClinic = formData.role === 'Clinique' || formData.role === 'Agent Clinique';
+            const isParent = formData.role === 'Parent';
+            const hasSub = isClinic || isParent;
+
+            let subscriptionPayload = null;
+            if (hasSub) {
+                subscriptionPayload = {
+                    planType: formData.planType || 'Mensuel',
+                    maxDoctors: isClinic ? parseInt(formData.maxDoctors ?? 3) : 0,
+                    maxPatients: isClinic ? parseInt(formData.maxPatients ?? 3) : 0,
+                    maxKids: isParent ? parseInt(formData.maxKids ?? 1) : 1,
+                    isActive: formData.subscriptionIsActive,
+                    expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : new Date(new Date().setMonth(new Date().getMonth() + 1))
+                };
+            }
+
             const payload = {
                 id: selectedUser.id,
                 fullName: formData.name,
@@ -180,17 +208,7 @@ export default function AdminUsers() {
                 associatedClinicId: formData.associatedClinicId || null,
                 associatedDoctorId: formData.associatedDoctorId || null,
                 associatedParentId: formData.associatedParentId || null,
-                subscription: selectedUser.subscription ? {
-                    ...selectedUser.subscription,
-                    maxDoctors: parseInt(formData.maxDoctors),
-                    maxPatients: parseInt(formData.maxPatients)
-                } : (formData.role === 'Clinique' ? {
-                    maxDoctors: parseInt(formData.maxDoctors),
-                    maxPatients: parseInt(formData.maxPatients),
-                    planType: 'Standard',
-                    isActive: true,
-                    expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                } : null)
+                subscription: subscriptionPayload
             };
             await api.put(`/Users/${selectedUser.id}`, payload);
             fetchUsers();
@@ -455,6 +473,7 @@ export default function AdminUsers() {
                                         <option value="Admin">Admin</option>
                                         <option value="Medecin">Médecin</option>
                                         <option value="Clinique">Clinique</option>
+                                        <option value="Agent Clinique">Agent Clinique</option>
                                         <option value="Parent">Parent</option>
                                     </select>
                                 </div>
@@ -481,36 +500,90 @@ export default function AdminUsers() {
                                     </select>
                                 </div>
 
-                                {formData.role === 'Clinique' && isEditModalOpen && (
+                                {(formData.role === 'Clinique' || formData.role === 'Agent Clinique' || formData.role === 'Parent') && isEditModalOpen && (
                                     <motion.div
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
                                         className="space-y-4 pt-4 border-t border-white/5"
                                     >
+                                        <div className="text-[11px] font-black uppercase tracking-widest text-[#1E88E5] mb-2 flex items-center gap-2">
+                                            <Shield size={14} /> Gestion de l'Abonnement ({formData.role})
+                                        </div>
+
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="text-[10px] font-bold text-[#1E88E5] uppercase tracking-widest pl-4 mb-2 block">Médecins Max</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.maxDoctors}
-                                                    onChange={e => setFormData({ ...formData, maxDoctors: e.target.value })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none"
-                                                    placeholder="Ex: 15 ( -1 = ∞ )"
-                                                />
+                                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Plan</label>
+                                                <select
+                                                    value={formData.planType}
+                                                    onChange={e => setFormData({ ...formData, planType: e.target.value })}
+                                                    className="w-full bg-[#0b1b2b] border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none cursor-pointer text-xs uppercase font-bold"
+                                                >
+                                                    <option value="Mensuel">Mensuel</option>
+                                                    <option value="Annuel">Annuel</option>
+                                                    <option value="Standard">Standard</option>
+                                                    <option value="Premium">Premium</option>
+                                                </select>
                                             </div>
                                             <div>
-                                                <label className="text-[10px] font-bold text-[#1E88E5] uppercase tracking-widest pl-4 mb-2 block">Patients Max</label>
+                                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Date d'expiration</label>
                                                 <input
-                                                    type="number"
-                                                    value={formData.maxPatients}
-                                                    onChange={e => setFormData({ ...formData, maxPatients: e.target.value })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none"
-                                                    placeholder="Ex: 50 ( -1 = ∞ )"
+                                                    type="date"
+                                                    value={formData.expiryDate}
+                                                    onChange={e => setFormData({ ...formData, expiryDate: e.target.value })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none text-xs font-mono"
                                                 />
                                             </div>
                                         </div>
+
+                                        {(formData.role === 'Clinique' || formData.role === 'Agent Clinique') ? (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-[#1E88E5] uppercase tracking-widest pl-4 mb-2 block">Médecins Max</label>
+                                                    <input
+                                                        type="number"
+                                                        value={formData.maxDoctors}
+                                                        onChange={e => setFormData({ ...formData, maxDoctors: e.target.value })}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none"
+                                                        placeholder="Ex: 15 ( -1 = ∞ )"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-[#1E88E5] uppercase tracking-widest pl-4 mb-2 block">Patients Max</label>
+                                                    <input
+                                                        type="number"
+                                                        value={formData.maxPatients}
+                                                        onChange={e => setFormData({ ...formData, maxPatients: e.target.value })}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none"
+                                                        placeholder="Ex: 50 ( -1 = ∞ )"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-[#1E88E5] uppercase tracking-widest pl-4 mb-2 block">Nombre d'enfants max (Héros)</label>
+                                                <select
+                                                    value={formData.maxKids}
+                                                    onChange={e => setFormData({ ...formData, maxKids: parseInt(e.target.value) })}
+                                                    className="w-full bg-[#0b1b2b] border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none cursor-pointer font-bold"
+                                                >
+                                                    <option value={1}>1 Héros</option>
+                                                    <option value={2}>2 Héros</option>
+                                                    <option value={3}>3 Héros</option>
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-4 mt-2">
+                                            <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest cursor-pointer">Paiement Effectué (Abonnement Actif)</label>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.subscriptionIsActive}
+                                                onChange={e => setFormData({ ...formData, subscriptionIsActive: e.target.checked })}
+                                                className="w-5 h-5 rounded bg-white/10 border-white/20 text-[#1E88E5] focus:ring-[#1E88E5]"
+                                            />
+                                        </div>
                                         <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest px-4 italic">
-                                            * Utilisez -1 pour un accès illimité.
+                                            * Utilisez -1 en capacité pour un accès illimité.
                                         </p>
                                     </motion.div>
                                 )}

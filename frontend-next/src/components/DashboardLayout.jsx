@@ -32,6 +32,18 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
             const parsed = JSON.parse(storedUser);
             setUser(parsed);
 
+            // Fetch full user profile
+            api.get(`/Users/${parsed.id}`).then(res => {
+                setUser(res.data);
+                // Also update localStorage so role/name are fresh
+                localStorage.setItem('user', JSON.stringify({
+                    id: res.data.id,
+                    role: res.data.role,
+                    fullName: res.data.fullName,
+                    token: localStorage.getItem('token') // keep token
+                }));
+            }).catch(err => console.error("Error fetching user:", err));
+
             // Fetch unread messages
             api.get(`/Messages/user/${parsed.id}`).then(res => {
                 const unread = res.data.filter(m => !m.isRead && m.receiverId === parsed.id);
@@ -80,8 +92,9 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         { name: t('sidebar.dashboard'), href: '/clinic/dashboard', icon: <Home size={20} /> },
         { name: t('sidebar.doctors'), href: '/clinic/doctors', icon: <Stethoscope size={20} /> },
         { name: t('sidebar.patients'), href: '/clinic/patients', icon: <Baby size={20} /> },
+        { name: 'Packs & Forfaits', href: '/clinic/packages', icon: <FileText size={20} /> },
         { name: t('sidebar.stats'), href: '/clinic/stats', icon: <BarChart3 size={20} /> },
-        { name: t('sidebar.subscription'), href: '/clinic/subscription', icon: <CreditCard size={20} /> },
+        { name: t('sidebar.subscription'), href: '/pricing', icon: <CreditCard size={20} /> },
         { name: t('sidebar.payments'), href: '/clinic/payments', icon: <Wallet size={20} /> },
         { name: t('sidebar.alerts'), href: '/clinic/alerts', icon: <AlertTriangle size={20} /> },
         { name: t('sidebar.settings'), href: '/clinic/settings', icon: <Settings size={20} /> },
@@ -94,13 +107,16 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         { name: t('sidebar.treatments'), href: '/doctor/treatments', icon: <Syringe size={20} /> },
         { name: t('sidebar.stats'), href: '/doctor/stats', icon: <BarChart3 size={20} /> },
         { name: t('sidebar.messaging'), href: '/doctor/messaging', icon: <MessageSquare size={20} /> },
+        { name: t('sidebar.subscription'), href: '/pricing', icon: <CreditCard size={20} /> },
+        { name: t('sidebar.payments'), href: '/doctor/payments', icon: <Wallet size={20} /> },
         { name: t('sidebar.settings'), href: '/doctor/settings', icon: <Settings size={20} /> },
     ];
 
     const parentLinks = [
         { name: t('sidebar.dashboard'), href: '/parent/dashboard', icon: <Home size={20} /> },
         { name: 'Mes Héros', href: '/parent/heroes', icon: <Baby size={20} /> },
-        { name: t('sidebar.subscription'), href: '/parent/subscription', icon: <CreditCard size={20} /> },
+        { name: t('sidebar.subscription'), href: '/pricing', icon: <CreditCard size={20} /> },
+        { name: t('sidebar.payments'), href: '/parent/payments', icon: <Wallet size={20} /> },
         { name: t('parent.addMeasure'), href: '/parent/add', icon: <PlusCircle size={20} /> },
         { name: t('sidebar.stats'), href: '/parent/history', icon: <HistoryIcon size={20} /> },
         { name: t('sidebar.messaging'), href: '/parent/messaging', icon: <MessageCircle size={20} /> },
@@ -135,6 +151,39 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
             {/* Main Content Area */}
             <main className="pt-24 min-h-screen flex flex-col">
                 <div className="flex-1 p-6 lg:p-12 w-full">
+                    {/* Alert: Clinique or personal-plan Parent with inactive sub → Stripe payment */}
+                    {((role === 'Clinique' && user.subscription?.isActive === false) ||
+                      (role === 'Parent' && user.subscription?.isActive === false && !user.associatedClinicId)) && (
+                        <div className="bg-accent/10 border border-accent/20 p-5 rounded-[24px] mb-8 flex items-center gap-5 shadow-[0_0_20px_rgba(255,112,67,0.1)]">
+                            <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-black text-white text-sm uppercase tracking-widest mb-1">Abonnement Inactif</h4>
+                                <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">
+                                    Veuillez payer en ligne ou contacter l'administration pour débloquer votre accès.
+                                </p>
+                            </div>
+                            <Link href="/pricing" className="bg-accent text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-accent/80 transition-colors shadow-lg shadow-accent/20">
+                                Payer en Ligne
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Alert: Clinic-managed Parent with inactive sub → contact clinic */}
+                    {role === 'Parent' && user.subscription?.isActive === false && user.associatedClinicId && (
+                        <div className="bg-[#088395]/10 border border-[#088395]/30 p-5 rounded-[24px] mb-8 flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-full bg-[#088395]/20 flex items-center justify-center text-[#088395]">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-black text-white text-sm uppercase tracking-widest mb-1">En Attente d'Activation</h4>
+                                <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">
+                                    Votre compte est lié à une clinique. Contactez votre clinique pour finaliser votre paiement.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Breadcrumb SECTION 12.3 */}
                     <div className="flex items-center gap-3 mb-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">

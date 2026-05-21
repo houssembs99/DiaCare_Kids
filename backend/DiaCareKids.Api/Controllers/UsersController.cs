@@ -32,6 +32,16 @@ namespace DiaCareKids.Api.Controllers
         {
             var user = await _usersService.GetAsync(id);
             if (user == null) return NotFound();
+
+            if (user.Role == "Parent" && user.Subscription != null && user.Subscription.PlanType == "Sous Clinique" && !string.IsNullOrEmpty(user.AssociatedClinicId))
+            {
+                var clinic = await _usersService.GetAsync(user.AssociatedClinicId);
+                if (clinic == null || clinic.Status != "Actif" || clinic.Subscription == null || !clinic.Subscription.IsActive)
+                {
+                    user.Subscription.IsActive = false;
+                }
+            }
+
             return user;
         }
 
@@ -69,7 +79,7 @@ namespace DiaCareKids.Api.Controllers
 
             // Authorization: Only Admin or the user themselves
             var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Admin";
 
             if (!isAdmin && currentUserId != id) return Forbid();
 
@@ -88,6 +98,11 @@ namespace DiaCareKids.Api.Controllers
                 if (!string.IsNullOrEmpty(request.NewPassword))
                 {
                     user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                }
+                
+                if (request.Subscription != null)
+                {
+                    user.Subscription = request.Subscription;
                 }
             }
 

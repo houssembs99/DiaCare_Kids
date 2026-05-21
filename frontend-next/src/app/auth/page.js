@@ -19,19 +19,48 @@ export default function AuthPage() {
     const [maxKids, setMaxKids] = useState(1);
     const [selectedClinicId, setSelectedClinicId] = useState('');
     const [allClinics, setAllClinics] = useState([]);
+    const [clinicPackages, setClinicPackages] = useState([]);
+    const [selectedClinicPackageId, setSelectedClinicPackageId] = useState('');
     const [clinicType, setClinicType] = useState('Clinique');
     const [clinicAddress, setClinicAddress] = useState('');
     const [clinicPhone, setClinicPhone] = useState('');
     const [maxDoctors, setMaxDoctors] = useState(3);
     const [maxPatients, setMaxPatients] = useState(3);
+    const [clinicPlan, setClinicPlan] = useState('Basic');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const queryRole = params.get('role');
+            const queryPlan = params.get('plan');
+            
+            if (queryRole) {
+                setRole(queryRole);
+                setIsLogin(false);
+            }
+            if (queryPlan) {
+                if (queryRole === 'Clinique') {
+                    setClinicPlan(queryPlan);
+                } else if (queryRole === 'Parent') {
+                    if (queryPlan === 'Solo') setMaxKids(1);
+                    else if (queryPlan === 'Duo') setMaxKids(2);
+                    else if (queryPlan === 'Famille') setMaxKids(3);
+                }
+            }
+        }
+    }, []);
 
     const fetchClinics = async () => {
         try {
             const res = await api.get('/clinics');
             setAllClinics(res.data);
-            if (res.data.length > 0) setSelectedClinicId(res.data[0].id);
+            if (res.data.length > 0 && role === 'Medecin') {
+                setSelectedClinicId(res.data[0].id);
+            } else {
+                setSelectedClinicId('');
+            }
         } catch (err) {
             console.error("Error fetching clinics:", err);
         }
@@ -43,21 +72,55 @@ export default function AuthPage() {
         }
     }, [isLogin, role]);
 
+    React.useEffect(() => {
+        if (!isLogin && role === 'Parent') {
+            if (selectedClinicId) {
+                api.get(`/ClinicPackages/clinic/${selectedClinicId}`).then(res => {
+                    setClinicPackages(res.data);
+                    if (res.data.length > 0) setSelectedClinicPackageId(res.data[0].id);
+                    else setSelectedClinicPackageId('');
+                }).catch(err => console.error("Error fetching clinic packages", err));
+            } else {
+                setClinicPackages([]);
+                setSelectedClinicPackageId('');
+            }
+        }
+    }, [selectedClinicId, role, isLogin]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
+            let subscriptionPlanToSend = subPlan;
+            let associatedClinicIdToSend = selectedClinicId;
+            let maxDocsToSend = maxDoctors;
+            let maxPatsToSend = maxPatients;
+
+            if (role === 'Parent') {
+                if (!selectedClinicId) {
+                    associatedClinicIdToSend = null;
+                    subscriptionPlanToSend = maxKids === 1 ? 'Solo' : (maxKids === 2 ? 'Duo' : 'Famille');
+                } else {
+                    subscriptionPlanToSend = 'Sous Clinique';
+                }
+            } else if (role === 'Clinique') {
+                subscriptionPlanToSend = clinicPlan;
+                maxDocsToSend = clinicPlan === 'Basic' ? 2 : (clinicPlan === 'Pro' ? 10 : 50);
+                maxPatsToSend = clinicPlan === 'Basic' ? 50 : (clinicPlan === 'Pro' ? 500 : -1);
+            }
+
             const endpoint = isLogin ? '/auth/login' : '/auth/register';
             const payload = isLogin ? { email, password } : {
                 email, password, fullName, role,
-                subscriptionPlan: subPlan,
+                subscriptionPlan: subscriptionPlanToSend,
                 maxKids: maxKids,
-                associatedClinicId: selectedClinicId,
+                associatedClinicId: associatedClinicIdToSend,
+                clinicPackageId: selectedClinicPackageId,
                 clinicType,
                 address: clinicAddress,
                 contactNumber: clinicPhone,
-                maxDoctors,
-                maxPatients
+                maxDoctors: maxDocsToSend,
+                maxPatients: maxPatsToSend
             };
             const res = await api.post(endpoint, payload);
 
@@ -222,21 +285,42 @@ export default function AuthPage() {
                                         {!isLogin && (role === 'Parent' || role === 'Medecin') && (
                                             <div className="space-y-3 pt-4 animate-in fade-in slide-in-from-bottom-2">
                                                 <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block ml-4">
-                                                    {role === 'Parent' ? 'Clinique / Cabinet de Suivi' : 'Établissement où vous exercez'}
+                                                    {role === 'Parent' ? 'Clinique / Cabinet de Suivi (Optionnel)' : 'Établissement où vous exercez'}
                                                 </label>
                                                 <select
                                                     value={selectedClinicId}
                                                     onChange={(e) => setSelectedClinicId(e.target.value)}
                                                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-6 px-8 text-sm font-bold text-white outline-none focus:border-[#088395] transition-all appearance-none cursor-pointer"
-                                                    required
+                                                    required={role === 'Medecin'}
                                                 >
-                                                    <option value="" className="bg-[#0b1b2b]">Choisir un établissement</option>
+                                                    <option value="" className="bg-[#0b1b2b]">
+                                                        {role === 'Parent' ? 'Plan Personnel (Sans clinique - Paiement en ligne)' : 'Choisir un établissement'}
+                                                    </option>
                                                     {allClinics.map(clinic => (
                                                         <option key={clinic.id} value={clinic.id} className="bg-[#0b1b2b]">
                                                             {clinic.fullName || clinic.name} ({clinic.clinicType || 'Clinique'})
                                                         </option>
                                                     ))}
                                                 </select>
+                                                
+                                                {!isLogin && role === 'Parent' && selectedClinicId && clinicPackages.length > 0 && (
+                                                    <div className="mt-4 space-y-3 animate-in fade-in">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block ml-4">Forfait de la clinique</label>
+                                                        <select
+                                                            value={selectedClinicPackageId}
+                                                            onChange={(e) => setSelectedClinicPackageId(e.target.value)}
+                                                            className="w-full bg-white/5 border border-[#088395]/50 rounded-2xl py-6 px-8 text-sm font-bold text-white outline-none focus:border-[#088395] transition-all appearance-none cursor-pointer"
+                                                            required
+                                                        >
+                                                            {clinicPackages.map(pkg => (
+                                                                <option key={pkg.id} value={pkg.id} className="bg-[#0b1b2b]">
+                                                                    {pkg.name} - {pkg.price} {pkg.currency} / {pkg.paymentFrequency} (Max {pkg.maxKidsPerParent} enfant(s))
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                )}
+
                                                 {role === 'Medecin' && (
                                                     <p className="text-[9px] font-bold text-[#088395] uppercase tracking-widest ml-4 mt-2">
                                                         * Votre compte devra être validé par la clinique.
@@ -265,33 +349,27 @@ export default function AuthPage() {
                                                 <AuthInput icon={<Globe />} type="text" placeholder="Adresse complète (Map)" value={clinicAddress} onChange={setClinicAddress} />
 
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block ml-4">Capacité Médecins</label>
-                                                    <div className="grid grid-cols-4 gap-3">
-                                                        {[3, 7, 15, -1].map(n => (
-                                                            <button key={n} type="button" onClick={() => setMaxDoctors(n)} className={cn("py-4 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", maxDoctors === n ? "bg-white text-[#088395] border-white" : "bg-white/5 border-white/10 text-white/40")}>
-                                                                {n === -1 ? '∞' : n}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block ml-4">Capacité Patients (Parents)</label>
-                                                    <div className="grid grid-cols-4 gap-3">
-                                                        {[3, 10, 15, -1].map(n => (
-                                                            <button key={n} type="button" onClick={() => setMaxPatients(n)} className={cn("py-4 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", maxPatients === n ? "bg-white text-[#088395] border-white" : "bg-white/5 border-white/10 text-white/40")}>
-                                                                {n === -1 ? '∞' : n}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block ml-4">Durée de l'Abonnement</label>
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        {['Mensuel', 'Annuel'].map(p => (
-                                                            <button key={p} type="button" onClick={() => setSubPlan(p)} className={cn("py-4 rounded-xl text-xs font-bold uppercase tracking-widest border transition-all", subPlan === p ? "bg-white text-[#088395] border-white" : "bg-white/5 border-white/10 text-white/40")}>
-                                                                {p}
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block ml-4">Forfait d'Abonnement</label>
+                                                    <div className="grid grid-cols-3 gap-3">
+                                                        {[
+                                                            { name: 'Basic', label: 'Basic (49 DT)' },
+                                                            { name: 'Pro', label: 'Pro (149 DT)' },
+                                                            { name: 'Premium', label: 'Premium (299 DT)' }
+                                                        ].map(p => (
+                                                            <button
+                                                                key={p.name}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setClinicPlan(p.name);
+                                                                    setSubPlan('Mensuel');
+                                                                }}
+                                                                className={cn(
+                                                                    "py-4 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all text-center flex flex-col items-center justify-center gap-1",
+                                                                    clinicPlan === p.name ? "bg-white text-[#088395] border-white" : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
+                                                                )}
+                                                            >
+                                                                <span>{p.name}</span>
+                                                                <span className="text-[8px] opacity-65">{p.name === 'Basic' ? '2 Méd / 50 Pat' : (p.name === 'Pro' ? '10 Méd / 500 Pat' : '50 Méd / ∞ Pat')}</span>
                                                             </button>
                                                         ))}
                                                     </div>
