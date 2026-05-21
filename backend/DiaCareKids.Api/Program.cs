@@ -19,7 +19,7 @@ builder.Services.AddScoped(s =>
     return client.GetDatabase(mongoDbSettings?.DatabaseName ?? "DiaCareKidsDb");
 });
 
-builder.Services.AddScoped<DiaCareKids.Api.Services.UsersService>();
+builder.Services.AddScoped<UsersService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.PlansService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.PatientsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.MedicalRecordsService>();
@@ -105,7 +105,7 @@ using (var scope = app.Services.CreateScope())
     var plansService = scope.ServiceProvider.GetRequiredService<DiaCareKids.Api.Services.PlansService>();
     await plansService.SeedAsync();
 
-    var usersService = scope.ServiceProvider.GetRequiredService<DiaCareKids.Api.Services.UsersService>();
+    var usersService = scope.ServiceProvider.GetRequiredService<UsersService>();
     var testEmail = "medecin@gmail.com";
     var existing = await usersService.GetByEmailAsync(testEmail);
     if (existing == null)
@@ -127,3 +127,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+public partial class Program { }

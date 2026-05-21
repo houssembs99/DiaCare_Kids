@@ -84,10 +84,10 @@ export default function AdminDashboard() {
 
     // Pie Chart Data
     const pieData = {
-        labels: ['Admins', 'Cliniques', 'Médecins', 'Parents'],
+        labels: ['Cliniques', 'Médecins', 'Parents', 'Patients'],
         datasets: [{
-            data: [5, 12, 128, 1540],
-            backgroundColor: ['#1E88E5', '#26A69A', '#FFCA28', '#FF7043'],
+            data: [stats.clinicsCount, stats.doctorsCount, stats.parentsCount, stats.patientsCount],
+            backgroundColor: ['#26A69A', '#FFCA28', '#FF7043', '#1E88E5'],
             borderWidth: 0,
         }]
     };
@@ -113,15 +113,7 @@ export default function AdminDashboard() {
                         </h1>
                     </div>
                     <div className="flex gap-4">
-                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 flex items-center gap-6 group hover:border-white/30 transition-all">
-                            <div className="w-12 h-12 bg-[#1E88E5] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                                <Server size={24} />
-                            </div>
-                            <div>
-                                <div className="text-xl font-black">99.9%</div>
-                                <div className="text-[8px] font-bold opacity-30 uppercase tracking-[0.2em]">Uptime Moyen</div>
-                            </div>
-                        </div>
+                        {/* Uptime indicator removed as requested */}
                     </div>
                 </div>
 
