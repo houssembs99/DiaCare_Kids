@@ -79,9 +79,20 @@ export default function DoctorMessaging() {
 
     const fetchContacts = async () => {
         try {
-            const res = await api.get('/Users');
-            const parents = res.data.filter(u => u.role?.toLowerCase() === 'parent');
-            setContacts(parents.map(p => ({
+            const storedUser = localStorage.getItem('user');
+            if (!storedUser) return;
+            const docId = JSON.parse(storedUser).id;
+
+            // 1. Get patients for this doctor to find his parents
+            const patientsRes = await api.get(`/Patients/doctor/${docId}`);
+            const doctorPatients = patientsRes.data;
+            const myParentIds = new Set(doctorPatients.map(p => p.parentId).filter(id => id));
+
+            // 2. Get all users and filter by those parent IDs
+            const usersRes = await api.get('/Users');
+            const myParents = usersRes.data.filter(u => myParentIds.has(u.id));
+
+            setContacts(myParents.map(p => ({
                 id: p.id,
                 name: p.fullName || p.email || "Parent Inconnu",
                 parentOf: "un enfant",
