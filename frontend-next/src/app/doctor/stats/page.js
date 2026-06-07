@@ -42,7 +42,7 @@ export default function DoctorStats() {
     const [period, setPeriod] = useState('30d');
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
-        totalPatients: 0,
+        totalPatients: 28,
         stablePercent: 65,
         avgGlucose: 124,
         hyposRate: 8.2,
@@ -50,40 +50,80 @@ export default function DoctorStats() {
         score: 92
     });
 
+    const [chartData, setChartData] = useState({
+        avgGlucose: null,
+        distribution: null,
+        incidents: null,
+        therapeutic: null
+    });
+
     useEffect(() => {
-        // Simulate real data fetching
+        setLoading(true);
+        // Simulate real data fetching with variations based on period
         const timer = setTimeout(() => {
+            generateData(period);
             setLoading(false);
-            // In a real app, we'd call api.get('/stats/doctor/...')
-        }, 800);
+        }, 600);
         return () => clearTimeout(timer);
     }, [period]);
 
-    const avgGlucoseData = {
-        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6'],
-        datasets: [{
-            label: 'Moyenne Glycémique (mg/dL)',
-            data: [135, 142, 128, 122, 125, 118],
-            borderColor: '#088395',
-            backgroundColor: 'rgba(8, 131, 149, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 4,
-            pointRadius: 4,
-            pointBackgroundColor: '#088395',
-            pointBorderWidth: 2,
-            pointBorderColor: '#fff'
-        }]
-    };
+    const generateData = (p) => {
+        let labels, lineData, barHypers, barHypos;
+        
+        if (p === '7d') {
+            labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            lineData = [118, 125, 110, 130, 115, 122, 114];
+            barHypers = [10, 8, 12, 15, 9, 7, 11];
+            barHypos = [3, 2, 4, 6, 2, 3, 4];
+        } else if (p === '30d') {
+            labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
+            lineData = [135, 142, 128, 122];
+            barHypers = [45, 52, 40, 38];
+            barHypos = [15, 18, 12, 10];
+        } else {
+            labels = ['Jan', 'Féb', 'Mar'];
+            lineData = [140, 132, 124];
+            barHypers = [150, 140, 120];
+            barHypos = [50, 45, 38];
+        }
 
-    const statusDistributionData = {
-        labels: ['Stables', 'Surveillance', 'Critiques'],
-        datasets: [{
-            data: [65, 25, 10],
-            backgroundColor: ['#34C759', '#FF7043', '#1E88E5'],
-            borderWidth: 0,
-            hoverOffset: 15
-        }]
+        setChartData({
+            avgGlucose: {
+                labels,
+                datasets: [{
+                    label: 'Moyenne Glycémique (mg/dL)',
+                    data: lineData,
+                    borderColor: '#088395',
+                    backgroundColor: 'rgba(8, 131, 149, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 4,
+                    pointRadius: 4,
+                }]
+            },
+            distribution: {
+                labels: ['Stables', 'Surveillance', 'Critiques'],
+                datasets: [{
+                    data: p === '7d' ? [75, 20, 5] : (p === '30d' ? [65, 25, 10] : [60, 30, 10]),
+                    backgroundColor: ['#34C759', '#FF7043', '#1E88E5'],
+                    borderWidth: 0,
+                }]
+            },
+            incidents: {
+                labels,
+                datasets: [
+                    { label: 'Hyperglycémies', data: barHypers, backgroundColor: '#EAB308', borderRadius: 8 },
+                    { label: 'Hypoglycémies', data: barHypos, backgroundColor: '#F97316', borderRadius: 8 }
+                ]
+            },
+            therapeutic: {
+                labels: ['Contrôle', 'Régularité', 'Alertes', 'Doses', 'Glycémie'],
+                datasets: [
+                    { label: '0-5 ans', data: [80, 70, 90, 85, 75], borderColor: '#088395', backgroundColor: 'rgba(8,131,149,0.1)', borderWidth: 3 },
+                    { label: '6-12 ans', data: [90, 85, 80, 90, 95], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', borderWidth: 3 }
+                ]
+            }
+        });
     };
 
     const chartsDefaultOptions = {
@@ -134,7 +174,7 @@ export default function DoctorStats() {
 
                     <div className="flex items-center gap-4">
                         <div className="flex gap-1 p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
-                            {['7d', '30d', '90d'].map(p => (
+                            {['7d', '30d', '3m'].map(p => (
                                 <button
                                     key={p}
                                     onClick={() => setPeriod(p)}
@@ -147,21 +187,21 @@ export default function DoctorStats() {
                                 </button>
                             ))}
                         </div>
-                        <button className="p-4 bg-white/5 border border-white/10 text-white rounded-2xl hover:bg-white/10 transition-all group">
+                        <button className="p-4 bg-white/5 border border-white/10 text-white rounded-2xl hover:bg-white/10 transition-all group" onClick={() => window.print()}>
                             <Download size={18} className="group-hover:translate-y-0.5 transition-transform" />
                         </button>
                     </div>
                 </div>
 
                 <AnimatePresence mode="wait">
-                    {loading ? (
+                    {loading || !chartData.avgGlucose ? (
                         <motion.div 
                             key="loader"
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             className="h-[60vh] flex flex-col items-center justify-center gap-4"
                         >
                             <div className="w-12 h-12 border-4 border-[#088395] border-t-transparent rounded-full animate-spin" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Analyse des données en cours...</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Analyse des données pour {period === '7d' ? 'la semaine' : period === '30d' ? 'le mois' : 'le trimestre'}...</p>
                         </motion.div>
                     ) : (
                         <motion.div 
@@ -171,9 +211,9 @@ export default function DoctorStats() {
                         >
                             {/* Stats Summary */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <MedicalStatCard title="Indice de Contrôle" value="92/100" sub="+4pts vs mois dernier" icon={<Target size={24} />} color="bg-green-500 shadow-[0_10px_25px_rgba(34,197,94,0.3)]" />
-                                <MedicalStatCard title="Taux d'Hypos" value="8.2%" sub="-1.4% baisse stable" icon={<Droplets size={24} />} color="bg-orange-500 shadow-[0_10px_25px_rgba(249,115,22,0.3)]" />
-                                <MedicalStatCard title="Taux d'Hypers" value="22.5%" sub="+0.8% légère hausse" icon={<Zap size={24} />} color="bg-yellow-500 shadow-[0_10px_25px_rgba(234,179,8,0.3)]" />
+                                <MedicalStatCard title="Indice de Contrôle" value={period === '7d' ? "94/100" : "92/100"} sub="+4pts vs mois dernier" icon={<Target size={24} />} color="bg-green-500 shadow-[0_10px_25px_rgba(34,197,94,0.3)]" />
+                                <MedicalStatCard title="Taux d'Hypos" value={period === '7d' ? "6.8%" : "8.2%"} sub="-1.4% baisse stable" icon={<Droplets size={24} />} color="bg-orange-500 shadow-[0_10px_25px_rgba(249,115,22,0.3)]" />
+                                <MedicalStatCard title="Taux d'Hypers" value={period === '7d' ? "18.5%" : "22.5%"} sub="+0.8% légère hausse" icon={<Zap size={24} />} color="bg-yellow-500 shadow-[0_10px_25px_rgba(234,179,8,0.3)]" />
                                 <MedicalStatCard title="Score Engagement" value="88%" sub="Observance protocoles" icon={<Activity size={24} />} color="bg-indigo-500 shadow-[0_10px_25_rgba(99,102,241,0.3)]" />
                             </div>
 
@@ -190,11 +230,11 @@ export default function DoctorStats() {
                                             <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Variation moyenne de la cohorte patientèle</p>
                                         </div>
                                         <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-[9px] font-black uppercase tracking-widest">
-                                            <TrendingUp size={14} /> +3.2% Stabilité
+                                            <TrendingUp size={14} /> +3.2% {period === '7d' ? 'Hebdomadaire' : 'Stabilité'}
                                         </div>
                                     </div>
                                     <div className="h-[350px] relative z-10">
-                                        <Line data={avgGlucoseData} options={chartsDefaultOptions} />
+                                        <Line data={chartData.avgGlucose} options={chartsDefaultOptions} />
                                     </div>
                                 </div>
 
@@ -206,7 +246,7 @@ export default function DoctorStats() {
                                     </div>
                                     <div className="flex-1 relative flex items-center justify-center">
                                         <div className="w-[220px] h-[220px]">
-                                            <Doughnut data={statusDistributionData} options={{ cutout: '80%', plugins: { legend: { display: false } } }} />
+                                            <Doughnut data={chartData.distribution} options={{ cutout: '80%', plugins: { legend: { display: false } } }} />
                                         </div>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                                             <span className="text-4xl font-black italic">28</span>
@@ -215,8 +255,8 @@ export default function DoctorStats() {
                                     </div>
                                     <div className="mt-10 space-y-3">
                                         {[
-                                            { label: "Patients Stables", val: "65%", col: "bg-green-500", icon: <CheckCircle size={12}/> },
-                                            { label: "Sous Surveillance", val: "25%", col: "bg-orange-500", icon: <Clock size={12}/> },
+                                            { label: "Patients Stables", val: period === '7d' ? "75%" : "65%", col: "bg-green-500", icon: <CheckCircle size={12}/> },
+                                            { label: "Sous Surveillance", val: period === '7d' ? "20%" : "25%", col: "bg-orange-500", icon: <Clock size={12}/> },
                                             { label: "Cas Critiques", val: "10%", col: "bg-indigo-500", icon: <ShieldAlert size={12}/> }
                                         ].map(item => (
                                             <div key={item.label} className="flex items-center justify-between p-4 bg-white/3 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors">
@@ -239,18 +279,12 @@ export default function DoctorStats() {
                                     <div className="flex justify-between items-start mb-10">
                                         <div>
                                             <h3 className="text-xl font-black uppercase tracking-tighter italic mb-2">Taux d'Incidents</h3>
-                                            <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Comparaison hebdomadaire Hypos vs Hypers</p>
+                                            <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{period === '7d' ? 'Comparaison par jour' : 'Comparaison hebdomadaire'}</p>
                                         </div>
                                     </div>
                                     <div className="h-[300px]">
                                         <Bar
-                                            data={{
-                                                labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
-                                                datasets: [
-                                                    { label: 'Hyperglycémies', data: [12, 19, 15, 8, 12, 10], backgroundColor: '#EAB308', borderRadius: 8 },
-                                                    { label: 'Hypoglycémies', data: [5, 8, 4, 3, 6, 4], backgroundColor: '#F97316', borderRadius: 8 }
-                                                ]
-                                            }}
+                                            data={chartData.incidents}
                                             options={chartsDefaultOptions}
                                         />
                                     </div>
@@ -263,13 +297,7 @@ export default function DoctorStats() {
                                     </div>
                                     <div className="h-[300px]">
                                         <Radar
-                                            data={{
-                                                labels: ['Contrôle', 'Régularité', 'Alertes', 'Doses', 'Glycémie'],
-                                                datasets: [
-                                                    { label: '0-5 ans', data: [80, 70, 90, 85, 75], borderColor: '#088395', backgroundColor: 'rgba(8,131,149,0.1)', borderWidth: 3 },
-                                                    { label: '6-12 ans', data: [90, 85, 80, 90, 95], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', borderWidth: 3 }
-                                                ]
-                                            }}
+                                            data={chartData.therapeutic}
                                             options={{ 
                                                 ...chartsDefaultOptions, 
                                                 scales: { 
