@@ -27,10 +27,23 @@ namespace DiaCareKids.Api.Controllers
         public async Task<ActionResult> GetMyPatients()
         {
             var doctorId = GetCurrentUserId();
-            var patients = await _usersService.GetByDoctorIdAsync(doctorId);
+            
+            // 1. Get patients directly assigned to me
+            var directPatients = await _usersService.GetByDoctorIdAsync(doctorId);
+            
+            // 2. Find siblings: Get all kids of parents who are rattachés to me
+            var allUsers = await _usersService.GetAsync();
+            var myParents = allUsers.Where(u => u.Role == "Parent" && u.AssociatedDoctorId == doctorId).ToList();
+            var kidsOfMyParents = allUsers.Where(u => u.Role == "Enfant" && myParents.Any(parent => parent.Id == u.AssociatedParentId)).ToList();
+
+            // Unique set of patients
+            var allPatients = directPatients.Concat(kidsOfMyParents)
+                .GroupBy(p => p.Id)
+                .Select(g => g.First())
+                .ToList();
             
             var result = new List<object>();
-            foreach (var p in patients)
+            foreach (var p in allPatients)
             {
                 var records = await _recordsService.GetByPatientAsync(p.Id!);
                 var lastRecord = records.FirstOrDefault();
