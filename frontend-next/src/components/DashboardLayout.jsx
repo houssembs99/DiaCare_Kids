@@ -8,7 +8,7 @@ import {
     Home, Users, BarChart3, Bell, FileText, Settings, LogOut, Activity, Menu, X,
     ShieldCheck, ChevronRight, Building2, CreditCard, Stethoscope, Baby, Wallet, AlertTriangle,
     Syringe, MessageSquare, History as HistoryIcon, PlusCircle, BookOpen, MessageCircle,
-    Gamepad2, Brain, Trophy, Star
+    Gamepad2, Brain, Trophy, Star, Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import api from '@/lib/api';
