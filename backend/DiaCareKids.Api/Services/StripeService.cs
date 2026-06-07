@@ -15,7 +15,15 @@ namespace DiaCareKids.Api.Services
         public StripeService(IOptions<StripeSettings> stripeSettings)
         {
             _stripeSettings = stripeSettings.Value;
-            StripeConfiguration.ApiKey = _stripeSettings.SecretKey;
+            
+            var secret = _stripeSettings.SecretKey;
+            if (string.IsNullOrEmpty(secret))
+            {
+                // Fallback de sécurité : récupération depuis les variables d'environnement système
+                secret = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY") ?? "";
+            }
+            
+            StripeConfiguration.ApiKey = secret;
         }
 
         public async Task<Session> CreateSubscriptionCheckoutSessionAsync(string userEmail, string planName, long priceAmount, string currency = "eur")
