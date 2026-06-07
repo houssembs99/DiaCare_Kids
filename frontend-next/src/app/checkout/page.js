@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Shield, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Shield, CheckCircle, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
 
@@ -119,6 +119,17 @@ export default function CustomCheckoutPage({ searchParams }) {
 
     return (
         <div className="min-h-screen bg-[#0b1b2b] text-white flex flex-col items-center justify-center p-4">
+            {/* Back Button */}
+            <motion.button
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                onClick={() => window.location.href = '/pricing'}
+                className="absolute top-10 left-10 z-[100] flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white hover:bg-white/10 transition-all group"
+            >
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                Retour aux forfaits
+            </motion.button>
+
             <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}

@@ -110,6 +110,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         // Pour les médecins de cabinet (indépendants), on ajoute les packs et paiements
         ...(!user?.associatedClinicId ? [
             { name: t('sidebar.subscription'), href: '/pricing', icon: <CreditCard size={20} /> },
+            { name: "Packs & Forfaits", href: '/doctor/packages', icon: <Package size={20} /> },
             { name: t('sidebar.payments'), href: '/doctor/payments', icon: <Wallet size={20} /> }
         ] : []),
         { name: t('sidebar.settings'), href: '/doctor/settings', icon: <Settings size={20} /> },

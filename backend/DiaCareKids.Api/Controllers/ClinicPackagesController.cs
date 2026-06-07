@@ -31,7 +31,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Clinique")]
+        [Authorize(Roles = "Clinique,Medecin")]
         public async Task<ActionResult<List<ClinicPackage>>> GetMyPackages()
         {
             var clinicId = GetCurrentUserId();
@@ -39,7 +39,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Clinique")]
+        [Authorize(Roles = "Clinique,Medecin")]
         public async Task<IActionResult> CreatePackage(ClinicPackage package)
         {
             var clinicId = GetCurrentUserId();
@@ -51,7 +51,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Clinique")]
+        [Authorize(Roles = "Clinique,Medecin")]
         public async Task<IActionResult> UpdatePackage(string id, ClinicPackage package)
         {
             var clinicId = GetCurrentUserId();
@@ -71,7 +71,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Clinique")]
+        [Authorize(Roles = "Clinique,Medecin")]
         public async Task<IActionResult> DeletePackage(string id)
         {
             var clinicId = GetCurrentUserId();
