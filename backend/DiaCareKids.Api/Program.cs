@@ -37,6 +37,9 @@ builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("StripeSettings"));
 builder.Services.AddScoped<StripeService>();
 
+// Email Service
+builder.Services.AddScoped<EmailService>();
+
 // Auth Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secret = jwtSettings.GetValue<string>("Secret") ?? "default_secret_key_change_me_123456789";

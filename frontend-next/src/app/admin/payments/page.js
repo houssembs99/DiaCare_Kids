@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import InvoiceGenerator from '@/components/InvoiceGenerator';
 import { Send, FileText, Search, CreditCard, Clock, CheckCircle, User, Phone, Mail, Calendar, Activity, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -18,12 +19,12 @@ export default function AdminPayments() {
     const [plans, setPlans] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
-    const [isSending, setIsSending] = useState(false);
     
     // Modal state
     const [selectedUser, setSelectedUser] = useState(null);
     const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
     const [invoiceData, setInvoiceData] = useState({ description: "Abonnement", amount: 199.99, currency: "eur", planId: "" });
 
     useEffect(() => {
@@ -322,11 +323,11 @@ export default function AdminPayments() {
                 )}
             </AnimatePresence>
 
-            {/* Modal Envoi Facture */}
+            {/* Modal Envoi Facture (Configuration) */}
             <AnimatePresence>
-                {isInvoiceModalOpen && selectedUser && (
+                {isInvoiceModalOpen && selectedUser && !showPreview && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isSending && setIsInvoiceModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsInvoiceModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-md w-full relative z-10 shadow-2xl"
                         >
@@ -334,13 +335,13 @@ export default function AdminPayments() {
                                 <FileText size={32} />
                             </div>
                             <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2 text-white">
-                                Nouvelle Facture
+                                Configurer la Facture
                             </h2>
                             <p className="text-white/40 text-sm mb-8 font-bold">
                                 Destinataire: <span className="text-white">{selectedUser.email}</span>
                             </p>
 
-                            <form onSubmit={confirmSendInvoice} className="space-y-4">
+                            <form onSubmit={(e) => { e.preventDefault(); setShowPreview(true); }} className="space-y-4">
                                 {plans.length > 0 && (
                                     <div>
                                         <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Choisir un Pack Pré-configuré</label>
@@ -400,16 +401,14 @@ export default function AdminPayments() {
                                         type="button"
                                         onClick={() => setIsInvoiceModalOpen(false)} 
                                         className="flex-1 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-colors"
-                                        disabled={isSending}
                                     >
                                         Annuler
                                     </button>
                                     <button 
                                         type="submit"
-                                        disabled={isSending}
-                                        className="flex-1 py-4 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/80 transition-all disabled:opacity-50"
+                                        className="flex-1 py-4 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/80 transition-all"
                                     >
-                                        {isSending ? 'Envoi...' : 'Générer & Envoyer'}
+                                        Aperçu Facture
                                     </button>
                                 </div>
                             </form>
@@ -417,6 +416,14 @@ export default function AdminPayments() {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Modal Aperçu & Envoi (InvoiceGenerator) */}
+            <InvoiceGenerator
+                isOpen={showPreview}
+                onClose={() => setShowPreview(false)}
+                user={selectedUser}
+                plan={{ name: invoiceData.description.split(' - ')[0].replace('Abonnement ', '') || 'Personnalisé', description: invoiceData.description, price: invoiceData.amount, currency: invoiceData.currency }}
+            />
         </DashboardLayout>
     );
 }
