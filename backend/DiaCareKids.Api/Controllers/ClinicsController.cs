@@ -20,9 +20,17 @@ namespace DiaCareKids.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<List<User>> Get() {
-            var clinics = await _usersService.GetByRoleAsync("Clinique");
-            // Only return clinics that are active and have paid their subscription (or have unlimited/default access)
-            return clinics.Where(c => c.Status == "Actif" && c.Subscription != null && c.Subscription.IsActive).ToList();
+            var allUsers = await _usersService.GetAsync();
+            
+            // Filter: 
+            // 1. All "Clinique" that are Active & Paid
+            // 2. All "Medecin" that are Independent (AssociatedClinicId is null) AND Active & Paid
+            var establishments = allUsers.Where(u => 
+                (u.Role == "Clinique" && u.Status == "Actif" && u.Subscription != null && u.Subscription.IsActive) ||
+                (u.Role == "Medecin" && string.IsNullOrEmpty(u.AssociatedClinicId) && u.Status == "Actif" && u.Subscription != null && u.Subscription.IsActive)
+            ).ToList();
+
+            return establishments;
         }
 
         [HttpGet("{id}")]

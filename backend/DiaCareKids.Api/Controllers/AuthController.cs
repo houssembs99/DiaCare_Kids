@@ -70,33 +70,38 @@ namespace DiaCareKids.Api.Controllers
                             Console.WriteLine("[AUTH BAD_REQUEST] Vous devez choisir une clinique.");
                             return BadRequest(new { message = "Vous devez choisir une clinique." });
                         }
-                        var clinic = await _usersService.GetAsync(request.AssociatedClinicId);
-                        if (clinic == null)
+                        var targetEntity = await _usersService.GetAsync(request.AssociatedClinicId);
+                        if (targetEntity == null)
                         {
-                            Console.WriteLine($"[AUTH BAD_REQUEST] La clinique sélectionnée est introuvable: {request.AssociatedClinicId}");
-                            return BadRequest(new { message = "La clinique sélectionnée est introuvable." });
+                            Console.WriteLine($"[AUTH BAD_REQUEST] L'établissement sélectionné est introuvable: {request.AssociatedClinicId}");
+                            return BadRequest(new { message = "L'établissement sélectionné est introuvable." });
                         }
-                        if (clinic.Status != "Actif" || clinic.Subscription == null || !clinic.Subscription.IsActive)
+                        if (targetEntity.Status != "Actif" || targetEntity.Subscription == null || !targetEntity.Subscription.IsActive)
                         {
-                            Console.WriteLine($"[AUTH BAD_REQUEST] Cette clinique n'est pas active pour le moment: {clinic.Id} (Status: {clinic.Status}, SubActive: {clinic.Subscription?.IsActive})");
-                            return BadRequest(new { message = "Cette clinique n'est pas active pour le moment." });
+                            Console.WriteLine($"[AUTH BAD_REQUEST] Cet établissement n'est pas actif pour le moment: {targetEntity.Id}");
+                            return BadRequest(new { message = "Cet établissement n'est pas actif pour le moment." });
                         }
                         
-                        // Check Clinic Capacity Quota
-                        var allClinicUsers = await _usersService.GetByClinicIdAsync(clinic.Id!);
-                        var activeParents = allClinicUsers.Count(u => u.Role == "Parent" && u.Status == "Actif");
-                        var maxPatients = clinic.Subscription.MaxPatients == 0 ? 3 : clinic.Subscription.MaxPatients;
+                        // Check Quota (Clinic or Doctor Cabinet)
+                        var allEntityUsers = await _usersService.GetByClinicIdAsync(targetEntity.Id!);
+                        var activeParents = allEntityUsers.Count(u => u.Role == "Parent" && u.Status == "Actif");
+                        var maxPatients = targetEntity.Subscription.MaxPatients == 0 ? 50 : targetEntity.Subscription.MaxPatients;
                         
                         if (maxPatients != -1 && activeParents >= maxPatients)
                         {
-                            Console.WriteLine($"[AUTH BAD_REQUEST] La clinique sélectionnée a atteint son quota maximal de patients: {activeParents} >= {maxPatients}");
-                            return BadRequest(new { message = "La clinique sélectionnée a atteint son quota maximal de patients." });
+                            Console.WriteLine($"[AUTH BAD_REQUEST] Quota maximal atteint pour cet établissement: {activeParents} >= {maxPatients}");
+                            return BadRequest(new { message = "Cet établissement a atteint son quota maximal de patients." });
                         }
 
                         user.AssociatedClinicId = request.AssociatedClinicId;
-                        user.Status = "En Attente"; // Free parent waits for clinic approval
+                        // If it's a doctor, set him as the primary doctor as well
+                        if (targetEntity.Role == "Medecin") {
+                            user.AssociatedDoctorId = targetEntity.Id;
+                        }
                         
-                        var subscriptionName = "Sous Clinique";
+                        user.Status = "En Attente"; 
+                        
+                        var subscriptionName = "Sous Établissement";
                         var maxKidsForParent = request.MaxKids > 0 ? request.MaxKids : 1;
 
                         if (!string.IsNullOrEmpty(request.ClinicPackageId))
