@@ -78,6 +78,15 @@ namespace DiaCareKids.Api.Controllers
                     var doctor = await _usersService.GetAsync(child.AssociatedDoctorId);
                     if (doctor != null) doctorName = "Dr. " + doctor.FullName;
                 }
+                else if (!string.IsNullOrEmpty(child.AssociatedClinicId))
+                {
+                    // Case for independent doctor where clinic ID is actually the doctor ID
+                    var clinicAsDoctor = await _usersService.GetAsync(child.AssociatedClinicId);
+                    if (clinicAsDoctor != null && clinicAsDoctor.Role == "Medecin")
+                    {
+                        doctorName = "Dr. " + clinicAsDoctor.FullName;
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(child.AssociatedClinicId))
                 {
@@ -158,11 +167,6 @@ namespace DiaCareKids.Api.Controllers
                     return BadRequest(new { message = "Un abonnement actif est requis." });
                 }
 
-                if (string.IsNullOrEmpty(parent.AssociatedClinicId))
-                {
-                    return BadRequest(new { message = "Veuillez d'abord être rattaché à une clinique." });
-                }
-
                 var existingChildren = await _usersService.GetByParentIdAsync(parentId);
                 if (existingChildren.Count >= parent.Subscription.MaxKids)
                 {
@@ -176,6 +180,13 @@ namespace DiaCareKids.Api.Controllers
 
                 var fileNumber = await GenerateUniqueFileNumber();
 
+                // If independent doctor, use his ID from parent if not in request
+                var finalDoctorId = request.AssociatedDoctorId;
+                if (string.IsNullOrEmpty(finalDoctorId) && !string.IsNullOrEmpty(parent.AssociatedDoctorId))
+                {
+                    finalDoctorId = parent.AssociatedDoctorId;
+                }
+
                 var child = new User
                 {
                     Email = emailLower,
@@ -183,9 +194,8 @@ namespace DiaCareKids.Api.Controllers
                     Role = "Enfant",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                     AssociatedParentId = parentId,
-                    // IMPORTANT: Ensure these are null if empty to avoid BsonSerializationException
                     AssociatedClinicId = string.IsNullOrWhiteSpace(parent.AssociatedClinicId) ? null : parent.AssociatedClinicId,
-                    AssociatedDoctorId = string.IsNullOrWhiteSpace(request.AssociatedDoctorId) ? null : request.AssociatedDoctorId,
+                    AssociatedDoctorId = string.IsNullOrWhiteSpace(finalDoctorId) ? null : finalDoctorId,
                     DateOfBirth = request.DateOfBirth,
                     Gender = request.Gender,
                     FileNumber = fileNumber,
