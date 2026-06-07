@@ -21,6 +21,7 @@ export default function DoctorPayments() {
     const [isLoading, setIsLoading] = useState(true);
     const [doctorInfo, setDoctorInfo] = useState(null);
     const [packages, setPackages] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
 
     // Invoice Generator State
     const [selectedUserForInvoice, setSelectedUserForInvoice] = useState(null);
@@ -44,6 +45,7 @@ export default function DoctorPayments() {
 
             // 2. Parents (Patients) managed by me to see their payment status
             const usersRes = await api.get('/Users');
+            setAllUsers(usersRes.data);
             const myPatients = usersRes.data.filter(u => 
                 u.associatedDoctorId === doctorId && u.role === 'Parent'
             );
@@ -191,7 +193,16 @@ export default function DoctorPayments() {
                                                             </div>
                                                             <div>
                                                                 <div className="text-sm font-black uppercase italic tracking-tight">{item.fullName}</div>
-                                                                <div className="text-[10px] font-bold text-white/20 lowercase tracking-widest">{item.email}</div>
+                                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                                    {allUsers.filter(u => u.associatedParentId === item.id).map(kid => (
+                                                                        <span key={kid.id} className="text-[8px] font-black uppercase bg-[#088395]/10 text-[#088395] px-2 py-0.5 rounded-md border border-[#088395]/10">
+                                                                            🏆 {kid.fullName}
+                                                                        </span>
+                                                                    ))}
+                                                                    {allUsers.filter(u => u.associatedParentId === item.id).length === 0 && (
+                                                                        <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest italic">Aucun champion rattaché</div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -200,10 +211,8 @@ export default function DoctorPayments() {
                                                             {item.subscription?.planType || 'Standard'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-10 py-8 text-center">
-                                                        <span className="text-xs font-bold text-white/40">
-                                                            {item.subscription?.expiryDate ? new Date(item.subscription.expiryDate).toLocaleDateString() : '—'}
-                                                        </span>
+                                                    <td className="px-10 py-8 text-center text-xs font-bold text-white/40">
+                                                        {item.subscription?.expiryDate ? new Date(item.subscription.expiryDate).toLocaleDateString() : '—'}
                                                     </td>
                                                     <td className="px-10 py-8">
                                                         <div className="flex justify-center">
