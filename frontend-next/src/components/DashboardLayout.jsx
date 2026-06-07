@@ -105,10 +105,8 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         { name: t('sidebar.myPatients'), href: '/doctor/patients', icon: <Baby size={20} /> },
         { name: t('sidebar.alerts'), href: '/doctor/alerts', icon: <AlertTriangle size={20} /> },
         { name: t('sidebar.treatments'), href: '/doctor/treatments', icon: <Syringe size={20} /> },
-        { name: t('sidebar.stats'), href: '/doctor/stats', icon: <BarChart3 size={20} /> },
+        { name: 'Analyse Médicale', href: '/doctor/stats', icon: <BarChart3 size={20} /> },
         { name: t('sidebar.messaging'), href: '/doctor/messaging', icon: <MessageSquare size={20} /> },
-        { name: t('sidebar.subscription'), href: '/pricing', icon: <CreditCard size={20} /> },
-        { name: t('sidebar.payments'), href: '/doctor/payments', icon: <Wallet size={20} /> },
         { name: t('sidebar.settings'), href: '/doctor/settings', icon: <Settings size={20} /> },
     ];
 
