@@ -8,7 +8,7 @@ import {
     ArrowUpRight, CreditCard, ExternalLink,
     ChevronLeft, ChevronRight, User as UserIcon
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 import InvoiceGenerator from '@/components/InvoiceGenerator';
