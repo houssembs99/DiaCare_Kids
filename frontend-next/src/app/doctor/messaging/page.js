@@ -83,14 +83,17 @@ export default function DoctorMessaging() {
             if (!storedUser) return;
             const docId = JSON.parse(storedUser).id;
 
-            // 1. Get patients for this doctor to find his parents
+            // 1. Get patients for this doctor to find parents of existing patients
             const patientsRes = await api.get(`/Patients/doctor/${docId}`);
             const doctorPatients = patientsRes.data;
             const myParentIds = new Set(doctorPatients.map(p => p.parentId).filter(id => id));
 
-            // 2. Get all users and filter by those parent IDs
+            // 2. Get all users and filter by those who are either parents of my patients 
+            // OR parents rattachés directly to my cabinet (for independent doctors)
             const usersRes = await api.get('/Users');
-            const myParents = usersRes.data.filter(u => myParentIds.has(u.id));
+            const myParents = usersRes.data.filter(u => 
+                u.role === 'Parent' && (myParentIds.has(u.id) || u.associatedDoctorId === docId || u.associatedClinicId === docId)
+            );
 
             setContacts(myParents.map(p => ({
                 id: p.id,
