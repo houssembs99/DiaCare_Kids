@@ -265,26 +265,51 @@ export default function DoctorPayments() {
 
                 {/* Footer Stats */}
                 {!isLoading && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className={cn(
+                        "grid gap-6",
+                        activeTab === 'revenue' ? "grid-cols-1 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2"
+                    )}>
                         <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
                             <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Total {activeTab === 'revenue' ? 'Patients' : 'Dépenses'}</p>
                             <div className="text-3xl font-black italic tracking-tight">
                                 {activeTab === 'revenue' ? patientSubscribers.length : `${(myTransactions.reduce((acc, c) => acc + c.amount, 0) / 100).toFixed(2)} €`}
                             </div>
                         </div>
+
                         {activeTab === 'revenue' && (
-                            <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
-                                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Abonnements Actifs</p>
-                                <div className="text-3xl font-black italic tracking-tight text-green-400">
-                                    {patientSubscribers.filter(p => p.subscription?.isActive).length}
+                            <>
+                                <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl border-l-[#088395] border-l-4">
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Revenu Total (Actif)</p>
+                                    <div className="text-3xl font-black italic tracking-tight text-[#088395]">
+                                        {patientSubscribers.reduce((acc, p) => {
+                                            if (p.subscription?.isActive) {
+                                                const pkg = packages.find(pkg => pkg.name === p.subscription.planType);
+                                                return acc + (pkg?.price || 0);
+                                            }
+                                            return acc;
+                                        }, 0)} DT
+                                    </div>
                                 </div>
-                            </div>
+                                <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Abonnements Actifs</p>
+                                    <div className="text-3xl font-black italic tracking-tight text-green-400">
+                                        {patientSubscribers.filter(p => p.subscription?.isActive).length}
+                                    </div>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">En Attente</p>
+                                    <div className="text-3xl font-black italic tracking-tight text-red-400">
+                                        {patientSubscribers.filter(p => !p.subscription?.isActive).length}
+                                    </div>
+                                </div>
+                            </>
                         )}
-                        {activeTab === 'revenue' && (
+
+                        {activeTab === 'my_bills' && (
                             <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
-                                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">En Attente</p>
-                                <div className="text-3xl font-black italic tracking-tight text-red-400">
-                                    {patientSubscribers.filter(p => !p.subscription?.isActive).length}
+                                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Prochaine Échéance</p>
+                                <div className="text-2xl font-black italic tracking-tight text-white/40">
+                                    30 Jours
                                 </div>
                             </div>
                         )}
