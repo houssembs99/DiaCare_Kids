@@ -136,11 +136,11 @@ namespace DiaCareKids.Api.Controllers
             if (user == null) return NotFound();
 
             if (user.Subscription == null)
-                user.Subscription = new Subscription();
+                user.Subscription = new SubscriptionDetails();
 
             user.Subscription.IsActive = request.IsActive;
             user.Subscription.PlanType = request.PlanType ?? user.Subscription.PlanType ?? "Basic";
-            user.Subscription.StartDate = request.IsActive ? (request.StartDate ?? DateTime.UtcNow) : user.Subscription.StartDate;
+            // SubscriptionDetails has no StartDate; activation date is implied by setting IsActive
             user.Subscription.ExpiryDate = request.ExpiryDate ?? user.Subscription.ExpiryDate;
             user.Status = request.IsActive ? "Actif" : "En Attente";
 
