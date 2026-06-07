@@ -169,10 +169,9 @@ export default function DoctorSettings() {
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <InputField label="Prénom & Nom" placeholder="DR. NOM" icon={User} value={user?.fullName || ""} />
                                 <InputField label="Spécialité" placeholder="EX: PÉDIATRE" icon={Briefcase} value={user?.clinicType || ""} />
-                                <InputField label="Établissement Rattaché" icon={Building2} value={clinicName || "Indépendant / Cabinet"} readOnly />
                                 <InputField label="Email Professionnel" icon={Mail} value={user?.email || ""} readOnly />
                                 <InputField label="Téléphone" placeholder="+216 -- --- ---" icon={Phone} value={user?.contactNumber || ""} />
-                                <InputField label="Langue de l'interface" placeholder="FRANÇAIS" icon={Globe} value="Français (FR)" readOnly />
+                                <InputField label="Établissement" icon={Building2} value={clinicName || "Indépendant / Cabinet"} readOnly />
                             </div>
                         </div>
                     </SettingsSection>
