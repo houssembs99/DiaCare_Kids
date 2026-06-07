@@ -129,7 +129,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpPatch("{id}/subscription")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Clinique,Medecin")]
         public async Task<IActionResult> UpdateSubscription(string id, [FromBody] SubscriptionUpdateRequest request)
         {
             var user = await _usersService.GetAsync(id);
