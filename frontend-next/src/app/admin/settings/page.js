@@ -69,22 +69,23 @@ export default function AdminSettings() {
     const [loading, setLoading] = useState(false);
     
     // Branding Logic
-    const { branding, updateBranding } = useBranding();
+    const { branding, updateBranding, isLoading } = useBranding();
     const [footerDescription, setFooterDescription] = useState('');
     const [contactPhone, setContactPhone] = useState('');
     const [contactEmail, setContactEmail] = useState('');
     const [contactAddress, setContactAddress] = useState('');
     const [contactWebsite, setContactWebsite] = useState('');
 
+    // Only populate form fields when branding finishes loading for the first time
     useEffect(() => {
-        if (branding) {
+        if (!isLoading && branding) {
             setFooterDescription(branding.description || '');
             setContactPhone(branding.phone || '');
             setContactEmail(branding.email || '');
             setContactAddress(branding.address || '');
             setContactWebsite(branding.website || '');
         }
-    }, [branding]);
+    }, [isLoading, branding]);
 
     const [logoUploading, setLogoUploading] = useState(false);
     const [logoSaved, setLogoSaved] = useState(false);
@@ -92,6 +93,7 @@ export default function AdminSettings() {
     const fileInputRef = useRef(null);
 
     const handleSaveBranding = () => {
+        console.log("Saving footer branding...");
         updateBranding({
             description: footerDescription,
             phone: contactPhone,

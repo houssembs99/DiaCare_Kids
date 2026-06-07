@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const BrandingContext = createContext({
     branding: {
@@ -12,10 +12,10 @@ const BrandingContext = createContext({
         website: "www.diacarekids.com"
     },
     updateBranding: () => {},
-    isLoading: false,
+    isLoading: true,
 });
 
-const BRANDING_STORAGE_KEY = 'diacare_platform_branding';
+const BRANDING_STORAGE_KEY = 'diacare_platform_branding_v2'; // Forced refresh with v2
 
 export function BrandingProvider({ children }) {
     const [branding, setBrandingState] = useState({
@@ -28,7 +28,7 @@ export function BrandingProvider({ children }) {
     });
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load persisted branding on mount
+    // Initial load
     useEffect(() => {
         try {
             const saved = localStorage.getItem(BRANDING_STORAGE_KEY);
@@ -38,21 +38,30 @@ export function BrandingProvider({ children }) {
             }
         } catch (err) {
             console.error("Error loading branding:", err);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }, []);
 
-    const updateBranding = (updates) => {
+    // Side effect: Save to local storage whenever branding changes AND not during initial load
+    useEffect(() => {
+        if (!isLoading) {
+            try {
+                localStorage.setItem(BRANDING_STORAGE_KEY, JSON.stringify(branding));
+                console.log("Branding saved to localStorage:", branding);
+            } catch (err) {
+                console.error("Error saving branding to localStorage:", err);
+            }
+        }
+    }, [branding, isLoading]);
+
+    const updateBranding = useCallback((updates) => {
         setBrandingState(prev => {
             const newState = { ...prev, ...updates };
-            try {
-                localStorage.setItem(BRANDING_STORAGE_KEY, JSON.stringify(newState));
-            } catch (err) {
-                console.error("Error saving branding:", err);
-            }
+            console.log("Updating branding context with:", updates);
             return newState;
         });
-    };
+    }, []);
 
     return (
         <BrandingContext.Provider value={{ branding, updateBranding, isLoading }}>
