@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     Baby, Activity, Syringe, AlertTriangle,
@@ -8,7 +8,7 @@ import {
     Edit3, ChevronRight, Droplet, Clock,
     Calendar, User, Weight, Ruler, Mail,
     Phone, Plus, CheckCircle2, TrendingUp,
-    Send, Paperclip
+    Send, Paperclip, Loader2, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -85,7 +85,7 @@ export default function PatientDetail() {
         try {
             await api.put(`/doctor-management/update-patient-profile/${id}`, editForm);
             setShowEditModal(false);
-            fetchDetail(); // Refresh data
+            fetchDetail();
         } catch (err) {
             console.error(err);
         }
@@ -95,7 +95,7 @@ export default function PatientDetail() {
         setSavingNotes(true);
         try {
             await api.put(`/doctor-management/update-medical-notes/${id}`, { notes: medicalNotes });
-            fetchDetail(); // Rafraîchir
+            fetchDetail();
         } catch (err) {
             console.error("Error saving notes:", err);
         } finally {
@@ -135,29 +135,32 @@ export default function PatientDetail() {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         const u = JSON.parse(localStorage.getItem('user') || '{}');
         setCurrentUser(u);
         if (id) fetchDetail();
     }, [id]);
 
-
-
     if (loading) {
         return (
             <DashboardLayout role="Medecin">
                 <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-                    <div className="w-12 h-12 border-4 border-t-[#088395] border-white/10 rounded-full animate-spin" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30 italic">Chargement du profil...</span>
+                    <Loader2 className="animate-spin text-[#088395]" size={40} />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30 italic">Chargement du dossier patient...</span>
                 </div>
             </DashboardLayout>
         );
     }
 
-    if (!data) {
+    if (!data || !data.patient) {
         return (
             <DashboardLayout role="Medecin">
-                <div className="text-center py-20">Patient non trouvé.</div>
+                <div className="text-center py-20 bg-white/5 rounded-[40px] border border-white/10">
+                    <AlertTriangle size={48} className="mx-auto text-accent mb-6" />
+                    <h2 className="text-2xl font-black uppercase italic italic text-white mb-2">Patient non trouvé</h2>
+                    <p className="text-sm text-white/40 mb-10 italic font-bold">Le dossier que vous tentez de consulter n'existe pas ou ne vous est pas rattaché.</p>
+                    <Link href="/doctor/patients" className="px-10 py-5 bg-[#088395] rounded-2xl font-black uppercase text-[10px] tracking-widest">Retour à la liste</Link>
+                </div>
             </DashboardLayout>
         );
     }
@@ -166,13 +169,13 @@ export default function PatientDetail() {
     const age = patient.dateOfBirth ? new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear() : 'N/A';
 
     // Chart logic
-    const sortedRecords = [...records].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).slice(-10);
+    const sortedRecords = [...records].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).slice(-15);
     const chartLabels = sortedRecords.length > 0
         ? sortedRecords.map(r => new Date(r.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
-        : ['08:00', '10:00', '12:00', '14:00', '16:00'];
+        : ['--:--', '--:--', '--:--', '--:--', '--:--'];
     const chartDataValues = sortedRecords.length > 0
         ? sortedRecords.map(r => r.glucoseValue || 0)
-        : [110, 145, 185, 130, 95];
+        : [0, 0, 0, 0, 0];
 
     const chartData = {
         labels: chartLabels,
@@ -193,33 +196,28 @@ export default function PatientDetail() {
         <DashboardLayout role="Medecin">
             <div className="space-y-10 pb-10 text-white">
 
-                {/* Back & Title */}
+                {/* Header SECTION 4.1 */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="flex items-center gap-6">
-                        <Link href="/doctor/patients" className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all">
-                            <ArrowLeft size={24} />
+                        <Link href="/doctor/patients" className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all shadow-xl group">
+                            <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                         </Link>
                         <div className="space-y-1">
-                            <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none uppercase italic">
-                                {patient.fullName.split(' ')[0]} <span className="text-white/40">{patient.fullName.split(' ').slice(1).join(' ')}</span>
-                            </h1>
                             <div className="flex items-center gap-3">
-                                <span className={cn(
-                                    "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-                                    patient.status === 'Stable' || patient.status === 'Actif' ? "bg-success/20 text-success" : "bg-accent/20 text-accent"
-                                )}>
-                                    {patient.status === 'Actif' ? 'Stable' : patient.status || 'Stable'}
-                                </span>
-                                <span className="text-[10px] font-bold text-[#088395] uppercase tracking-widest">{patient.fileNumber || 'PAS DE FICHE'}</span>
+                                <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none uppercase italic">
+                                    {patient.fullName}
+                                </h1>
+                                <div className="p-2 bg-success/20 rounded-xl text-success"><CheckCircle2 size={16} /></div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#088395]">Dossier Patient:</span>
+                                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-lg border border-white/5">{patient.fileNumber || 'PAS DE FICHE'}</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex gap-4">
-                        <button className="p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all">
-                            <Edit3 size={20} />
-                        </button>
-                        <button className="flex items-center gap-3 px-8 py-5 bg-[#088395] rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl">
-                            Modifier Profil
+                        <button onClick={() => setShowEditModal(true)} className="flex items-center gap-3 px-8 py-5 bg-[#088395] rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:scale-105 active:scale-95 transition-all">
+                            <Edit3 size={18} /> Modifier Infos Médicales
                         </button>
                     </div>
                 </div>
@@ -227,182 +225,158 @@ export default function PatientDetail() {
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-                    {/* Sidebar: General Info (SECTION 1) */}
+                    {/* Left: Patient ID Card */}
                     <div className="lg:col-span-4 space-y-8">
-                        <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-10 shadow-2xl space-y-10 relative group">
-                            <button
-                                onClick={() => setShowEditModal(true)}
-                                className="absolute top-8 right-8 p-3 bg-white/5 hover:bg-white/20 rounded-xl text-white/40 hover:text-white transition-all"
-                            >
-                                <Edit3 size={16} />
-                            </button>
-                            <div className="flex flex-col items-center gap-6">
-                                <div className="w-40 h-40 bg-[#088395]/20 rounded-[50px] flex items-center justify-center text-[#088395] font-black text-6xl border-4 border-[#088395]/30 uppercase">
-                                    {(patient.fullName || "P").charAt(0)}
+                        <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-10 shadow-2xl space-y-10">
+                            <div className="flex flex-col items-center gap-8">
+                                <div className="group relative">
+                                    <div className="w-44 h-44 bg-[#088395]/20 rounded-[55px] flex items-center justify-center text-[#088395] font-black text-6xl border-4 border-[#088395]/30 uppercase transition-all group-hover:scale-105 group-hover:rotate-3 shadow-2xl">
+                                        {(patient.fullName || "P").charAt(0)}
+                                    </div>
+                                    <div className="absolute -bottom-2 -right-2 bg-success p-3 rounded-2xl border-4 border-[#1E1E2D] shadow-xl">
+                                        <Heart size={20} className="text-white fill-white" />
+                                    </div>
                                 </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-black italic uppercase tracking-tighter">{age} ans</div>
-                                    <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Diagnostic: {patient.diagnosisDate ? new Date(patient.diagnosisDate).toLocaleDateString('fr-FR') : 'Non renseigné'}</div>
+                                
+                                <div className="text-center space-y-2">
+                                    <h2 className="text-2xl font-black italic uppercase tracking-tighter">Profil du Champion</h2>
+                                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em]">Date Naissance: {patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('fr-FR') : '--'}</p>
                                 </div>
                             </div>
 
-                            <div className="space-y-6 pt-10 border-t border-white/5">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-5 bg-white/5 rounded-3xl border border-white/5 space-y-2">
-                                        <Weight size={18} className="text-[#088395]" />
-                                        <div className="text-xl font-black italic">{patient.weight || '--'} Kg</div>
-                                        <div className="text-[8px] font-bold text-white/20 uppercase">Poids</div>
-                                    </div>
-                                    <div className="p-5 bg-white/5 rounded-3xl border border-white/5 space-y-2">
-                                        <Ruler size={18} className="text-[#088395]" />
-                                        <div className="text-xl font-black italic">{patient.height || '--'} m</div>
-                                        <div className="text-[8px] font-bold text-white/20 uppercase">Taille</div>
-                                    </div>
+                            <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-10">
+                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 flex flex-col items-center text-center space-y-2">
+                                    <Weight size={20} className="text-[#088395]" />
+                                    <div className="text-xl font-black italic">{patient.weight || '--'} <span className="text-[10px] not-italic opacity-20">Kg</span></div>
+                                    <div className="text-[8px] font-black uppercase text-white/20 tracking-widest">Poids Actuel</div>
                                 </div>
+                                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 flex flex-col items-center text-center space-y-2">
+                                    <Ruler size={20} className="text-[#088395]" />
+                                    <div className="text-xl font-black italic">{patient.height || '--'} <span className="text-[10px] not-italic opacity-20">m</span></div>
+                                    <div className="text-[8px] font-black uppercase text-white/20 tracking-widest">Taille</div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
                                 <div className="p-6 bg-accent/5 rounded-3xl border border-accent/10 space-y-2">
-                                    <AlertTriangle size={18} className="text-accent" />
-                                    <div className="text-sm font-black uppercase tracking-tighter text-accent">Allergies: {patient.allergies || 'Aucune connue'}</div>
-                                </div>
-                                <div className="space-y-4 pt-4">
-                                    <div className="flex items-center gap-4 p-4 bg-white/2 rounded-2xl">
-                                        <User size={16} className="text-white/20" />
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Parent: {parent?.fullName || 'N/A'}</span>
-                                            <span className="text-[9px] font-bold text-white/20 uppercase">{patient.gender === 'F' ? 'Mère' : 'Père / Tuteur'}</span>
-                                        </div>
+                                    <div className="flex items-center gap-3 text-accent mb-2">
+                                        <AlertTriangle size={18} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Allergies Signalées</span>
                                     </div>
-                                    <div className="flex items-center gap-4 p-4 bg-white/2 rounded-2xl">
-                                        <Mail size={16} className="text-white/20" />
-                                        <span className="text-[10px] font-black tracking-widest text-white/60">{parent?.email || 'N/A'}</span>
+                                    <div className="text-sm font-bold text-white/60 italic">{patient.allergies || 'Aucune contre-indication renseignée'}</div>
+                                </div>
+
+                                <div className="p-6 bg-[#088395]/5 rounded-3xl border border-[#088395]/10 space-y-4">
+                                    <div className="flex items-center gap-3 text-[#088395]">
+                                        <User size={18} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Rattachement Parental</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-black uppercase text-white">{parent?.fullName || 'Non assigné'}</span>
+                                            <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{parent?.email || 'Pas d\'email'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Treatment Section (SECTION 3) */}
-                        <div className="bg-[#088395] rounded-[40px] p-10 shadow-2xl relative overflow-hidden group">
-                            <div className="absolute -right-10 -top-10 opacity-10 rotate-12 group-hover:rotate-45 transition-transform duration-1000">
-                                <Syringe size={180} />
-                            </div>
-                            <div className="relative z-10 space-y-8">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xl font-black italic uppercase tracking-tighter">Traitement</h3>
-                                    <div className="p-3 bg-white/20 rounded-xl"><Syringe size={20} /></div>
-                                </div>
-                                <div className="space-y-6">
-                                    <div className="p-6 bg-white/10 rounded-3xl border border-white/10">
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Type Diabète</div>
-                                        <div className="text-3xl font-black italic">{patient.diabetesType || 'Type 1'}</div>
-                                        <div className="flex items-center gap-4 mt-4">
-                                            <div className="flex items-center gap-2 px-3 py-1 bg-white text-[#088395] rounded-full text-[9px] font-black">ACTIF</div>
-                                            <div className="text-[9px] font-black uppercase text-white/40">Suivi en cours</div>
-                                        </div>
+                        {/* Disease Info Box */}
+                        <div className="bg-[#0b1b2b] border border-white/10 rounded-[40px] p-10 shadow-2xl relative overflow-hidden group">
+                           <div className="absolute -right-10 -top-10 opacity-5 rotate-12"><Activity size={180} /></div>
+                           <div className="relative z-10 space-y-6">
+                               <SectionHeader icon={Activity} title="Pathologie" sub="Détails du diagnostic" />
+                               <div className="space-y-4">
+                                    <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Type</span>
+                                        <span className="text-sm font-black italic">{patient.diabetesType || 'Type 1'}</span>
                                     </div>
-                                    <button className="w-full py-5 bg-white text-[#088395] rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl">
-                                        Modifier Traitement
-                                    </button>
-                                </div>
-                            </div>
+                                    <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Depuis le</span>
+                                        <span className="text-sm font-black italic">{patient.diagnosisDate ? new Date(patient.diagnosisDate).toLocaleDateString('fr-FR') : '--'}</span>
+                                    </div>
+                               </div>
+                           </div>
                         </div>
                     </div>
 
-                    {/* Main Content: Tabs (SECTIONS 2, 4, 5, 6) */}
+                    {/* Right: Interactive Tabs */}
                     <div className="lg:col-span-8 space-y-10">
-                        {/* Tabs Navigation */}
-                        <div className="flex gap-2 p-2 bg-white/5 rounded-[28px] border border-white/10 backdrop-blur-xl">
-                            {['overview', 'history', 'alerts', 'notes', 'messages'].map(tab => (
+                        {/* Tab Switcher */}
+                        <div className="flex gap-2 p-2 bg-white/5 rounded-[32px] border border-white/10 backdrop-blur-xl sticky top-20 z-50">
+                            {['overview', 'history', 'notes', 'messages'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={cn(
                                         "flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                        activeTab === tab ? "bg-white text-[#088395] shadow-xl" : "text-white/40 hover:text-white"
+                                        activeTab === tab ? "bg-white text-[#088395] shadow-xl translate-y-[-2px]" : "text-white/40 hover:text-white"
                                     )}
                                 >
-                                    {tab === 'overview' ? 'Aperçu' : tab === 'history' ? 'Historique' : tab === 'alerts' ? 'Alertes' : tab === 'notes' ? 'Notes' : 'Messages'}
+                                    {tab === 'overview' ? 'Aperçu' : tab === 'history' ? 'Tout l\'Historique' : tab === 'notes' ? 'Notes Médicales' : 'Contacter Parent'}
                                 </button>
                             ))}
                         </div>
 
                         <AnimatePresence mode="wait">
                             {activeTab === 'overview' && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                                    className="space-y-10"
-                                >
-                                    {/* Glucose Chart (SECTION 2) */}
-                                    <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-10 shadow-2xl overflow-hidden">
-                                        <SectionHeader icon={Activity} title="Historique Glycémique" sub="Suivi des dernières 24 heures" />
-                                        <div className="h-[350px]">
-                                            <Line data={chartData} options={{
-                                                responsive: true, maintainAspectRatio: false,
-                                                plugins: { legend: { display: false } },
-                                                scales: {
-                                                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.2)' } },
-                                                    x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)' } }
-                                                }
-                                            }} />
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {activeTab === 'notes' && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                                    className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-10 shadow-2xl"
-                                >
-                                    <SectionHeader icon={FileText} title="Notes Médicales" sub="Observations & Recommandations" />
-                                    <textarea
-                                        value={medicalNotes}
-                                        onChange={(e) => setMedicalNotes(e.target.value)}
-                                        placeholder="Ajoutez vos observations cliniques ici..."
-                                        className="w-full h-80 bg-white/2 border border-white/5 rounded-[32px] p-8 text-sm focus:outline-none focus:border-[#088395] transition-all"
-                                    />
-                                    <div className="mt-8 flex justify-end">
-                                        <button
-                                            onClick={handleSaveNotes}
-                                            disabled={savingNotes}
-                                            className="px-10 py-5 bg-[#088395] rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center min-w-[200px]"
-                                        >
-                                            {savingNotes ? "Enregistrement..." : "Enregistrer la note"}
-                                        </button>
+                                <motion.div key="overview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-10">
+                                    <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[45px] p-10 shadow-2xl relative overflow-hidden">
+                                        <SectionHeader icon={Activity} title="Courbe Glycémique" sub="Tendances des derniers relevés" />
+                                        {records.length > 0 ? (
+                                            <div className="h-[350px]">
+                                                <Line data={chartData} options={{
+                                                    responsive: true, maintainAspectRatio: false,
+                                                    plugins: { legend: { display: false } },
+                                                    scales: {
+                                                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10, weight: 'bold' } } },
+                                                        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10, weight: 'bold' } } }
+                                                    }
+                                                }} />
+                                            </div>
+                                        ) : (
+                                            <div className="h-[350px] flex flex-col items-center justify-center text-center space-y-4 opacity-30 italic">
+                                                <Activity size={48} />
+                                                <p className="text-sm font-bold uppercase tracking-widest">Aucune donnée glycémique enregistrée pour le moment.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             )}
 
                             {activeTab === 'history' && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                                    className="bg-white/5 border border-white/10 rounded-[40px] p-10 overflow-hidden"
+                                <motion.div key="history" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                                    className="bg-white/5 border border-white/10 rounded-[45px] p-10"
                                 >
-                                    <SectionHeader icon={Clock} title="Historique Complet" sub="Journal chronologique des relevés" />
-                                    <div className="overflow-x-auto -mx-10 px-10">
+                                    <SectionHeader icon={Clock} title="Journal Complet" sub="Héritage médical chronologique" />
+                                    <div className="overflow-x-auto min-h-[400px]">
                                         <table className="w-full text-left border-collapse">
                                             <thead>
                                                 <tr className="border-b border-white/5">
-                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Date & Heure</th>
-                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Glycémie</th>
-                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Insuline</th>
-                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Glucides</th>
+                                                    <th className="py-6 text-[10px] font-black uppercase tracking-widest text-[#088395]">Date & Heure</th>
+                                                    <th className="py-6 text-[10px] font-black uppercase tracking-widest text-white/20">Glycémie</th>
+                                                    <th className="py-6 text-[10px] font-black uppercase tracking-widest text-white/20">Insuline</th>
+                                                    <th className="py-6 text-[10px] font-black uppercase tracking-widest text-white/20 text-right">Glucides</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-white/5">
+                                            <tbody className="divide-y divide-white/5 text-white">
                                                 {records.length === 0 ? (
-                                                    <tr><td colSpan="4" className="py-10 text-center text-white/20 italic text-xs">Aucun relevé enregistré.</td></tr>
+                                                    <tr><td colSpan="4" className="py-24 text-center text-white/20 italic font-bold uppercase tracking-widest">Historique vide pour cet enfant.</td></tr>
                                                 ) : records.map((r, idx) => (
-                                                    <tr key={idx} className="group hover:bg-white/2 transition-colors">
-                                                        <td className="py-6 text-[11px] font-bold text-white/40 uppercase tracking-widest leading-none">
-                                                            {new Date(r.timestamp).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                    <tr key={idx} className="group hover:bg-white/[0.02] transition-colors">
+                                                        <td className="py-6 text-sm font-black italic uppercase tracking-tighter">
+                                                            {new Date(r.timestamp).toLocaleDateString('fr-FR')} <span className="text-[10px] not-italic text-white/20 ml-2">{new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                         </td>
                                                         <td className="py-6">
-                                                            <div className="text-xl font-black italic text-white">{r.glucoseValue || '--'} <span className="text-[10px] font-bold not-italic opacity-20">mg/dL</span></div>
+                                                            <div className="text-2xl font-black italic">{r.glucoseValue || '--'} <span className="text-[10px] not-italic opacity-20 uppercase ml-1">mg/dL</span></div>
                                                         </td>
-                                                        <td className="py-6 text-sm font-black text-[#088395] uppercase">
-                                                            <Syringe size={14} className="inline mr-2" /> {r.insulinDose || '--'} U
+                                                        <td className="py-6">
+                                                            <div className="flex items-center gap-3 text-[#088395] font-black text-sm uppercase">
+                                                                <Syringe size={16} /> {r.insulinDose || '--'} U
+                                                            </div>
                                                         </td>
-                                                        <td className="py-6 text-sm font-black text-orange-400 uppercase">
-                                                            {r.carbsEstimated || '--'} g
+                                                        <td className="py-6 text-right">
+                                                            <span className="text-sm font-black italic text-orange-400">{r.carbsEstimated || '--'} <span className="text-[10px] not-italic opacity-30">g</span></span>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -412,99 +386,60 @@ export default function PatientDetail() {
                                 </motion.div>
                             )}
 
-                            {activeTab === 'alerts' && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                                    className="bg-white/5 border border-white/10 rounded-[40px] p-10"
-                                >
-                                    <SectionHeader icon={AlertTriangle} title="Journal des Alertes" sub="Incidents récents enregistrés" />
-                                    <div className="space-y-4">
-                                        {[
-                                            { type: "Hypoglycémie Sévère", val: "58 mg/dL", time: "Hier, 09:12", status: "Critique" },
-                                            { type: "Oubli Dose", val: "--", time: "10 feb, 21:00", status: "Moyenne" }
-                                        ].map((alert, idx) => (
-                                            <div key={idx} className="flex items-center justify-between p-6 bg-white/2 border border-white/5 rounded-3xl">
-                                                <div className="flex items-center gap-6">
-                                                    <div className={cn(
-                                                        "w-12 h-12 rounded-2xl flex items-center justify-center",
-                                                        alert.status === 'Critique' ? "bg-accent/20 text-accent" : "bg-orange-500/20 text-orange-500"
-                                                    )}>
-                                                        <AlertTriangle size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-black uppercase tracking-tighter leading-none mb-1">{alert.type}</div>
-                                                        <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{alert.time}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-8">
-                                                    <div className="text-2xl font-black italic text-accent">{alert.val}</div>
-                                                    <button className="flex items-center gap-2 px-6 py-3 bg-success/10 text-success rounded-xl text-[9px] font-black uppercase tracking-widest border border-success/20">
-                                                        <CheckCircle2 size={12} /> Traitée
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                            {activeTab === 'notes' && (
+                                <motion.div key="notes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                                    <div className="bg-white/5 border border-white/10 rounded-[45px] p-10">
+                                        <SectionHeader icon={FileText} title="Observations Cliniques" sub="Vos notes privées sur ce patient" />
+                                        <textarea
+                                            value={medicalNotes}
+                                            onChange={(e) => setMedicalNotes(e.target.value)}
+                                            placeholder="Notez ici les particularités cliniques, les conseils donnés lors de la consultation ou les ajustements de protocole..."
+                                            className="w-full h-80 bg-[#0b1b2b] border border-white/5 rounded-[32px] p-10 text-sm italic font-medium focus:outline-none focus:border-[#088395] transition-all resize-none shadow-inner"
+                                        />
+                                        <div className="mt-8 flex justify-end">
+                                            <button onClick={handleSaveNotes} disabled={savingNotes} className="px-10 py-5 bg-[#088395] rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl flex items-center gap-3">
+                                                {savingNotes ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
+                                                {savingNotes ? "Sauvegarde..." : "Enregistrer mes notes"}
+                                            </button>
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}
 
                             {activeTab === 'messages' && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-                                    className="bg-white/5 border border-white/10 rounded-[40px] h-[700px] flex flex-col shadow-2xl overflow-hidden"
-                                >
-                                    {/* Chat Header */}
-                                    <div className="p-8 border-b border-white/5 bg-white/2 flex items-center justify-between">
+                                <motion.div key="messages" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-black/20 border border-white/10 rounded-[45px] h-[750px] flex flex-col shadow-2xl overflow-hidden backdrop-blur-3xl">
+                                    <div className="p-10 border-b border-white/5 bg-white/2 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-[#088395] rounded-2xl flex items-center justify-center font-black uppercase">{(parent?.fullName || "P").charAt(0)}</div>
+                                            <div className="w-14 h-14 bg-[#088395] rounded-2xl flex items-center justify-center font-black text-xl uppercase italic">{(parent?.fullName || "P").charAt(0)}</div>
                                             <div>
-                                                <div className="text-sm font-black uppercase tracking-tighter">{parent?.fullName || 'Parent'}</div>
-                                                <div className="flex items-center gap-2 text-[9px] font-black text-success uppercase tracking-widest">
-                                                    <div className="w-2 h-2 bg-success rounded-full animate-pulse" /> Parent rattaché
+                                                <div className="text-xl font-black uppercase italic tracking-tighter">{parent?.fullName || 'Parent'}</div>
+                                                <div className="text-[10px] font-black text-success uppercase tracking-widest flex items-center gap-2 mt-1">
+                                                    <div className="w-2 h-2 bg-success rounded-full animate-pulse" /> Messagerie Parent rattaché
                                                 </div>
                                             </div>
                                         </div>
-                                        <button className="p-4 bg-white/5 rounded-xl hover:bg-white/10"><Clock size={16} /></button>
                                     </div>
-
-                                    {/* Chat Messages */}
-                                    <div className="flex-1 p-8 overflow-y-auto space-y-4">
+                                    <div className="flex-1 p-10 overflow-y-auto space-y-6">
                                         {messages.length === 0 ? (
-                                            <div className="text-center text-white/40 italic text-sm mt-10">
-                                                Aucun message pour l'instant. Commencez la discussion avec le parent.
+                                            <div className="text-center py-20 text-white/20 italic font-bold uppercase tracking-widest text-xs">Démarrez la discussion avec le parent ici.</div>
+                                        ) : messages.map(m => (
+                                            <div key={m.id} className={cn("max-w-[75%] p-6 rounded-3xl text-sm font-medium leading-relaxed shadow-xl", m.senderId === currentUser?.id ? "bg-[#088395] ml-auto rounded-tr-none text-white" : "bg-white/5 border border-white/5 rounded-tl-none text-white/80")}>
+                                                {m.content}
+                                                <div className="text-[8px] font-black opacity-30 mt-3 uppercase text-right tracking-widest">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                                             </div>
-                                        ) : (
-                                            messages.map(m => {
-                                                const isMine = m.senderId === currentUser?.id;
-                                                return (
-                                                    <div key={m.id} className={cn("max-w-[80%] p-6 text-sm font-medium", isMine ? "bg-[#088395] ml-auto rounded-b-[32px] rounded-l-[32px]" : "bg-white/5 border border-white/5 rounded-b-[32px] rounded-r-[32px]")}>
-                                                        {m.content}
-                                                        <div className={cn("text-[8px] font-black opacity-40 mt-3 uppercase tracking-widest", isMine ? "text-right" : "")}>
-                                                            {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })
-                                        )}
+                                        ))}
                                     </div>
-
-                                    {/* Chat Input */}
                                     <div className="p-8 bg-white/2 border-t border-white/5">
-                                        <div className="relative group">
+                                        <div className="relative">
                                             <input
-                                                type="text"
-                                                value={msg}
-                                                onChange={(e) => setMsg(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(); }}
-                                                placeholder="ÉCRIVEZ VOTRE MESSAGE AU PARENT..."
-                                                className="w-full bg-white/5 border border-white/10 rounded-[28px] py-6 pl-8 pr-32 text-xs font-bold focus:outline-none focus:border-[#088395] transition-all"
+                                                type="text" value={msg} onChange={(e) => setMsg(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                                placeholder="VOTRE MESSAGE..."
+                                                className="w-full bg-[#0b1b2b] border border-white/10 rounded-full py-6 pl-10 pr-24 text-xs font-black uppercase tracking-widest focus:border-[#088395] outline-none"
                                             />
-                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                                                <button className="p-4 text-white/20 hover:text-white transition-colors"><Paperclip size={18} /></button>
-                                                <button onClick={handleSendMessage} className="p-4 bg-[#088395] rounded-2xl text-white shadow-xl hover:scale-105 active:scale-95 transition-all">
-                                                    <Send size={18} />
-                                                </button>
-                                            </div>
+                                            <button onClick={handleSendMessage} className="absolute right-3 top-1/2 -translate-y-1/2 p-4 bg-[#088395] rounded-full text-white shadow-xl hover:scale-105 active:scale-95 transition-all">
+                                                <Send size={20} />
+                                            </button>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -512,57 +447,38 @@ export default function PatientDetail() {
                         </AnimatePresence>
                     </div>
                 </div>
-
             </div>
 
-            {/* Edit Profile Modal */}
+            {/* Profile Update Modal */}
             <AnimatePresence>
                 {showEditModal && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl px-6">
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-lg bg-[#0b1b2b] border border-white/10 rounded-[40px] p-10 relative shadow-2xl"
-                        >
-                            <button
-                                onClick={() => setShowEditModal(false)}
-                                className="absolute top-6 right-6 p-3 bg-white/5 rounded-2xl text-white/40 hover:text-white transition-all hover:rotate-90"
-                            >
-                                x
-                            </button>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-8 bg-gradient-to-r from-[#088395] to-white bg-clip-text text-transparent">
-                                Mettre à jour le profil
-                            </h3>
-                            <form onSubmit={handleUpdateProfile} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#088395] ml-4">Poids (Kg)</label>
-                                        <input type="number" step="0.1" value={editForm.weight} onChange={e => setEditForm({ ...editForm, weight: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:border-[#088395] outline-none transition-all" />
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-2xl px-6">
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-xl bg-[#0b1b2b] border border-white/10 rounded-[50px] p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
+                            <div className="flex justify-between items-center mb-10">
+                                <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">Mettre à jour <span className="text-[#088395]">Champions</span></h3>
+                                <button onClick={() => setShowEditModal(false)} className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all text-white/20">X</button>
+                            </div>
+                            <form onSubmit={handleUpdateProfile} className="space-y-8">
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-4">Poids (Kg)</label>
+                                        <input type="number" step="0.1" value={editForm.weight} onChange={e => setEditForm({ ...editForm, weight: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-bold focus:border-[#088395] transition-all outline-none" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#088395] ml-4">Taille (m)</label>
-                                        <input type="number" step="0.01" value={editForm.height} onChange={e => setEditForm({ ...editForm, height: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:border-[#088395] outline-none transition-all" />
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-4">Taille (m)</label>
+                                        <input type="number" step="0.01" value={editForm.height} onChange={e => setEditForm({ ...editForm, height: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-bold focus:border-[#088395] transition-all outline-none" />
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#088395] ml-4">Date de Diagnostic</label>
-                                    <input type="date" value={editForm.diagnosisDate} onChange={e => setEditForm({ ...editForm, diagnosisDate: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:border-[#088395] outline-none transition-all" />
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-4">Date de Diagnostic</label>
+                                    <input type="date" value={editForm.diagnosisDate} onChange={e => setEditForm({ ...editForm, diagnosisDate: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-bold text-white/60 focus:border-[#088395] transition-all outline-none" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#088395] ml-4">Type de Diabète</label>
-                                    <select value={editForm.diabetesType} onChange={e => setEditForm({ ...editForm, diabetesType: e.target.value })} className="w-full bg-[#0b1b2b] border border-white/10 rounded-2xl p-4 text-sm focus:border-[#088395] outline-none transition-all">
-                                        <option value="Type 1">Type 1</option>
-                                        <option value="Type 2">Type 2</option>
-                                    </select>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-4">Allergies</label>
+                                    <input type="text" value={editForm.allergies} onChange={e => setEditForm({ ...editForm, allergies: e.target.value })} placeholder="Ex: Aucune" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-bold focus:border-[#088395] transition-all outline-none uppercase tracking-widest placeholder:opacity-10" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#088395] ml-4">Allergies</label>
-                                    <input type="text" value={editForm.allergies} onChange={e => setEditForm({ ...editForm, allergies: e.target.value })} placeholder="Ex: Pénicilline, Arachides..." className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:border-[#088395] outline-none transition-all" />
-                                </div>
-
-                                <button type="submit" className="w-full py-5 bg-gradient-to-r from-[#088395] to-[#066a7a] rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all mt-4">
-                                    Sauvegarder les modifications
+                                <button type="submit" className="w-full py-6 bg-[#088395] rounded-3xl font-black uppercase text-xs tracking-[0.3em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all mt-6 shadow-[0_20px_50px_rgba(8,131,149,0.3)]">
+                                    Valider les Changements
                                 </button>
                             </form>
                         </motion.div>
