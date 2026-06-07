@@ -35,6 +35,12 @@ namespace DiaCareKids.Api.Controllers
                 var records = await _recordsService.GetByPatientAsync(p.Id!);
                 var lastRecord = records.FirstOrDefault();
                 
+                string parentName = "Parent inconnu";
+                if (!string.IsNullOrEmpty(p.AssociatedParentId)) {
+                    var parent = await _usersService.GetAsync(p.AssociatedParentId);
+                    parentName = parent?.FullName ?? "Parent inconnu";
+                }
+                
                 result.Add(new
                 {
                     p.Id,
@@ -42,6 +48,8 @@ namespace DiaCareKids.Api.Controllers
                     p.FileNumber,
                     p.DateOfBirth,
                     p.Status,
+                    p.AssociatedParentId,
+                    ParentFullName = parentName,
                     LastGlucose = lastRecord?.GlucoseValue
                 });
             }
