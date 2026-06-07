@@ -52,10 +52,21 @@ export default function ParentMessaging() {
     const fetchDoctor = async (parentId) => {
         try {
             const sumRes = await api.get('/parent/dashboard-summary');
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const userFull = await api.get(`/users/${storedUser.id}`);
+            const parentUser = userFull.data;
+
             let docId = null;
             let docName = "Docteur";
 
-            if (sumRes.data.children) {
+            // 1. Priority: Direct association on parent (Independent Cabinet)
+            if (parentUser.associatedDoctorId) {
+                const docInfo = await api.get(`/users/${parentUser.associatedDoctorId}`);
+                docId = docInfo.data.id;
+                docName = docInfo.data.fullName;
+            } 
+            // 2. Secondary: Associated doctor from a child
+            else if (sumRes.data.children) {
                 const childWithDoc = sumRes.data.children.find(c => c.associatedDoctorId);
                 if (childWithDoc) {
                     docId = childWithDoc.associatedDoctorId;
