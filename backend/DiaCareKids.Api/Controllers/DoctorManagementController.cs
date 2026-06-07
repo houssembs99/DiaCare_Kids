@@ -31,9 +31,9 @@ namespace DiaCareKids.Api.Controllers
             // 1. Get patients directly assigned to me
             var directPatients = await _usersService.GetByDoctorIdAsync(doctorId);
             
-            // 2. Find siblings: Get all kids of parents who are rattachés to me
+            // 2. Find siblings: Get all kids of parents who are rattachés to me (as Doctor or Clinic)
             var allUsers = await _usersService.GetAsync();
-            var myParents = allUsers.Where(u => u.Role == "Parent" && u.AssociatedDoctorId == doctorId).ToList();
+            var myParents = allUsers.Where(u => u.Role == "Parent" && (u.AssociatedDoctorId == doctorId || u.AssociatedClinicId == doctorId)).ToList();
             var kidsOfMyParents = allUsers.Where(u => u.Role == "Enfant" && myParents.Any(parent => parent.Id == u.AssociatedParentId)).ToList();
 
             // Unique set of patients
@@ -87,7 +87,7 @@ namespace DiaCareKids.Api.Controllers
             if (!string.IsNullOrEmpty(patient.AssociatedParentId))
             {
                 parent = await _usersService.GetAsync(patient.AssociatedParentId);
-                if (parent != null && parent.AssociatedDoctorId == doctorId)
+                if (parent != null && (parent.AssociatedDoctorId == doctorId || parent.AssociatedClinicId == doctorId))
                 {
                     isThroughParent = true;
                 }
