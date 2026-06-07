@@ -15,12 +15,20 @@ namespace DiaCareKids.Api.Services
 
         public async Task SendInvoiceEmailAsync(string toEmail, string toName, string subject, string htmlBody)
         {
-            var smtpHost = _configuration["EmailSettings:SmtpHost"] ?? Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com";
-            var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587");
+            var smtpHost = _configuration["EmailSettings:SmtpHost"];
+            if (string.IsNullOrEmpty(smtpHost)) smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
+            if (string.IsNullOrEmpty(smtpHost)) smtpHost = "smtp.gmail.com";
+            
+            var smtpPortStr = _configuration["EmailSettings:SmtpPort"] ?? Environment.GetEnvironmentVariable("SMTP_PORT");
+            int smtpPort = int.TryParse(smtpPortStr, out int p) ? p : 587;
+
             var smtpUser = _configuration["EmailSettings:SmtpUser"] ?? Environment.GetEnvironmentVariable("SMTP_USER") ?? "";
             var smtpPass = _configuration["EmailSettings:SmtpPass"] ?? Environment.GetEnvironmentVariable("SMTP_PASS") ?? "";
             var fromName = _configuration["EmailSettings:FromName"] ?? "DiaCare Kids";
-            var fromEmail = _configuration["EmailSettings:FromEmail"] ?? smtpUser;
+            var fromEmail = _configuration["EmailSettings:FromEmail"];
+            if (string.IsNullOrEmpty(fromEmail)) fromEmail = smtpUser;
+
+            Console.WriteLine($"[EMAIL] Attempting to connect to {smtpHost}:{smtpPort} with User: {smtpUser}");
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(fromName, fromEmail));
@@ -31,10 +39,25 @@ namespace DiaCareKids.Api.Services
             message.Body = bodyBuilder.ToMessageBody();
 
             using var client = new SmtpClient();
-            client.Timeout = 30000; // 30 seconds
-            await client.ConnectAsync(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.Auto);
+            client.Timeout = 15000; // 15 seconds
+            
+            // Accept all certificates in case of proxy/antivirus interception
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+            var options = smtpPort == 465 
+                ? MailKit.Security.SecureSocketOptions.SslOnConnect 
+                : MailKit.Security.SecureSocketOptions.StartTls;
+
+            Console.WriteLine($"[EMAIL] Connecting with {options}...");
+            await client.ConnectAsync(smtpHost, smtpPort, options);
+
+            Console.WriteLine($"[EMAIL] Authenticating...");
             await client.AuthenticateAsync(smtpUser, smtpPass);
+
+            Console.WriteLine($"[EMAIL] Sending...");
             await client.SendAsync(message);
+
+            Console.WriteLine($"[EMAIL] Disconnecting...");
             await client.DisconnectAsync(true);
         }
     }
