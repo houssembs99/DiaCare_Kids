@@ -26,7 +26,7 @@ const CheckoutForm = ({ amount, planName, onSuccess }) => {
         const { error: paymentError, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                // Return URL n'est pas utilisé ici car on redirige (redirect: 'if_required')
+                return_url: window.location.origin + '/payment-success', // Added return_url to prevent Stripe errors for cards requiring 3D secure.
             },
             redirect: 'if_required',
         });
