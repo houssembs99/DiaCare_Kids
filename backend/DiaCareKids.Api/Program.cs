@@ -40,6 +40,8 @@ builder.Services.AddScoped<StripeService>();
 // Auth Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secret = jwtSettings.GetValue<string>("Secret") ?? "default_secret_key_change_me_123456789";
+var issuer = jwtSettings.GetValue<string>("Issuer") ?? "DiaCareKids";
+var audience = jwtSettings.GetValue<string>("Audience") ?? "DiaCareKidsUsers";
 
 builder.Services.AddAuthentication(options =>
 {
@@ -54,8 +56,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings.GetValue<string>("Issuer"),
-        ValidAudience = jwtSettings.GetValue<string>("Audience"),
+        ValidIssuer = issuer,
+        ValidAudience = audience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
     };
 });

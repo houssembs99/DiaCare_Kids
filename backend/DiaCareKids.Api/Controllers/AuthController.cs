@@ -300,9 +300,12 @@ namespace DiaCareKids.Api.Controllers
                 new Claim("FullName", user.FullName)
             };
 
+            var issuer = jwtSettings.GetValue<string>("Issuer") ?? "DiaCareKids";
+            var audience = jwtSettings.GetValue<string>("Audience") ?? "DiaCareKidsUsers";
+
             var token = new JwtSecurityToken(
-                issuer: jwtSettings.GetValue<string>("Issuer"),
-                audience: jwtSettings.GetValue<string>("Audience"),
+                issuer: issuer,
+                audience: audience,
                 claims: claims,
                 expires: DateTime.Now.AddDays(7),
                 signingCredentials: creds
