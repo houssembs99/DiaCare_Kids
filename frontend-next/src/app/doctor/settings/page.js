@@ -6,7 +6,7 @@ import {
     Settings, Camera, User, Mail,
     Phone, Shield, Lock, Bell,
     Globe, Save, Stethoscope, Briefcase,
-    Credential, History, Key, Smartphone
+    Credential, History, Key, Smartphone, Building2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -29,7 +29,7 @@ const SettingsSection = ({ title, sub, icon, children }) => (
     </div>
 );
 
-const InputField = ({ label, placeholder, icon: Icon, type = "text", value, onChange }) => (
+const InputField = ({ label, placeholder, icon: Icon, type = "text", value, onChange, readOnly = false }) => (
     <div className="space-y-3 group/field">
         <label className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within/field:text-[#088395] transition-colors pl-2">{label}</label>
         <div className="relative">
@@ -40,9 +40,12 @@ const InputField = ({ label, placeholder, icon: Icon, type = "text", value, onCh
                 type={type}
                 value={value}
                 onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-                readOnly={!onChange}
+                readOnly={readOnly || !onChange}
                 placeholder={placeholder}
-                className="w-full bg-white/5 border border-white/10 rounded-[22px] py-5 px-16 text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] focus:bg-white/10 transition-all text-white placeholder:text-white/5"
+                className={cn(
+                    "w-full bg-white/5 border border-white/10 rounded-[22px] py-5 px-16 text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] focus:bg-white/10 transition-all text-white placeholder:text-white/5",
+                    (readOnly || !onChange) && "opacity-60 cursor-default"
+                )}
             />
         </div>
     </div>
@@ -53,15 +56,27 @@ export default function DoctorSettings() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [clinicName, setClinicName] = useState('');
 
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         if (storedUser.id) {
             setUser(storedUser);
             // Fetch fresh data
-            api.get(`/Users/${storedUser.id}`).then(res => {
-                setUser(res.data);
-                localStorage.setItem('user', JSON.stringify(res.data));
+            api.get(`/Users/${storedUser.id}`).then(async (res) => {
+                const userData = res.data;
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
+
+                // If doctor is associated with a clinic, fetch clinic name
+                if (userData.associatedClinicId) {
+                    try {
+                        const clinicRes = await api.get(`/Users/${userData.associatedClinicId}`);
+                        setClinicName(clinicRes.data.fullName || "Clinique Partenaire");
+                    } catch (err) {
+                        console.error("Error fetching clinic name", err);
+                    }
+                }
             }).catch(err => console.error("Error fetching doctor", err));
         }
     }, []);
@@ -113,8 +128,8 @@ export default function DoctorSettings() {
         <DashboardLayout role="Medecin">
             <div className="space-y-12 pb-10 text-white max-w-5xl mx-auto">
 
-                {/* Header SECTION 10 */}
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-16">
+                {/* Header Section */}
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-16 px-4 lg:px-0">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
                             <Settings size={28} className="text-[#088395]" />
@@ -130,10 +145,10 @@ export default function DoctorSettings() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-12">
+                <div className="grid grid-cols-1 gap-12 px-4 lg:px-0">
 
-                    {/* Professional Info SECTION 10 */}
-                    <SettingsSection title="Informations Professionnelles" sub="Détails de votre identité médicale et spécialisation" icon={<Stethoscope size={24} />}>
+                    {/* Professional Info Section */}
+                    <SettingsSection title="Informations Professionnelles" sub="Détails de votre identité médicale et établissement" icon={<Stethoscope size={24} />}>
                         <div className="flex flex-col lg:flex-row gap-12">
                             <div className="flex flex-col items-center gap-6">
                                 <label className="relative group/photo cursor-pointer block">
@@ -152,17 +167,17 @@ export default function DoctorSettings() {
                                 </label>
                             </div>
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <InputField label="Prénom & Nom" placeholder="DR. flen" icon={User} value={user?.fullName || "Dr. Ahmed Amor"} />
-                                <InputField label="Spécialité" placeholder="EX: ENDOCRINOLOGUE PÉDIATRE" icon={Briefcase} value={user?.clinicType || "Endocrinologue Pédiatre"} />
-                                <InputField label="Numéro d'ordre" placeholder="12345" icon={Shield} value={user?.fileNumber || "9201-TU-2024"} />
-                                <InputField label="Email Professionnel" placeholder="DIRECT@DOCTOR.TN" icon={Mail} value={user?.email || "ahmed.amor@diacare.tn"} />
-                                <InputField label="Téléphone" placeholder="+216 -- --- ---" icon={Phone} value={user?.contactNumber || "+216 22 123 456"} />
-                                <InputField label="Langue de l'interface" placeholder="FRANÇAIS" icon={Globe} value="Français (FR)" />
+                                <InputField label="Prénom & Nom" placeholder="DR. NOM" icon={User} value={user?.fullName || ""} />
+                                <InputField label="Spécialité" placeholder="EX: PÉDIATRE" icon={Briefcase} value={user?.clinicType || ""} />
+                                <InputField label="Établissement Rattaché" icon={Building2} value={clinicName || "Indépendant / Cabinet"} readOnly />
+                                <InputField label="Email Professionnel" icon={Mail} value={user?.email || ""} readOnly />
+                                <InputField label="Téléphone" placeholder="+216 -- --- ---" icon={Phone} value={user?.contactNumber || ""} />
+                                <InputField label="Langue de l'interface" placeholder="FRANÇAIS" icon={Globe} value="Français (FR)" readOnly />
                             </div>
                         </div>
                     </SettingsSection>
 
-                    {/* Security & Access SECTION 10 */}
+                    {/* Security Section */}
                     <SettingsSection title="Sécurité du E-Cabinet" sub="Protégez votre accès aux données sensibles" icon={<Lock size={24} />}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-6">
@@ -195,21 +210,12 @@ export default function DoctorSettings() {
                                 <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3 italic">
                                     <Smartphone size={18} className="text-[#088395]" /> Double Facteur (2FA)
                                 </h3>
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Notification Mobile</span>
-                                        <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Actif sur iPhone 15 Pro</span>
-                                    </div>
-                                    <div className="w-14 h-8 bg-[#088395] rounded-full p-1 flex justify-end cursor-pointer transition-all">
-                                        <div className="w-6 h-6 bg-white rounded-full shadow-lg" />
-                                    </div>
-                                </div>
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-4 text-white/40 text-[9px] font-bold uppercase tracking-widest cursor-pointer hover:text-white transition-colors">
-                                        <Bell size={14} /> Préférences de notifications critiques
+                                        <Bell size={14} /> Préférences de notifications
                                     </div>
                                     <div className="flex items-center gap-4 text-white/40 text-[9px] font-bold uppercase tracking-widest cursor-pointer hover:text-white transition-colors">
-                                        <Key size={14} /> Historique des accès (IP Logs)
+                                        <Key size={14} /> Historique des accès
                                     </div>
                                 </div>
                             </div>
