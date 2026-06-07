@@ -20,6 +20,7 @@ export default function DoctorPayments() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [doctorInfo, setDoctorInfo] = useState(null);
+    const [packages, setPackages] = useState([]);
 
     // Invoice Generator State
     const [selectedUserForInvoice, setSelectedUserForInvoice] = useState(null);
@@ -47,6 +48,10 @@ export default function DoctorPayments() {
                 u.associatedDoctorId === doctorId && u.role === 'Parent'
             );
             setPatientSubscribers(myPatients);
+
+            // 3. My Packages to get prices
+            const pkgsRes = await api.get('/ClinicPackages');
+            setPackages(pkgsRes.data);
 
         } catch (err) {
             console.error("Erreur de récupération des données", err);
@@ -295,16 +300,16 @@ export default function DoctorPayments() {
                     user={selectedUserForInvoice}
                     issuerInfo={{
                         name: `Dr. ${doctorInfo?.fullName || 'Médecin'}`,
-                        address: doctorInfo?.address || 'Cabinet Médical DiaCare',
+                        address: doctorInfo?.address || 'Cabinet Médical',
                         phone: doctorInfo?.contactNumber || '',
                         email: doctorInfo?.email || '',
                         website: 'www.diacarekids.com'
                     }}
                     plan={{
                         name: selectedUserForInvoice.subscription?.planType || 'Consultation',
-                        price: 50, // Should probably come from the package, but default to 50 DT
+                        price: packages.find(p => p.name === selectedUserForInvoice.subscription?.planType)?.price || 80, 
                         currency: 'TND',
-                        description: `Honoraires de suivi médical DiaCare pour ${selectedUserForInvoice.fullName}`
+                        description: `Honoraires de suivi médical (Cabinet) pour ${selectedUserForInvoice.fullName}`
                     }}
                 />
             )}
