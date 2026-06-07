@@ -97,8 +97,9 @@ export default function CustomCheckoutPage({ searchParams }) {
         api.post('/Payments/create-payment-intent', { amount })
             .then(res => setClientSecret(res.data.clientSecret))
             .catch(err => {
-                console.error("Erreur d'initialisation", err);
-                setStripeError("Impossible d'initialiser le paiement. Veuillez contacter l'administration.");
+                console.error("Erreur d'initialisation", err.response?.data || err.message);
+                const serverMsg = err.response?.data?.error || err.response?.statusText || err.message;
+                setStripeError(`Impossible d'initialiser le paiement (${err.response?.status || 'Network'}): ${serverMsg}. Veuillez contacter l'administration.`);
             });
     }, [amount, isClinicManagedPlan]);
 
