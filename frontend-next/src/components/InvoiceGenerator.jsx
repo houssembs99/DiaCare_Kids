@@ -91,8 +91,10 @@ function generateInvoiceHTML({
             <!-- Header -->
             <div class="header">
                 <div class="header-left">
-                    ${platformLogoUrl ? `<img src="${platformLogoUrl}" alt="Logo" style="max-height: 48px; max-width: 140px; object-fit: contain; margin-bottom: 8px; border-radius: 8px;">` : ''}
-                    <h1>⚕ ${issuerInfo?.name || DIACARE_INFO.name}</h1>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
+                        ${platformLogoUrl ? `<img src="${platformLogoUrl}" alt="Logo" style="max-height: 50px; max-width: 150px; object-fit: contain; border-radius: 8px;">` : ''}
+                        <h1 style="margin: 0;">${issuerInfo?.name || DIACARE_INFO.name}</h1>
+                    </div>
                     <p>FACTURE D'ABONNEMENT</p>
                 </div>
                 <div class="header-right">
