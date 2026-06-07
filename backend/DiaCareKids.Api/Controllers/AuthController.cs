@@ -118,7 +118,7 @@ namespace DiaCareKids.Api.Controllers
                         {
                             PlanType = subscriptionName,
                             MaxKids = maxKidsForParent,
-                            ExpiryDate = clinic.Subscription.ExpiryDate,
+                            ExpiryDate = targetEntity.Subscription.ExpiryDate,
                             IsActive = false
                         };
                     }
