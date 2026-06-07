@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Menu, X, ArrowRight, Bell, Globe, Search, User, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useLogo } from '@/lib/LogoContext';
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
@@ -16,6 +17,7 @@ const Navbar = () => {
     const [pageResults, setPageResults] = useState([]);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const { lang, switchLanguage, t } = useLanguage();
+    const { logoUrl } = useLogo();
     const pathname = usePathname();
 
     const isDashboard = pathname !== '/' && (
@@ -193,8 +195,12 @@ const Navbar = () => {
                         href="/"
                         className="flex items-center gap-3 shrink-0 group transition-all duration-500"
                     >
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500">
-                            <Activity className="text-[#0b1b2b] w-6 h-6" />
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500 overflow-hidden">
+                            {logoUrl ? (
+                                <img src={logoUrl} alt="DiaCare Kids" className="w-8 h-8 object-contain" />
+                            ) : (
+                                <Activity className="text-[#0b1b2b] w-6 h-6" />
+                            )}
                         </div>
                         <div className="flex flex-col">
                             <span className="text-xl font-extrabold tracking-tight text-premium uppercase leading-none">

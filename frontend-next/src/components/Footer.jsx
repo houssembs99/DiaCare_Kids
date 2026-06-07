@@ -1,8 +1,13 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
 import { Activity, Mail, Phone, MapPin, Heart, } from 'lucide-react';
+import { useLogo } from '@/lib/LogoContext';
 
 const Footer = () => {
+    const { logoUrl } = useLogo();
+
     return (
         <footer className="bg-black/10 pt-24 pb-12 px-6 border-t border-white/10 backdrop-blur-3xl">
             <div className="max-w-7xl mx-auto">
@@ -11,8 +16,12 @@ const Footer = () => {
                     {/* Brand */}
                     <div className="space-y-6">
                         <Link href="/" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500">
-                                <Activity className="text-[#088395] w-6 h-6" />
+                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500 overflow-hidden">
+                                {logoUrl ? (
+                                    <img src={logoUrl} alt="DiaCare Kids" className="w-8 h-8 object-contain" />
+                                ) : (
+                                    <Activity className="text-[#088395] w-6 h-6" />
+                                )}
                             </div>
                             <span className="text-xl font-extrabold tracking-tight text-white uppercase">
                                 DiaCare<span className="text-white/60 italic">Kids</span>

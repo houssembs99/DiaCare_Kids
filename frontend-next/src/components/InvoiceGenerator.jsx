@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Send, FileText, CheckCircle, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
+import { useLogo } from '@/lib/LogoContext';
 
 // ─── Coordonnées DiaCare Kids (dynamiques) ────────────────────────────────
 const DIACARE_INFO = {
@@ -32,7 +33,8 @@ function generateInvoiceHTML({
     amount,
     currency,
     issuerInfo,
-    isPaid
+    isPaid,
+    platformLogoUrl
 }) {
     const currencySymbol = currency === 'eur' ? '€' : currency === 'usd' ? '$' : currency === 'tnd' ? 'DT' : currency.toUpperCase();
     const formattedAmount = parseFloat(amount).toFixed(2);
@@ -89,6 +91,7 @@ function generateInvoiceHTML({
             <!-- Header -->
             <div class="header">
                 <div class="header-left">
+                    ${platformLogoUrl ? `<img src="${platformLogoUrl}" alt="Logo" style="max-height: 48px; max-width: 140px; object-fit: contain; margin-bottom: 8px; border-radius: 8px;">` : ''}
                     <h1>⚕ ${issuerInfo?.name || DIACARE_INFO.name}</h1>
                     <p>FACTURE D'ABONNEMENT</p>
                 </div>
@@ -180,6 +183,7 @@ function generateInvoiceHTML({
 
             <!-- Footer -->
             <div class="footer">
+                ${platformLogoUrl ? `<img src="${platformLogoUrl}" alt="Logo" style="max-height: 32px; max-width: 120px; object-fit: contain; margin: 0 auto 10px; display: block; opacity: 0.7;">` : ''}
                 <p class="brand">${issuerInfo?.name || DIACARE_INFO.name}</p>
                 <p>
                     Cette facture a été générée automatiquement par la plateforme ${issuerInfo?.name || DIACARE_INFO.name}.<br>
@@ -197,6 +201,7 @@ export default function InvoiceGenerator({ isOpen, onClose, user, plan, issuerIn
     const [isSending, setIsSending] = useState(false);
     const [sent, setSent] = useState(false);
     const iframeRef = useRef(null);
+    const { logoUrl: platformLogoUrl } = useLogo();
 
     if (!isOpen || !user) return null;
 
@@ -237,7 +242,8 @@ export default function InvoiceGenerator({ isOpen, onClose, user, plan, issuerIn
         amount,
         currency,
         issuerInfo,
-        isPaid: user.subscription?.isActive === true
+        isPaid: user.subscription?.isActive === true,
+        platformLogoUrl
     });
 
     const handleDownloadPDF = () => {

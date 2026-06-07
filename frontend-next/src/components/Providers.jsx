@@ -1,11 +1,14 @@
 "use client";
 
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { LogoProvider } from "@/lib/LogoContext";
 
 export function Providers({ children }) {
     return (
         <LanguageProvider>
-            {children}
+            <LogoProvider>
+                {children}
+            </LogoProvider>
         </LanguageProvider>
     );
 }
