@@ -42,8 +42,14 @@ export default function ParentHeroes() {
             const userRes = await api.get(`/users/${userStore.id}`);
             setSubDetails(userRes.data.subscription);
 
-            // Fetch doctors for this parent's clinic
-            if (userRes.data.associatedClinicId) {
+            // Fetch doctors for this parent's clinic or independent doctor
+            if (userRes.data.associatedDoctorId) {
+                // Independent doctor case
+                const docRes = await api.get(`/users/${userRes.data.associatedDoctorId}`);
+                setClinicDoctors([docRes.data]);
+                setSelectedDoctorId(docRes.data.id);
+            } else if (userRes.data.associatedClinicId) {
+                // Clinic case
                 const docsRes = await api.get('/parent/my-clinic-doctors');
                 setClinicDoctors(docsRes.data);
                 if (docsRes.data.length > 0) setSelectedDoctorId(docsRes.data[0].id);
