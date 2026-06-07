@@ -40,24 +40,31 @@ namespace DiaCareKids.Api.Controllers
             // Count Patients (via PatientsService)
             var patients = await _patientsService.GetAsync();
             
-            // Get Transactions for revenue
+            // Get Transactions for revenue (amounts stored directly in DT, not cents)
             var transactions = await _transactionsService.GetAsync();
 
-            // Total revenue in USD
-            double totalRevenue = transactions.Sum(t => t.Amount) / 100.0;
+            double totalRevenue = transactions.Sum(t => t.Amount);
             
             string formattedRevenue = totalRevenue >= 1000 
-                ? (totalRevenue / 1000.0).ToString("0.0") + "k" 
-                : totalRevenue.ToString("0");
+                ? (totalRevenue / 1000.0).ToString("0.0") + "k DT" 
+                : totalRevenue.ToString("0") + " DT";
+
+            // Count all active subscriptions across clinics and parents
+            var allUsers = await _usersService.GetAsync();
+            int activeSubs = allUsers.Count(u => 
+                u.Subscription != null && 
+                u.Subscription.IsActive == true &&
+                (u.Role == "Clinique" || u.Role == "Parent" || u.Role == "Agent Clinique")
+            );
 
             return Ok(new
             {
                 DoctorsCount = doctors.Count,
                 ParentsCount = parents.Count,
                 PatientsCount = patients.Count,
-                ClinicsCount = clinics.Count, // Real count from Users collection
+                ClinicsCount = clinics.Count,
                 Revenue = formattedRevenue,
-                ActiveSubs = parents.Count(u => u.Status == "Actif") 
+                ActiveSubs = activeSubs
             });
         }
     }

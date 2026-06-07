@@ -8,6 +8,11 @@ obj/
 *.sln.docstates
 .vs/
 
+# Secrets - Ne JAMAIS committer ces fichiers !
+**/appsettings.json
+**/appsettings.*.json
+!**/appsettings.example.json
+
 # Node / React
 node_modules/
 dist/

@@ -2,38 +2,43 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { 
-  Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, 
-  BarElement, Title, Tooltip, Legend, ArcElement, Filler 
+import {
+    Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement,
+    BarElement, Title, Tooltip, Legend, ArcElement, Filler
 } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import api from '@/lib/api';
 import { Activity, Users, DollarSign, Building } from 'lucide-react';
 
 ChartJS.register(
-  CategoryScale, LinearScale, PointElement, LineElement, 
-  BarElement, Title, Tooltip, Legend, ArcElement, Filler
+    CategoryScale, LinearScale, PointElement, LineElement,
+    BarElement, Title, Tooltip, Legend, ArcElement, Filler
 );
 
 export default function AdminStats() {
     const [users, setUsers] = useState([]);
-    const [transactions, setTransactions] = useState([]);
+    const [summary, setSummary] = useState({ revenue: '0 DT', activeSubs: 0 });
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchStatsData = async () => {
             setIsLoading(true);
             try {
-                // 1. Récupération des utilisateurs pour les statistiques de répartition
+                // 1. Récupération des utilisateurs pour les graphiques de répartition
                 const usersRes = await api.get('/Users');
                 setUsers(usersRes.data || []);
-                
-                // 2. tentative de récupération des transactions
+
+                // 2. Récupération du résumé financier depuis l'endpoint dédié
                 try {
-                    const txRes = await api.get('/Transactions');
-                    setTransactions(txRes.data || []);
+                    const summaryRes = await api.get('/stats/summary');
+                    if (summaryRes.data) {
+                        setSummary({
+                            revenue: summaryRes.data.revenue || '0 DT',
+                            activeSubs: summaryRes.data.activeSubs || 0
+                        });
+                    }
                 } catch (e) {
-                    console.log("Endpoint /Transactions indisponible, calcul des revenus depuis les abonnements actifs...");
+                    console.log("Endpoint /stats/summary indisponible, calcul local depuis abonnements.");
                 }
             } catch (error) {
                 console.error("Erreur API Stats", error);
@@ -58,20 +63,7 @@ export default function AdminStats() {
         Attente: users.filter(u => u.status === 'En Attente').length,
     };
 
-    // Calcul du revenu approximatif (Fallback si pas de transactions en DB)
-    let totalRevenue = 0;
-    if (transactions.length > 0) {
-        totalRevenue = transactions.reduce((acc, tx) => acc + (tx.amount || 0), 0);
-    } else {
-        users.forEach(u => {
-            if (u.subscription && u.subscription.isActive) {
-                if (u.subscription.planType === 'Premium') totalRevenue += 299;
-                else if (u.subscription.planType === 'Pro') totalRevenue += 149;
-                else if (u.subscription.planType === 'Famille') totalRevenue += 49;
-                else totalRevenue += 15; // Basic ou autre
-            }
-        });
-    }
+
 
     // Configuration des paramètres ChartJS (Design sombre)
     const chartOptions = {
@@ -116,14 +108,13 @@ export default function AdminStats() {
         }]
     };
 
-    // DATA: Graphique Ligne (Croissance des revenus simuleé ou réelle)
-    const currentMonthRealRevenue = totalRevenue > 0 ? totalRevenue : 1580;
+    // DATA: Graphique Ligne (Croissance des revenus)
     const growthData = {
         labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Ce mois-ci'],
         datasets: [
             {
                 label: 'Progression CA (DT)',
-                data: [350, 420, 680, 890, 1200, 1450, currentMonthRealRevenue],
+                data: [350, 420, 680, 890, 1200, 1450, parseFloat(summary.revenue) || 0],
                 borderColor: '#1E88E5',
                 backgroundColor: 'rgba(30, 136, 229, 0.2)',
                 tension: 0.4,
@@ -155,13 +146,13 @@ export default function AdminStats() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <StatCard icon={<Users />} title="Base Utilisateurs" value={users.length} color="text-[#00ACC1]" />
                             <StatCard icon={<Building />} title="Cliniques Partenaires" value={rolesCount.Clinique} color="text-[#1E88E5]" />
-                            <StatCard icon={<Activity />} title="Comptes Santé Actifs" value={statusCount.Actif} color="text-[#43A047]" />
-                            <StatCard icon={<DollarSign />} title="CA Moyen (Mensuel)" value={`${currentMonthRealRevenue} DT`} color="text-[#FDD835]" />
+                            <StatCard icon={<Activity />} title="Abonnements Actifs" value={summary.activeSubs} color="text-[#43A047]" />
+                            <StatCard icon={<DollarSign />} title="Revenus Encaissés" value={summary.revenue} color="text-[#FDD835]" />
                         </div>
 
                         {/* Zone des Graphiques */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            
+
                             {/* Donuts : Parts de marché */}
                             <div className="col-span-1 bg-white/5 border border-white/10 rounded-[32px] p-6 shadow-2xl">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-white/60 mb-6 text-center">Répartition des profils</h3>
@@ -169,7 +160,7 @@ export default function AdminStats() {
                                     <Doughnut data={roleData} options={doughnutOptions} />
                                 </div>
                             </div>
-                            
+
                             {/* Ligne de croissance */}
                             <div className="col-span-1 lg:col-span-2 bg-white/5 border border-white/10 rounded-[32px] p-6 shadow-2xl">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-white/60 mb-6 text-center">Tendance des abonnements cliniques</h3>
