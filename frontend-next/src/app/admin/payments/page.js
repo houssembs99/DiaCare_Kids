@@ -26,6 +26,9 @@ export default function AdminPayments() {
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
     const [invoiceData, setInvoiceData] = useState({ description: "Abonnement", amount: 199.99, currency: "eur", planId: "" });
+    const [isNewInvoiceModalOpen, setIsNewInvoiceModalOpen] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState("");
+    const [newInvoiceData, setNewInvoiceData] = useState({ description: "Abonnement", amount: 0, currency: "eur", planId: "" });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -157,6 +160,16 @@ export default function AdminPayments() {
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
                             Envoi de factures Stripe aux abonnés
                         </p>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button 
+                            onClick={() => setIsNewInvoiceModalOpen(true)}
+                            className="flex items-center gap-3 px-8 py-5 bg-[#1E88E5] hover:bg-[#1565C0] text-white rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-[0_10px_30px_rgba(30,136,229,0.3)]"
+                        >
+                            <FileText size={18} />
+                            Nouvelle Facture Libre
+                        </button>
                     </div>
                 </div>
 
@@ -409,6 +422,138 @@ export default function AdminPayments() {
                                         className="flex-1 py-4 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/80 transition-all"
                                     >
                                         Aperçu Facture
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Modal Créer Facture Libre (Nouvelle Facture) */}
+            <AnimatePresence>
+                {isNewInvoiceModalOpen && !showPreview && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsNewInvoiceModalOpen(false)} />
+                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-md w-full relative z-10 shadow-2xl"
+                        >
+                            <div className="w-16 h-16 rounded-full bg-[#1E88E5]/10 text-[#1E88E5] flex items-center justify-center mb-6">
+                                <FileText size={32} />
+                            </div>
+                            <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6 text-white">
+                                Nouvelle Facture Libre
+                            </h2>
+
+                            <form onSubmit={(e) => { 
+                                e.preventDefault(); 
+                                if(!selectedUserId) { alert('Veuillez sélectionner un utilisateur'); return; }
+                                const tUser = users.find(u => u.id === selectedUserId);
+                                setSelectedUser({
+                                    fullName: tUser?.fullName,
+                                    email: tUser?.email,
+                                    role: tUser?.role,
+                                    contactNumber: tUser?.contactNumber,
+                                    address: tUser?.address,
+                                    subscription: { isActive: true, planType: newInvoiceData.description, startDate: new Date().toISOString() }
+                                });
+                                setInvoiceData({ description: newInvoiceData.description, amount: newInvoiceData.amount, currency: newInvoiceData.currency });
+                                setIsNewInvoiceModalOpen(false);
+                                setShowPreview(true);
+                            }} className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Utilisateur / Client</label>
+                                    <select 
+                                        value={selectedUserId}
+                                        onChange={e => setSelectedUserId(e.target.value)}
+                                        className="w-full bg-[#0b1b2b] border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none font-bold text-sm appearance-none mb-4 shadow-inner"
+                                    >
+                                        <option value="" className="bg-[#0b1b2b]">-- Sélectionner l'utilisateur --</option>
+                                        {users.map(u => (
+                                            <option key={u.id} value={u.id} className="bg-[#0b1b2b] font-bold">
+                                                {u.fullName} ({u.email} - {u.role})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {plans.length > 0 && (
+                                    <div>
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Pack Plateforme (Option)</label>
+                                        <select 
+                                            value={newInvoiceData.planId}
+                                            onChange={e => {
+                                                const pkg = plans.find(p => p.id === e.target.value);
+                                                if (pkg) {
+                                                    let cur = (pkg.currency || 'eur').toLowerCase();
+                                                    if (cur === 'dt') cur = 'tnd';
+                                                    setNewInvoiceData({ planId: pkg.id, description: pkg.name, amount: pkg.price, currency: cur });
+                                                } else {
+                                                    setNewInvoiceData({ ...newInvoiceData, planId: "" });
+                                                }
+                                            }}
+                                            className="w-full bg-[#0b1b2b] border border-white/10 rounded-2xl p-4 text-[#1E88E5] focus:border-[#1E88E5] outline-none font-black text-sm appearance-none mb-4 shadow-inner"
+                                        >
+                                            <option value="">-- Saisie Manuelle --</option>
+                                            {plans.map(pkg => (
+                                                <option key={pkg.id} value={pkg.id} className="bg-[#0b1b2b] font-bold">
+                                                    {pkg.name} ({pkg.price} {pkg.currency}) - {pkg.role}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Description Facture</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        value={newInvoiceData.description} 
+                                        onChange={e => setNewInvoiceData({ ...newInvoiceData, description: e.target.value })} 
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none font-bold" 
+                                    />
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-1">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Montant</label>
+                                        <input 
+                                            type="number" 
+                                            step="0.01"
+                                            required 
+                                            value={newInvoiceData.amount} 
+                                            onChange={e => setNewInvoiceData({ ...newInvoiceData, amount: parseFloat(e.target.value) || 0 })} 
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none font-black text-xl" 
+                                        />
+                                    </div>
+                                    <div className="w-1/3">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Devise</label>
+                                        <select 
+                                            value={newInvoiceData.currency}
+                                            onChange={e => setNewInvoiceData({ ...newInvoiceData, currency: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:border-[#1E88E5] outline-none font-black text-xl appearance-none"
+                                        >
+                                            <option value="eur" className="bg-[#0b1b2b]">EUR (€)</option>
+                                            <option value="usd" className="bg-[#0b1b2b]">USD ($)</option>
+                                            <option value="cad" className="bg-[#0b1b2b]">CAD ($)</option>
+                                            <option value="tnd" className="bg-[#0b1b2b]">TND (DT)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div className="pt-4 flex gap-4">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsNewInvoiceModalOpen(false)} 
+                                        className="flex-1 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-colors"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        className="flex-1 py-4 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1565c0] transition-all"
+                                    >
+                                        Aperçu
                                     </button>
                                 </div>
                             </form>
