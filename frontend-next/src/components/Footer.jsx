@@ -3,10 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { Activity, Mail, Phone, MapPin, Heart, } from 'lucide-react';
-import { useLogo } from '@/lib/LogoContext';
+import { useBranding } from '@/lib/BrandingContext';
 
 const Footer = () => {
-    const { logoUrl } = useLogo();
+    const { branding } = useBranding();
+    const { logoUrl, description, phone, email, address } = branding;
 
     return (
         <footer className="bg-black/10 pt-24 pb-12 px-6 border-t border-white/10 backdrop-blur-3xl">
@@ -28,7 +29,7 @@ const Footer = () => {
                             </span>
                         </Link>
                         <p className="text-cyan-100/60 text-sm leading-relaxed max-w-xs font-medium italic">
-                            "Redonner le sourire aux petits champions à travers l'innovation et l'éducation intelligente."
+                            "{description}"
                         </p>
 
                     </div>
@@ -49,9 +50,9 @@ const Footer = () => {
                     <div className="space-y-6">
                         <h4 className="text-sm font-bold uppercase tracking-widest text-white">Nous Joindre</h4>
                         <div className="space-y-4">
-                            <ContactItem icon={<Phone size={16} />} text="+216 71 000 000" />
-                            <ContactItem icon={<Mail size={16} />} text="hello@diacarekids.tn" />
-                            <ContactItem icon={<MapPin size={16} />} text="Hôpital des Enfants, Tunis" />
+                            <ContactItem icon={<Phone size={16} />} text={phone} />
+                            <ContactItem icon={<Mail size={16} />} text={email} />
+                            <ContactItem icon={<MapPin size={16} />} text={address} />
                         </div>
                     </div>
                 </div>

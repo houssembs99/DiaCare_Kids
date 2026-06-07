@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Menu, X, ArrowRight, Bell, Globe, Search, User, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
-import { useLogo } from '@/lib/LogoContext';
+import { useBranding } from '@/lib/BrandingContext';
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
@@ -17,7 +17,8 @@ const Navbar = () => {
     const [pageResults, setPageResults] = useState([]);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const { lang, switchLanguage, t } = useLanguage();
-    const { logoUrl } = useLogo();
+    const { branding } = useBranding();
+    const logoUrl = branding.logoUrl;
     const pathname = usePathname();
 
     const isDashboard = pathname !== '/' && (

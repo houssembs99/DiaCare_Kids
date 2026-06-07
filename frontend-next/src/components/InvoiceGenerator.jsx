@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Send, FileText, CheckCircle, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
-import { useLogo } from '@/lib/LogoContext';
+import { useBranding } from '@/lib/BrandingContext';
 
 // ─── Coordonnées DiaCare Kids (dynamiques) ────────────────────────────────
 const DIACARE_INFO = {
@@ -203,9 +203,19 @@ export default function InvoiceGenerator({ isOpen, onClose, user, plan, issuerIn
     const [isSending, setIsSending] = useState(false);
     const [sent, setSent] = useState(false);
     const iframeRef = useRef(null);
-    const { logoUrl: platformLogoUrl } = useLogo();
+    const { branding } = useBranding();
+    const platformLogoUrl = branding.logoUrl;
 
     if (!isOpen || !user) return null;
+
+    // Use branding info as default if issuerInfo is not provided
+    const displayInfo = {
+        name: issuerInfo?.name || "DiaCare Kids",
+        address: issuerInfo?.address || branding.address,
+        phone: issuerInfo?.phone || branding.phone,
+        email: issuerInfo?.email || branding.email,
+        website: issuerInfo?.website || branding.website
+    };
 
     const now = new Date();
     const invoiceNumber = `INV-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${(user.id || 'xxx').slice(-4).toUpperCase()}`;
@@ -243,7 +253,7 @@ export default function InvoiceGenerator({ isOpen, onClose, user, plan, issuerIn
         duree,
         amount,
         currency,
-        issuerInfo,
+        issuerInfo: displayInfo,
         isPaid: user.subscription?.isActive === true,
         platformLogoUrl
     });
