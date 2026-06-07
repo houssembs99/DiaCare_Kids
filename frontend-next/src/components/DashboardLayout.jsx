@@ -107,6 +107,11 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         { name: t('sidebar.treatments'), href: '/doctor/treatments', icon: <Syringe size={20} /> },
         { name: 'Analyse Médicale', href: '/doctor/stats', icon: <BarChart3 size={20} /> },
         { name: t('sidebar.messaging'), href: '/doctor/messaging', icon: <MessageSquare size={20} /> },
+        // Pour les médecins de cabinet (indépendants), on ajoute les packs et paiements
+        ...(!user?.associatedClinicId ? [
+            { name: t('sidebar.subscription'), href: '/pricing', icon: <CreditCard size={20} /> },
+            { name: t('sidebar.payments'), href: '/doctor/payments', icon: <Wallet size={20} /> }
+        ] : []),
         { name: t('sidebar.settings'), href: '/doctor/settings', icon: <Settings size={20} /> },
     ];
 
