@@ -138,7 +138,8 @@ export default function AdminPayments() {
             setIsInvoiceModalOpen(false);
         } catch (error) {
             console.error("Erreur envoi facture", error);
-            alert("Erreur lors de l'envoi de la facture via Stripe.");
+            const errorMsg = error.response?.data?.error || error.message;
+            alert(`Erreur lors de l'envoi de la facture via Stripe : ${errorMsg}`);
         } finally {
             setIsSending(false);
         }
