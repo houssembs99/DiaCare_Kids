@@ -371,6 +371,47 @@ export default function PatientDetail() {
                                 </motion.div>
                             )}
 
+                            {activeTab === 'history' && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                                    className="bg-white/5 border border-white/10 rounded-[40px] p-10 overflow-hidden"
+                                >
+                                    <SectionHeader icon={Clock} title="Historique Complet" sub="Journal chronologique des relevés" />
+                                    <div className="overflow-x-auto -mx-10 px-10">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="border-b border-white/5">
+                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Date & Heure</th>
+                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Glycémie</th>
+                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Insuline</th>
+                                                    <th className="py-6 text-[10px] font-black uppercase text-white/20">Glucides</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-white/5">
+                                                {records.length === 0 ? (
+                                                    <tr><td colSpan="4" className="py-10 text-center text-white/20 italic text-xs">Aucun relevé enregistré.</td></tr>
+                                                ) : records.map((r, idx) => (
+                                                    <tr key={idx} className="group hover:bg-white/2 transition-colors">
+                                                        <td className="py-6 text-[11px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                                                            {new Date(r.timestamp).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                        </td>
+                                                        <td className="py-6">
+                                                            <div className="text-xl font-black italic text-white">{r.glucoseValue || '--'} <span className="text-[10px] font-bold not-italic opacity-20">mg/dL</span></div>
+                                                        </td>
+                                                        <td className="py-6 text-sm font-black text-[#088395] uppercase">
+                                                            <Syringe size={14} className="inline mr-2" /> {r.insulinDose || '--'} U
+                                                        </td>
+                                                        <td className="py-6 text-sm font-black text-orange-400 uppercase">
+                                                            {r.carbsEstimated || '--'} g
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </motion.div>
+                            )}
+
                             {activeTab === 'alerts' && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
