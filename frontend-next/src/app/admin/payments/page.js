@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import InvoiceGenerator from '@/components/InvoiceGenerator';
-import { Send, FileText, Search, CreditCard, Clock, CheckCircle, User, Phone, Mail, Calendar, Activity, X } from 'lucide-react';
+import { Send, FileText, Search, CreditCard, Clock, CheckCircle, User, Phone, Mail, Calendar, Activity, X, ToggleLeft, ToggleRight, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import api from '@/lib/api';
@@ -47,6 +47,25 @@ export default function AdminPayments() {
         };
         fetchData();
     }, []);
+
+    const toggleSubscription = async (e, user) => {
+        e.stopPropagation();
+        const newStatus = !user.subscription?.isActive;
+        try {
+            await api.patch(`/Users/${user.id}/subscription`, {
+                isActive: newStatus,
+                planType: user.subscription?.planType || 'Basic',
+                expiryDate: newStatus ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null
+            });
+            setUsers(prev => prev.map(u => u.id === user.id ? {
+                ...u,
+                status: newStatus ? 'Actif' : 'En Attente',
+                subscription: { ...u.subscription, isActive: newStatus }
+            } : u));
+        } catch (err) {
+            alert('Erreur lors de la modification du statut');
+        }
+    };
 
     const filteredUsers = users.filter(u =>
         (u.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -195,6 +214,8 @@ export default function AdminPayments() {
                                 <tr>
                                     <th className="px-10 py-8">Utilisateur</th>
                                     <th className="px-10 py-8">Rôle</th>
+                                    <th className="px-10 py-8">Abonnement</th>
+                                    <th className="px-10 py-8">Statut Paiement</th>
                                     <th className="px-10 py-8 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -213,6 +234,35 @@ export default function AdminPayments() {
                                             <span className="px-3 py-1 rounded-full bg-[#1E88E5]/10 text-[#1E88E5] text-xs uppercase tracking-widest border border-[#1E88E5]/20">
                                                 {user.role}
                                             </span>
+                                        </td>
+                                        <td className="px-10 py-8">
+                                            <div className="text-[11px] font-bold text-white/60 uppercase tracking-wider">
+                                                {user.subscription?.planType || 'Aucun'}
+                                            </div>
+                                            {user.subscription?.expiryDate && (
+                                                <div className="text-[10px] text-white/30 mt-1">
+                                                    Exp: {new Date(user.subscription.expiryDate).toLocaleDateString('fr-FR')}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="px-10 py-8">
+                                            <button
+                                                onClick={(e) => toggleSubscription(e, user)}
+                                                title={user.subscription?.isActive ? 'Cliquer pour désactiver' : 'Cliquer pour activer'}
+                                                className="flex items-center gap-2 group/toggle"
+                                            >
+                                                {user.subscription?.isActive ? (
+                                                    <>
+                                                        <ToggleRight size={28} className="text-emerald-400 group-hover/toggle:text-emerald-300 transition-colors" />
+                                                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">PAYÉ / ACTIF</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ToggleLeft size={28} className="text-white/20 group-hover/toggle:text-yellow-400 transition-colors" />
+                                                        <span className="text-[10px] font-black text-white/30 uppercase tracking-widest group-hover/toggle:text-yellow-400">EN ATTENTE</span>
+                                                    </>
+                                                )}
+                                            </button>
                                         </td>
                                         <td className="px-10 py-8 text-right">
                                             <button

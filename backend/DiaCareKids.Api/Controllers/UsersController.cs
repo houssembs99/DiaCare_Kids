@@ -128,6 +128,26 @@ namespace DiaCareKids.Api.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id}/subscription")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateSubscription(string id, [FromBody] SubscriptionUpdateRequest request)
+        {
+            var user = await _usersService.GetAsync(id);
+            if (user == null) return NotFound();
+
+            if (user.Subscription == null)
+                user.Subscription = new Subscription();
+
+            user.Subscription.IsActive = request.IsActive;
+            user.Subscription.PlanType = request.PlanType ?? user.Subscription.PlanType ?? "Basic";
+            user.Subscription.StartDate = request.IsActive ? (request.StartDate ?? DateTime.UtcNow) : user.Subscription.StartDate;
+            user.Subscription.ExpiryDate = request.ExpiryDate ?? user.Subscription.ExpiryDate;
+            user.Status = request.IsActive ? "Actif" : "En Attente";
+
+            await _usersService.UpdateAsync(id, user);
+            return Ok(new { message = "Statut mis à jour", isActive = user.Subscription.IsActive, status = user.Status });
+        }
+
         [HttpPost("upload-avatar/{id}")]
         [Authorize]
         public async Task<IActionResult> UploadAvatar(string id, IFormFile file)
@@ -155,5 +175,13 @@ namespace DiaCareKids.Api.Controllers
     public class AdminUserRequest : User
     {
         public string? NewPassword { get; set; }
+    }
+
+    public class SubscriptionUpdateRequest
+    {
+        public bool IsActive { get; set; }
+        public string? PlanType { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
     }
 }
