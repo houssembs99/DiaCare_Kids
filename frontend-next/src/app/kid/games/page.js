@@ -45,8 +45,7 @@ export default function KidGames() {
     const games = [
         { id: 'runner', title: 'Dia Runner', desc: "Esquive les ennemies, collecte les coeurs !", icon: Activity, color: "bg-red-500", xp: 500, link: '/kid/games/runner' },
         { id: 'puzzle', title: 'Puzzle Champion', desc: "Reconstitue les images et débloque les 12 niveaux !", icon: LayoutGrid, color: "bg-blue-500", xp: 1500, link: '/kid/games/puzzle' },
-        { id: 2, title: t('kid.gameHypo'), desc: "Trouve le trésor sucré pour gagner !", icon: Apple, color: "bg-accent", xp: 150, link: '/kid/games/insulin' },
-        { id: 3, title: t('kid.gameFood'), desc: "Aide ton héros à choisir son repas.", icon: Search, color: "bg-success", xp: 200 }
+        { id: 'memory', title: 'Mémoire Gourmande', desc: "Trouve les paires d'aliments cachés !", icon: Search, color: "bg-purple-500", xp: 200, link: '/kid/games/memory' }
     ];
 
     return (
