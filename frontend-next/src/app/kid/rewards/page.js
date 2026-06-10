@@ -53,13 +53,24 @@ export default function KidRewards() {
     const [level, setLevel] = useState(1);
     const [energy, setEnergy] = useState(0);
 
+    // Level is based on badge XP thresholds, not xp/100
+    const computeLevel = (currentXp) => {
+        const thresholds = [0, 2000, 3500, 5000, 10000, 20000, 40000, 70000, 100000];
+        let lvl = 1;
+        for (let i = 0; i < thresholds.length; i++) {
+            if (currentXp >= thresholds[i]) lvl = i + 1;
+            else break;
+        }
+        return lvl;
+    };
+
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         
         // Read XP from local user store
         const currentXp = user.xp || 0;
         setXp(currentXp);
-        setLevel(Math.floor(currentXp / 100) + 1);
+        setLevel(computeLevel(currentXp));
 
         // Read energy saved by the Dashboard page — same value, no re-calculation
         const savedEnergy = parseInt(localStorage.getItem('kidEnergy') || '0', 10);
@@ -73,7 +84,7 @@ export default function KidRewards() {
                     if (res.data) {
                         const freshXp = res.data.xp || 0;
                         setXp(freshXp);
-                        setLevel(Math.floor(freshXp / 100) + 1);
+                        setLevel(computeLevel(freshXp));
                         localStorage.setItem('user', JSON.stringify({ ...user, xp: freshXp }));
                     }
                 }
@@ -100,6 +111,15 @@ export default function KidRewards() {
     const unlockedCount = badges.filter(b => b.unlocked).length;
     const canOpenChest = xp >= 100000 || unlockedCount === 9;
 
+    // Current badge icon lookup
+    const BADGE_NAMES = ["Champion Débutant","Explorateur","Maître du Repas","Vif Éclair","Super Énergie","Garde du Corps","Flamme Dorée","Génie Diabète","Pilote Rocket"];
+    const BADGE_ICONS = [Trophy, Sparkles, Heart, Zap, BatteryCharging, ShieldCheck, Flame, Award, Rocket];
+    const BADGE_COLORS = ["bg-[#FFB300]","bg-blue-500","bg-accent","bg-orange-500","bg-green-500","bg-success","bg-red-500","bg-purple-500","bg-indigo-500"];
+    const currentIdx = Math.min(level - 1, 8);
+    const CurrentBadgeIcon = BADGE_ICONS[currentIdx];
+    const currentBadgeColor = BADGE_COLORS[currentIdx];
+    const currentBadgeName = BADGE_NAMES[currentIdx];
+
     const handleOpenChest = () => {
         if (!canOpenChest) {
             alert("Tu dois encore accumuler de l'XP ou gagner des badges pour ouvrir le Super Coffre !");
@@ -120,11 +140,11 @@ export default function KidRewards() {
                             transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
                             className="absolute -inset-10 bg-gradient-to-tr from-[#FFB300] to-transparent blur-3xl opacity-20"
                         />
-                        <div className="w-32 h-32 bg-white/5 border-4 border-white/10 rounded-[48px] flex items-center justify-center text-[#FFB300] relative z-10 shadow-5xl outline outline-8 outline-[#FFB300]/5">
-                            <Crown size={64} />
+                        <div className={`w-32 h-32 border-4 border-white/10 rounded-[48px] flex items-center justify-center text-white relative z-10 shadow-5xl outline outline-8 outline-white/5 ${currentBadgeColor}`}>
+                            <CurrentBadgeIcon size={64} />
                         </div>
-                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-8 py-2 bg-[#FFB300] text-black rounded-full font-black text-xs uppercase tracking-widest shadow-2xl">
-                            NIVEAU {level}
+                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-8 py-2 bg-[#FFB300] text-black rounded-full font-black text-xs uppercase tracking-widest shadow-2xl whitespace-nowrap">
+                            {currentBadgeName}
                         </div>
                     </div>
 
@@ -167,11 +187,8 @@ export default function KidRewards() {
 
                 {/* Badge Collection SECTION 7.2 */}
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between px-4">
+                    <div className="flex items-center px-4">
                         <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30">Tes Badges ({unlockedCount}/9)</h2>
-                        <button className="text-[10px] font-black text-[#FFB300] uppercase tracking-widest flex items-center gap-2">
-                            Tout voir <ChevronRight size={14} />
-                        </button>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">

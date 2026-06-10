@@ -9,7 +9,8 @@ import {
     Zap, Heart, Star, Sparkles,
     ChevronRight, ChevronLeft,
     Crown, Rocket, Shield, Loader2,
-    Gamepad2, BookOpen, Trophy, LayoutDashboard
+    Gamepad2, BookOpen, Trophy, LayoutDashboard,
+    ShieldCheck, Flame, Award, BatteryCharging
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -36,8 +37,15 @@ export default function KidDashboard() {
             setUserName(user.fullName.split(' ')[0]);
         }
         if (user.xp !== undefined) {
-            setXp(user.xp);
-            setLevel(Math.floor(user.xp / 100) + 1);
+            const currentXp = user.xp;
+            const thresholds = [0, 2000, 3500, 5000, 10000, 20000, 40000, 70000, 100000];
+            let lvl = 1;
+            for (let i = 0; i < thresholds.length; i++) {
+                if (currentXp >= thresholds[i]) lvl = i + 1;
+                else break;
+            }
+            setXp(currentXp);
+            setLevel(lvl);
         }
 
         // Show mascot on first visit of the session
@@ -53,8 +61,15 @@ export default function KidDashboard() {
                 try {
                     const freshUser = await api.get(`/users/${user.id}`);
                     if (freshUser.data) {
-                        setXp(freshUser.data.xp || 0);
-                        setLevel(Math.floor((freshUser.data.xp || 0) / 100) + 1);
+                        const freshXp = freshUser.data.xp || 0;
+                        const thresholds = [0, 2000, 3500, 5000, 10000, 20000, 40000, 70000, 100000];
+                        let lvl = 1;
+                        for (let i = 0; i < thresholds.length; i++) {
+                            if (freshXp >= thresholds[i]) lvl = i + 1;
+                            else break;
+                        }
+                        setXp(freshXp);
+                        setLevel(lvl);
                         const updatedStore = { ...user, ...freshUser.data };
                         localStorage.setItem('user', JSON.stringify(updatedStore));
                     }
@@ -157,6 +172,21 @@ export default function KidDashboard() {
         }
     ];
 
+    // Current badge based on level
+    const BADGE_DATA = [
+        { icon: Trophy,          color: "bg-[#FFB300]" },
+        { icon: Sparkles,        color: "bg-blue-500" },
+        { icon: Heart,           color: "bg-accent" },
+        { icon: Zap,             color: "bg-orange-500" },
+        { icon: BatteryCharging, color: "bg-green-500" },
+        { icon: ShieldCheck,     color: "bg-success" },
+        { icon: Flame,           color: "bg-red-500" },
+        { icon: Award,           color: "bg-purple-500" },
+        { icon: Rocket,          color: "bg-indigo-500" }
+    ];
+    const currentBadge = BADGE_DATA[Math.min(level - 1, BADGE_DATA.length - 1)];
+    const BadgeIcon = currentBadge.icon;
+
     return (
         <DashboardLayout role="Enfant">
             {showMascot && <DiaPoteMascot userName={userName} onClose={() => setShowMascot(false)} />}
@@ -178,15 +208,15 @@ export default function KidDashboard() {
                     <div className="flex items-center gap-4">
                         <motion.div 
                             whileHover={{ rotate: 15 }}
-                            className="w-14 h-14 md:w-20 md:h-20 bg-[#FFB300] rounded-2xl md:rounded-[32px] flex items-center justify-center text-black shadow-lg"
+                            className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-[32px] flex items-center justify-center text-white shadow-lg ${currentBadge.color}`}
                         >
-                            <Crown size={32} className="md:w-12 md:h-12" />
+                            <BadgeIcon size={32} className="md:w-12 md:h-12" />
                         </motion.div>
                         <div>
                             <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase leading-none">
                                 Salut, <span className="text-white/40">{userName} !</span>
                             </h1>
-                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Champion Niveau {level}</span>
+                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Champion Niveau {level} • {currentBadge.icon === Trophy ? "Champion Débutant" : currentBadge.icon === Sparkles ? "Explorateur" : currentBadge.icon === Heart ? "Maître du Repas" : currentBadge.icon === Zap ? "Vif Éclair" : "Super Héros"}</span>
                         </div>
                     </div>
                     <div className="hidden md:flex gap-4">
