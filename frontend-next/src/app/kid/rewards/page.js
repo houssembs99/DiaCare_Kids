@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Trophy, Star, Medal, Crown,
     Gift, Sparkles, ChevronRight,
     ShieldCheck, Heart, Zap, Rocket,
-    CheckCircle2
+    CheckCircle2, Flame, Award,
+    BatteryCharging
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
+import api from '@/lib/api';
 
 const BadgeCard = ({ name, icon: Icon, color, unlocked, delay }) => (
     <motion.div
@@ -45,23 +47,63 @@ export default function KidRewards() {
     const { t } = useLanguage();
     const [xp, setXp] = useState(0);
     const [level, setLevel] = useState(1);
+    const [energy, setEnergy] = useState(0);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.xp !== undefined) {
             setXp(user.xp);
             setLevel(Math.floor(user.xp / 100) + 1);
         }
+
+        const fetchHealthData = async () => {
+            try {
+                if (user.id) {
+                    const recordRes = await api.get(`/medicalrecords/patient/${user.id}`);
+                    const records = recordRes.data;
+
+                    if (records && records.length > 0) {
+                        const val = records[0].glucoseValue;
+                        if (val) {
+                            let calculatedEnergy = 0;
+                            if (val >= 70 && val <= 140) calculatedEnergy = 90 + Math.random() * 10;
+                            else if (val < 70) calculatedEnergy = Math.max(10, val / 1.5);
+                            else calculatedEnergy = Math.max(20, 100 - (val - 140) / 2);
+                            setEnergy(Math.round(calculatedEnergy));
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchHealthData();
     }, []);
 
+    // 9 Badges based on XP and Energy
     const badges = [
-        { id: 1, name: "Champion de Saisie", icon: Trophy, color: "bg-[#FFB300]", unlocked: true },
-        { id: 2, name: "Explorateur AR", icon: Sparkles, color: "bg-blue-500", unlocked: true },
-        { id: 3, name: "Maître du Repas", icon: Heart, color: "bg-accent", unlocked: true },
-        { id: 4, name: "Vif Éclair", icon: Zap, color: "bg-orange-500", unlocked: false },
-        { id: 5, name: "Garde du Corps", icon: ShieldCheck, color: "bg-success", unlocked: false },
-        { id: 6, name: "Pilote Rocket", icon: Rocket, color: "bg-indigo-500", unlocked: false }
+        { id: 1, name: "Champion Débutant", icon: Trophy, color: "bg-[#FFB300]", unlocked: xp >= 0 },
+        { id: 2, name: "Explorateur", icon: Sparkles, color: "bg-blue-500", unlocked: xp >= 200 },
+        { id: 3, name: "Maître du Repas", icon: Heart, color: "bg-accent", unlocked: xp >= 500 },
+        { id: 4, name: "Vif Éclair", icon: Zap, color: "bg-orange-500", unlocked: xp >= 1000 },
+        { id: 5, name: "Super Énergie", icon: BatteryCharging, color: "bg-green-500", unlocked: xp >= 1500 && energy > 50 },
+        { id: 6, name: "Garde du Corps", icon: ShieldCheck, color: "bg-success", unlocked: xp >= 3000 },
+        { id: 7, name: "Flamme Dorée", icon: Flame, color: "bg-red-500", unlocked: xp >= 5000 && energy > 70 },
+        { id: 8, name: "Génie Diabète", icon: Award, color: "bg-purple-500", unlocked: xp >= 7500 },
+        { id: 9, name: "Pilote Rocket", icon: Rocket, color: "bg-indigo-500", unlocked: xp >= 10000 }
     ];
+
+    const unlockedCount = badges.filter(b => b.unlocked).length;
+    const canOpenChest = xp >= 10000 || unlockedCount === 9; // Ultimate goal!
+
+    const handleOpenChest = () => {
+        if (!canOpenChest) {
+            alert("Tu dois encore accumuler de l'XP ou gagner des badges pour ouvrir le Super Coffre !");
+            return;
+        }
+        alert("Félicitations !! Tu reçois ton cadeau de tes parents ! 🎁🎉");
+    };
 
     return (
         <DashboardLayout role="Enfant">
@@ -83,17 +125,39 @@ export default function KidRewards() {
                         </div>
                     </div>
 
-                    <div className="text-center space-y-4 w-full px-10">
-                        <div className="flex justify-between items-center px-4">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{xp} / 3000 XP</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">Points restants : {3000 - xp}</span>
+                    <div className="text-center space-y-8 w-full px-4 md:px-10">
+                        {/* Progress 1: 3000 XP Goal */}
+                        <div className="space-y-2 relative">
+                            <div className="flex justify-between items-center px-4">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">{xp >= 3000 ? "3000" : xp} / 3000 XP</span>
+                                <span className="text-[10px] items-center flex gap-1 font-black uppercase tracking-widest text-white/50">
+                                    <Star size={10}/> Palier 1
+                                </span>
+                            </div>
+                            <div className="h-4 bg-white/5 border border-white/10 rounded-full overflow-hidden shadow-inner p-1">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min((xp / 3000) * 100, 100)}%` }}
+                                    className="h-full bg-gradient-to-r from-[#FFB300] to-[#FFA000] rounded-full shadow-[0_0_20px_rgba(255,179,0,0.5)]"
+                                />
+                            </div>
                         </div>
-                        <div className="h-6 bg-white/5 border border-white/10 rounded-full overflow-hidden p-1.5 shadow-inner">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(xp / 3000) * 100}%` }}
-                                className="h-full bg-gradient-to-r from-[#FFB300] to-[#FFA000] rounded-full shadow-[0_0_20px_rgba(255,179,0,0.5)]"
-                            />
+
+                        {/* Progress 2: 10000 XP Goal */}
+                        <div className="space-y-2 relative">
+                            <div className="flex justify-between items-center px-4">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{xp >= 10000 ? "10000" : xp} / 10000 XP</span>
+                                <span className="text-[10px] items-center flex gap-1 font-black uppercase tracking-widest text-white/50">
+                                    <Trophy size={10}/> Palier Ultime
+                                </span>
+                            </div>
+                            <div className="h-4 bg-white/5 border border-white/10 rounded-full overflow-hidden shadow-inner p-1">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min((xp / 10000) * 100, 100)}%` }}
+                                    className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -101,7 +165,7 @@ export default function KidRewards() {
                 {/* Badge Collection SECTION 7.2 */}
                 <div className="space-y-6">
                     <div className="flex items-center justify-between px-4">
-                        <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30">Tes Badges (3/6)</h2>
+                        <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30">Tes Badges ({unlockedCount}/9)</h2>
                         <button className="text-[10px] font-black text-[#FFB300] uppercase tracking-widest flex items-center gap-2">
                             Tout voir <ChevronRight size={14} />
                         </button>
@@ -122,21 +186,41 @@ export default function KidRewards() {
                 </div>
 
                 {/* Rewards Redemption SECTION 7.1 */}
-                <div className="bg-gradient-to-br from-[#088395] to-blue-700 rounded-[48px] p-10 relative overflow-hidden shadow-5xl group cursor-pointer">
+                <div 
+                    onClick={handleOpenChest}
+                    className={cn(
+                        "rounded-[48px] p-10 relative overflow-hidden shadow-5xl group cursor-pointer transition-all duration-300",
+                        canOpenChest 
+                            ? "bg-gradient-to-br from-[#088395] to-blue-700 animate-pulse hover:animate-none" 
+                            : "bg-white/5 border-2 border-white/10 grayscale"
+                    )}
+                >
                     <div className="absolute -right-16 -top-16 p-10 opacity-10 group-hover:rotate-12 transition-transform duration-500">
                         <Gift size={200} />
                     </div>
                     <div className="relative z-10">
                         <div className="flex items-center gap-5 mb-8">
-                            <div className="w-16 h-16 bg-white/20 backdrop-blur-3xl rounded-3xl flex items-center justify-center border border-white/20">
-                                <Medal size={32} className="text-[#FFB300]" />
+                            <div className={cn(
+                                "w-16 h-16 rounded-3xl flex items-center justify-center border",
+                                canOpenChest ? "bg-white/20 backdrop-blur-3xl border-white/20" : "bg-black/20 border-white/5"
+                            )}>
+                                <Medal size={32} className={canOpenChest ? "text-[#FFB300]" : "text-white/30"} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black italic uppercase tracking-tighter leading-none">Super Coffre</h3>
-                                <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest mt-1">Niveau requis prochainement</p>
+                                <h3 className="text-xl font-black italic uppercase tracking-tighter leading-none mb-1">Super Coffre</h3>
+                                <p className="text-[9px] font-bold opacity-80 uppercase tracking-widest">
+                                    {canOpenChest ? "Prêt à être ouvert !" : "Déverrouille-le à 10000 XP"}
+                                </p>
                             </div>
                         </div>
-                        <button className="w-full py-5 bg-white text-[#088395] rounded-[28px] font-black uppercase tracking-[0.3em] text-[11px] shadow-3xl hover:translate-y-[-2px] active:translate-y-[1px] transition-all">
+                        <button 
+                            className={cn(
+                                "w-full py-5 rounded-[28px] font-black uppercase tracking-[0.3em] text-[11px] shadow-3xl transition-all",
+                                canOpenChest 
+                                    ? "bg-white text-[#088395] hover:translate-y-[-2px] active:translate-y-[1px]" 
+                                    : "bg-white/10 text-white/30 cursor-not-allowed"
+                            )}
+                        >
                             Ouvrir mon Cadeau
                         </button>
                     </div>

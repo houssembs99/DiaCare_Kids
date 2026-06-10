@@ -185,7 +185,7 @@ export default function KidDashboard() {
                     <div className="hidden md:flex gap-4">
                          <div className="bg-white/5 border border-white/10 p-4 rounded-3xl flex items-center gap-3">
                             <div className="bg-[#FFB300] px-4 py-1 rounded-full text-[#0b1b2b] text-[10px] font-black uppercase tracking-widest -rotate-2">
-                                <span className="font-bold">{xp % 100}/100 XP</span>
+                                <span className="font-bold">{xp} XP</span>
                             </div>
                          </div>
                     </div>
