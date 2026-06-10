@@ -17,6 +17,7 @@ import {
 import { Line } from 'react-chartjs-2';
 
 import api from '@/lib/api';
+import Link from 'next/link';
 
 ChartJS.register(
     CategoryScale, LinearScale, PointElement, LineElement,
