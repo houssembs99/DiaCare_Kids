@@ -88,9 +88,11 @@ namespace DiaCareKids.Api.Controllers
 
             if (!isAdmin && currentUserId != id) return Forbid();
 
-            // Update allowed fields
-            user.Email = request.Email.ToLower();
-            user.FullName = request.FullName;
+            // Update allowed fields — guard against nulls from partial payloads
+            if (!string.IsNullOrWhiteSpace(request.Email))
+                user.Email = request.Email.ToLower();
+            if (!string.IsNullOrWhiteSpace(request.FullName))
+                user.FullName = request.FullName;
             
             if (isAdmin)
             {

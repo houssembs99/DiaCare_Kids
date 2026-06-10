@@ -109,19 +109,23 @@ export default function DoctorSettings() {
     const handleSaveProfile = async () => {
         setSavingProfile(true);
         try {
+            // Send the FULL user object merged with updated fields
+            // The PUT endpoint (AdminUserRequest extends User) requires all fields,
+            // otherwise unset fields (email, role, status...) get reset to empty strings.
             const payload = {
+                ...user,
                 fullName,
                 clinicType: specialty,
                 contactNumber: phone,
                 orderNumber,
             };
-            await api.put(`/Users/${user.id}`, payload);
-            const updatedUser = { ...user, ...payload };
+            await api.put(`/Users/${user.id || user.Id}`, payload);
+            const updatedUser = { ...user, fullName, clinicType: specialty, contactNumber: phone, orderNumber };
             setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
             alert("Profil mis à jour avec succès !");
         } catch (err) {
-            console.error(err);
+            console.error("Save profile error:", err.response?.data || err.message);
             alert(err.response?.data?.message || "Erreur lors de la mise à jour du profil.");
         } finally {
             setSavingProfile(false);
