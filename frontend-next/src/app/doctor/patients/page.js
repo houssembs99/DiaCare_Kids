@@ -113,8 +113,27 @@ export default function DoctorPatients() {
             return acc;
         }, {});
 
+        // Inject empty parents belonging to this doctor
+        if (doctorInfo) {
+            allUsers.forEach(u => {
+                if (u.role === 'Parent' && (u.associatedDoctorId === doctorInfo.id || u.associatedClinicId === doctorInfo.id)) {
+                    if (!groups[u.id]) {
+                        // Apply search filter for empty parents too
+                        const matchesSearch = (u.fullName || "").toLowerCase().includes(searchQuery.toLowerCase());
+                        if (matchesSearch && filterStatus === "All") {
+                            groups[u.id] = {
+                                parentId: u.id,
+                                parentName: u.fullName,
+                                kids: []
+                            };
+                        }
+                    }
+                }
+            });
+        }
+
         return Object.values(groups);
-    }, [patients, searchQuery, filterStatus]);
+    }, [patients, searchQuery, filterStatus, allUsers, doctorInfo]);
 
     return (
         <DashboardLayout role="Medecin">
