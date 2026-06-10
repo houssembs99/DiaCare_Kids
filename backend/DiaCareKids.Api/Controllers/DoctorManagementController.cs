@@ -148,10 +148,25 @@ namespace DiaCareKids.Api.Controllers
         {
             var doctorId = GetCurrentUserId();
             var patient = await _usersService.GetAsync(id);
+            
+            if (patient == null)
+                return NotFound(new { message = "Patient non trouvé." });
 
-            if (patient == null || patient.AssociatedDoctorId != doctorId)
+            bool isDirectlyAssigned = patient.AssociatedDoctorId == doctorId;
+            bool isThroughParent = false;
+
+            if (!string.IsNullOrEmpty(patient.AssociatedParentId))
             {
-                return NotFound(new { message = "Patient non trouvé ou non autorisé." });
+                var parent = await _usersService.GetAsync(patient.AssociatedParentId);
+                if (parent != null && (parent.AssociatedDoctorId == doctorId || parent.AssociatedClinicId == doctorId))
+                {
+                    isThroughParent = true;
+                }
+            }
+
+            if (!isDirectlyAssigned && !isThroughParent)
+            {
+                return NotFound(new { message = "Patient non autorisé." });
             }
 
             await _usersService.RemoveAsync(id);
