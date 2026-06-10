@@ -44,7 +44,15 @@ const BadgeCard = ({ name, icon: Icon, color, unlocked, delay }) => (
 export default function KidRewards() {
     const { t } = useLanguage();
     const [xp, setXp] = useState(0);
-    const [level, setLevel] = useState(0);
+    const [level, setLevel] = useState(1);
+
+    React.useEffect(() => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.xp !== undefined) {
+            setXp(user.xp);
+            setLevel(Math.floor(user.xp / 100) + 1);
+        }
+    }, []);
 
     const badges = [
         { id: 1, name: "Champion de Saisie", icon: Trophy, color: "bg-[#FFB300]", unlocked: true },

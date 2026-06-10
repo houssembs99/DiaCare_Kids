@@ -21,9 +21,11 @@ import stableAnimData from '@/animations/diapotstable.json';
 export default function KidDashboard() {
     const { t, locale } = useLanguage();
     const [energy, setEnergy] = useState(0);
-    const [userName, setUserName] = useState('');
+    const [userName, setUserName] = useState("Aventurier");
     const [statusMessage, setStatusMessage] = useState('');
     const [force, setForce] = useState('-');
+    const [xp, setXp] = useState(0);
+    const [level, setLevel] = useState(1);
     const [loading, setLoading] = useState(true);
     const [showMascot, setShowMascot] = useState(false);
     const [isEducationOpen, setIsEducationOpen] = useState(false);
@@ -32,6 +34,10 @@ export default function KidDashboard() {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.fullName) {
             setUserName(user.fullName.split(' ')[0]);
+        }
+        if (user.xp !== undefined) {
+            setXp(user.xp);
+            setLevel(Math.floor(user.xp / 100) + 1);
         }
 
         // Show mascot on first visit of the session
@@ -68,8 +74,9 @@ export default function KidDashboard() {
                         setEnergy(Math.round(calculatedEnergy));
                     }
                 } else {
-                    setStatusMessage(t('kid.welcome'));
-                    setForce("Initialisation");
+                    setStatusMessage("Ta batterie est en attente ! Demande vite à ton super-parent ou à ton docteur d'ajouter tes mesures pour voir ton niveau d'énergie réel ! 🔋🚀");
+                    setForce("En attente");
+                    setEnergy(0);
                 }
             } catch (err) {
                 console.error("Dashboard error:", err);
@@ -158,19 +165,17 @@ export default function KidDashboard() {
                             <Crown size={32} className="md:w-12 md:h-12" />
                         </motion.div>
                         <div>
-                            <h1 className="text-2xl md:text-4xl font-black italic tracking-tighter uppercase leading-none">
-                                {userName || 'Héros'} <span className="text-[#FFB300]">DiaCare</span>
+                            <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase leading-none">
+                                Salut, <span className="text-white/40">{userName} !</span>
                             </h1>
-                            <div className="flex items-center gap-2 mt-1">
-                                <Star size={12} className="text-[#FFB300] fill-[#FFB300]" />
-                                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Niveau 5 • Pro du Glucose</span>
-                            </div>
+                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Champion Niveau {level}</span>
                         </div>
                     </div>
                     <div className="hidden md:flex gap-4">
                          <div className="bg-white/5 border border-white/10 p-4 rounded-3xl flex items-center gap-3">
-                            <Sparkles className="text-[#FFB300]" />
-                            <span className="font-bold">450 XP</span>
+                            <div className="bg-[#FFB300] px-4 py-1 rounded-full text-[#0b1b2b] text-[10px] font-black uppercase tracking-widest -rotate-2">
+                                <span className="font-bold">{xp % 100}/100 XP</span>
+                            </div>
                          </div>
                     </div>
                 </div>
@@ -204,6 +209,18 @@ export default function KidDashboard() {
                             <p className="text-xl font-black italic uppercase tracking-tighter leading-tight bg-white/5 p-6 rounded-3xl border border-white/5">
                                 {loading ? <Loader2 className="animate-spin" /> : statusMessage}
                             </p>
+
+                            <div className="mt-6 p-6 bg-white/5 rounded-3xl border border-white/10 space-y-3">
+                                <div className="flex items-center gap-3 text-[#FFB300]">
+                                    <Sparkles size={16} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest Italix">Comment ça marche ?</span>
+                                </div>
+                                <p className="text-[10px] font-bold text-white/40 leading-relaxed uppercase">
+                                    Ton énergie dépend de ton sucre ! Si ton sucre est parfait, ta batterie est à 100%. S'il est trop haut ou trop bas, tu te fatigues un peu. 
+                                    <br /><br />
+                                    <span className="text-[#34C759]">Fais tes mesures avec tes parents pour charger ton énergie !</span>
+                                </p>
+                            </div>
 
                             <div className="mt-6 flex items-center gap-3 text-white/40">
                                 <Shield size={16} />

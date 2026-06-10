@@ -47,6 +47,9 @@ namespace DiaCareKids.Api.Models
 
         // Subscription management (for Parents & Clinics)
         public SubscriptionDetails? Subscription { get; set; }
+
+        // Gamification (For Kid role)
+        public int XP { get; set; } = 0;
     }
 
     public class SubscriptionDetails

@@ -67,11 +67,17 @@ namespace DiaCareKids.Api.Controllers
                         Console.WriteLine($"[IA ERROR] Prediction failed: {ex.Message}");
                     }
 
+                    // --- GAMIFICATION: Increment XP ---
+                    kid.XP += 10;
+                    await _usersService.UpdateAsync(kid.Id!, kid);
+
                     return Ok(new { 
                         record, 
                         analysis,
                         aiPrediction = prediction,
-                        aiMessage = predictionMsg
+                        aiMessage = predictionMsg,
+                        xpGained = 10,
+                        totalXp = kid.XP
                     });
                 }
 

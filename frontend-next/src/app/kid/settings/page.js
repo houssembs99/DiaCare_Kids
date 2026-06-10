@@ -144,7 +144,7 @@ export default function KidSettings() {
 
                     <div className="flex items-center gap-3 px-6 py-3 bg-[#FFB300]/10 border border-[#FFB300]/20 rounded-2xl">
                         <Trophy size={18} className="text-[#FFB300]" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">Champion Niveau 5</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">Champion Niveau {Math.floor((user.xp || 0) / 100) + 1}</span>
                     </div>
                 </div>
 
@@ -198,11 +198,11 @@ export default function KidSettings() {
                                 <div className="grid grid-cols-2 gap-3 w-full">
                                     <div className="bg-white/5 p-4 rounded-3xl border border-white/5 flex flex-col items-center gap-1">
                                         <Star size={16} className="text-[#FFB300] fill-[#FFB300]" />
-                                        <span className="text-[10px] font-black uppercase text-white/60">4.5k XP</span>
+                                        <span className="text-[10px] font-black uppercase text-white/60">{(user.xp || 0) % 100}/100 XP</span>
                                     </div>
                                     <div className="bg-white/5 p-4 rounded-3xl border border-white/5 flex flex-col items-center gap-1">
                                         <Sparkles size={16} className="text-[#34C759]" />
-                                        <span className="text-[10px] font-black uppercase text-white/60">Badge Pro</span>
+                                        <span className="text-[10px] font-black uppercase text-white/60">Total {user.xp || 0} XP</span>
                                     </div>
                                 </div>
                             </div>
@@ -240,23 +240,7 @@ export default function KidSettings() {
                             </div>
                         </SettingsSection>
 
-                        <motion.div 
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                            className="bg-gradient-to-br from-[#088395] to-[#0b1b2b] p-10 rounded-[40px] border border-white/10 relative overflow-hidden group"
-                        >
-                            <Gamepad2 className="absolute -bottom-10 -right-10 w-48 h-48 opacity-10 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700" />
-                            <div className="relative z-10 flex flex-col gap-4">
-                                <h3 className="text-xl font-black italic uppercase tracking-tighter">Besoin d'aide ?</h3>
-                                <p className="text-white/60 text-sm font-medium">Demande à ton parent ou à DiaPote si tu veux changer d'autres informations !</p>
-                                <div className="flex gap-4 mt-2">
-                                    <button className="bg-white/20 hover:bg-white/30 backdrop-blur-md px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
-                                        Voir l'Aide
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
+
                     </div>
                 </div>
 

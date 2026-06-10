@@ -34,14 +34,9 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
 
             // Fetch full user profile
             api.get(`/Users/${parsed.id}`).then(res => {
-                setUser(res.data);
-                // Also update localStorage so role/name are fresh
-                localStorage.setItem('user', JSON.stringify({
-                    id: res.data.id,
-                    role: res.data.role,
-                    fullName: res.data.fullName,
-                    token: localStorage.getItem('token') // keep token
-                }));
+                const userData = { ...res.data, token: parsed.token };
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
             }).catch(err => console.error("Error fetching user:", err));
 
             // Fetch unread messages

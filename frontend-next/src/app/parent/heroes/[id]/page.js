@@ -21,6 +21,9 @@ export default function ChildProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [resetting, setResetting] = useState(false);
     const [editForm, setEditForm] = useState({
         weight: '', height: '', allergies: '', diabetesType: '', diagnosisDate: ''
     });
@@ -69,6 +72,23 @@ export default function ChildProfile() {
             fetchChildDetails(); // Refresh data
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault();
+        if (!newPassword) return;
+        setResetting(true);
+        try {
+            await api.post(`/parent/reset-child-password/${id}`, { newPassword });
+            alert("Mot de passe du héros réinitialisé !");
+            setShowPasswordModal(false);
+            setNewPassword('');
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la réinitialisation.");
+        } finally {
+            setResetting(false);
         }
     };
 
@@ -142,15 +162,24 @@ export default function ChildProfile() {
                                 Petit Champion • {child.gender === 'H' ? 'Garçon' : 'Fille'}
                             </div>
 
-                            <div className="w-full grid grid-cols-2 gap-4 mt-10 p-6 bg-white/5 rounded-3xl border border-white/5">
-                                <div className="space-y-1">
-                                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Âge Actuel</div>
-                                    <div className="text-lg font-black text-white italic">{age} Ans</div>
+                            <div className="w-full space-y-4 mt-8">
+                                <div className="grid grid-cols-2 gap-4 p-6 bg-white/5 rounded-3xl border border-white/5">
+                                    <div className="space-y-1">
+                                        <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Âge Actuel</div>
+                                        <div className="text-lg font-black text-white italic">{age} Ans</div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Statut</div>
+                                        <div className="text-lg font-black text-success italic">Actif</div>
+                                    </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Statut</div>
-                                    <div className="text-lg font-black text-success italic">Actif</div>
-                                </div>
+                                
+                                <button
+                                    onClick={() => setShowPasswordModal(true)}
+                                    className="w-full py-4 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center gap-3 text-accent hover:bg-accent hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"
+                                >
+                                    <Shield size={16} /> Réinitialiser le mot de passe
+                                </button>
                             </div>
                         </div>
 
@@ -285,6 +314,50 @@ export default function ChildProfile() {
 
                                 <button type="submit" className="w-full py-5 bg-gradient-to-r from-[#088395] to-[#066a7a] rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all mt-4">
                                     Sauvegarder les modifications
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Password Reset Modal */}
+            <AnimatePresence>
+                {showPasswordModal && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl px-6">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="w-full max-w-sm bg-[#0b1b2b] border border-white/10 rounded-[40px] p-10 relative shadow-2xl text-center"
+                        >
+                            <button
+                                onClick={() => setShowPasswordModal(false)}
+                                className="absolute top-6 right-6 p-3 bg-white/5 rounded-2xl text-white/40 hover:text-white transition-all"
+                            >
+                                x
+                            </button>
+                            <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-accent">
+                                <Shield size={32} />
+                            </div>
+                            <h3 className="text-xl font-black uppercase tracking-tighter text-white mb-2">Sécurité Héros</h3>
+                            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-8">Définir un nouveau mot de passe</p>
+                            
+                            <form onSubmit={handleResetPassword} className="space-y-6">
+                                <input 
+                                    type="password" 
+                                    placeholder="Nouveau mot de passe"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-bold text-white outline-none focus:border-accent transition-all text-center"
+                                    required
+                                />
+                                <button 
+                                    type="submit" 
+                                    disabled={resetting}
+                                    className="w-full py-5 bg-accent text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    {resetting ? <Loader2 className="animate-spin mx-auto" size={16} /> : "Confirmer le nouveau code"}
                                 </button>
                             </form>
                         </motion.div>

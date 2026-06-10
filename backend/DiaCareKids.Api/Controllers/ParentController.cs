@@ -292,7 +292,35 @@ namespace DiaCareKids.Api.Controllers
 
             return Ok(new { message = "Profil médical mis à jour avec succès", child });
         }
+
+        [HttpPost("reset-child-password/{childId}")]
+        public async Task<IActionResult> ResetChildPassword(string childId, [FromBody] ResetPasswordRequest request)
+        {
+            var parentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var child = await _usersService.GetAsync(childId);
+
+            if (child == null || child.AssociatedParentId != parentId)
+            {
+                return NotFound(new { message = "Enfant non trouvé ou non autorisé." });
+            }
+
+            if (string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                return BadRequest(new { message = "Le nouveau mot de passe est requis." });
+            }
+
+            child.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            await _usersService.UpdateAsync(childId, child);
+
+            return Ok(new { message = "Mot de passe de l'enfant réinitialisé avec succès." });
+        }
     }
+
+    public class ResetPasswordRequest
+    {
+        public string NewPassword { get; set; } = string.Empty;
+    }
+
 
     public class UpdateChildProfileRequest
     {
