@@ -219,7 +219,7 @@ export default function DoctorPayments() {
                                                     </td>
                                                     <td className="px-10 py-8 text-right">
                                                         <button 
-                                                            onClick={() => handleOpenInvoice({ id: item.userId, fullName: item.userFullName || 'Patient', subscription: { planType: item.planName || 'Standard' }})}
+                                                            onClick={() => handleOpenInvoice({ id: item.userId, fullName: item.userFullName || 'Patient', subscription: { planType: item.planName || 'Standard', isActive: true }, amount: item.amount })}
                                                             className="p-4 bg-white/5 hover:bg-white hover:text-[#0b1b2b] rounded-2xl text-[#088395] transition-all border border-white/10 group" 
                                                             title="Générer et envoyer la facture"
                                                         >
@@ -246,7 +246,11 @@ export default function DoctorPayments() {
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-8 text-right">
-                                                        <button className="p-4 bg-white/5 hover:bg-white hover:text-[#0b1b2b] rounded-2xl text-white/20 transition-all border border-white/10 group">
+                                                        <button 
+                                                            onClick={() => handleOpenInvoice({ id: doctorInfo?.id, fullName: doctorInfo?.fullName, subscription: { planType: item.planName || 'Standard', isActive: true }, amount: item.amount, isSelfBill: true })}
+                                                            className="p-4 bg-white/5 hover:bg-white hover:text-[#0b1b2b] rounded-2xl text-white/20 transition-all border border-white/10 group"
+                                                            title="Télécharger ma facture DiaCare"
+                                                        >
                                                             <Download size={18} className="group-hover:-translate-y-0.5 transition-transform" />
                                                         </button>
                                                     </td>
@@ -318,7 +322,7 @@ export default function DoctorPayments() {
                     isOpen={isInvoiceOpen}
                     onClose={() => setIsInvoiceOpen(false)}
                     user={selectedUserForInvoice}
-                    issuerInfo={{
+                    issuerInfo={selectedUserForInvoice.isSelfBill ? undefined : {
                         name: `Dr. ${doctorInfo?.fullName || 'Médecin'}`,
                         address: doctorInfo?.address || 'Cabinet Médical',
                         phone: doctorInfo?.contactNumber || '',
@@ -327,9 +331,9 @@ export default function DoctorPayments() {
                     }}
                     plan={{
                         name: selectedUserForInvoice.subscription?.planType || 'Consultation',
-                        price: packages.find(p => p.name === selectedUserForInvoice.subscription?.planType)?.price || ((myTransactions.find(t => t.planName === selectedUserForInvoice.subscription?.planType)?.amount || 8000) / 100), 
-                        currency: 'DT',
-                        description: `Honoraires de suivi médical (Cabinet) pour ${selectedUserForInvoice.fullName}`
+                        price: selectedUserForInvoice.amount ? (selectedUserForInvoice.amount / 100) : (packages.find(p => p.name === selectedUserForInvoice.subscription?.planType)?.price || 80), 
+                        currency: selectedUserForInvoice.isSelfBill ? '€' : 'DT',
+                        description: selectedUserForInvoice.isSelfBill ? `Abonnement Plateforme DiaCare Kids - ${selectedUserForInvoice.subscription?.planType}` : `Honoraires de suivi médical (Cabinet) pour ${selectedUserForInvoice.fullName}`
                     }}
                 />
             )}
