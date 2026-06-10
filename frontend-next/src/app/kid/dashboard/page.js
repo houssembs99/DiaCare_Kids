@@ -18,9 +18,11 @@ import api from '@/lib/api';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
 import stableAnimData from '@/animations/diapotstable.json';
+import { useRouter } from 'next/navigation';
 
 export default function KidDashboard() {
     const { t, locale } = useLanguage();
+    const router = useRouter();
     const [energy, setEnergy] = useState(0);
     const [userName, setUserName] = useState("Aventurier");
     const [statusMessage, setStatusMessage] = useState('');
@@ -30,6 +32,7 @@ export default function KidDashboard() {
     const [loading, setLoading] = useState(true);
     const [showMascot, setShowMascot] = useState(false);
     const [isEducationOpen, setIsEducationOpen] = useState(false);
+    const [activeMission, setActiveMission] = useState(null);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -54,6 +57,15 @@ export default function KidDashboard() {
             setShowMascot(true);
             sessionStorage.setItem('hasSeenMascot', 'true');
         }
+
+        // Determine active mission
+        const games = [
+            { title: 'Dia Runner', link: '/kid/games/runner' },
+            { title: 'Puzzle Champion', link: '/kid/games/puzzle' },
+            { title: 'Mémoire Gourmande', link: '/kid/games/memory' }
+        ];
+        const day = new Date().getDay();
+        setActiveMission(games[day % games.length]);
 
         const fetchHealthData = async () => {
             try {
@@ -278,9 +290,18 @@ export default function KidDashboard() {
 
                         <div className="p-8 bg-gradient-to-br from-[#088395] to-[#0b1b2b] rounded-[40px] border border-white/10 relative overflow-hidden group">
                              <Rocket className="absolute -bottom-4 -right-4 w-32 h-32 opacity-5 group-hover:scale-110 transition-transform" />
-                             <h3 className="text-sm font-black uppercase tracking-widest mb-4">Mission Active</h3>
-                             <p className="text-2xl font-black italic leading-none mb-6 tracking-tighter uppercase">Le Détective des Repas</p>
-                             <button className="bg-white text-[#088395] px-6 py-3 rounded-2xl font-bold text-sm uppercase tracking-widest">Jouer</button>
+                             <h3 className="text-sm font-black uppercase tracking-widest mb-4">
+                                {t('kid.activeMission') !== 'kid.activeMission' ? t('kid.activeMission') : 'Mission Active'}
+                             </h3>
+                             <p className="text-2xl font-black italic leading-none mb-6 tracking-tighter uppercase">
+                                {activeMission ? activeMission.title : '...'}
+                             </p>
+                             <button 
+                                onClick={() => activeMission && router.push(activeMission.link)}
+                                className="bg-white text-[#088395] px-6 py-3 rounded-2xl font-bold text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform"
+                             >
+                                {t('kid.play') !== 'kid.play' ? t('kid.play') : 'Jouer'}
+                             </button>
                         </div>
                     </div>
 

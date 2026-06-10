@@ -145,6 +145,8 @@ export const translations = {
             diaPoteListening: "DiaPote est à l'écoute",
             next: "Suivant",
             letsGo: "C'est parti !",
+            activeMission: "Mission Active",
+            play: "Jouer",
             arEdu: {
                 greeting: "Salut champion ! Je suis Hamouch, ton ami ! Allons voir comment tu vas !",
                 hypoTitle: "Alerte Hypo !",
@@ -371,6 +373,8 @@ export const translations = {
             diaPoteListening: "DiaPote is listening",
             next: "Next",
             letsGo: "Let's Go!",
+            activeMission: "Active Mission",
+            play: "Play",
             arEdu: {
                 greeting: "Hi champion! I am Hamouch, your friend! Let's see how you are doing!",
                 hypoTitle: "Hypo Alert!",
@@ -597,6 +601,8 @@ export const translations = {
             diaPoteListening: "ديا-بوت يستمع",
             next: "التالي",
             letsGo: "هيا بنا!",
+            activeMission: "المهمة النشطة",
+            play: "العب",
             arEdu: {
                 greeting: "أهلاً يا بطل! أنا حموش، صديقك! لنرى كيف حالك!",
                 hypoTitle: "تنبيه هبوط!",
