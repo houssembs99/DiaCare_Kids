@@ -154,19 +154,14 @@ export default function KidRewards() {
                             className="absolute -inset-10 bg-gradient-to-tr from-[#FFB300] to-transparent blur-3xl opacity-20"
                         />
 
-                        {/* Badge name shown ABOVE the icon */}
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
-                                {currentBadgeName}
-                            </span>
+                        {/* Badge name shown ABOVE the icon (yellow pill) */}
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 bg-[#FFB300] text-black rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl whitespace-nowrap z-20">
+                            {currentBadgeName}
                         </div>
 
-                        <div className={`w-32 h-32 border-4 border-white/10 rounded-[48px] flex items-center justify-center text-white relative z-10 shadow-5xl outline outline-8 outline-white/5 ${currentBadgeColor}`}>
-                            <CurrentBadgeIcon size={64} />
-                        </div>
-                        {/* Badge name pill below the icon */}
-                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-8 py-2 bg-[#FFB300] text-black rounded-full font-black text-xs uppercase tracking-widest shadow-2xl whitespace-nowrap">
-                            {currentBadgeName}
+                        {/* Smaller badge icon */}
+                        <div className={`w-24 h-24 border-4 border-white/10 rounded-[32px] flex items-center justify-center text-white relative z-10 shadow-5xl outline outline-4 outline-white/5 ${currentBadgeColor}`}>
+                            <CurrentBadgeIcon size={48} />
                         </div>
                     </div>
 
