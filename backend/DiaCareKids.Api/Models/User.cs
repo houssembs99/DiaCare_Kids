@@ -44,6 +44,7 @@ namespace DiaCareKids.Api.Models
         public string? ClinicType { get; set; } // Clinique, Cabinet, Hopital
         public string? Address { get; set; }
         public string? ContactNumber { get; set; }
+        public string? OrderNumber { get; set; } // Numéro d'Ordre / Spécialité du médecin
 
         // Subscription management (for Parents & Clinics)
         public SubscriptionDetails? Subscription { get; set; }

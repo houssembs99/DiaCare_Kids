@@ -115,6 +115,7 @@ namespace DiaCareKids.Api.Controllers
             user.ClinicType = request.ClinicType;
             user.Address = request.Address;
             user.ContactNumber = request.ContactNumber;
+            user.OrderNumber = request.OrderNumber;
             user.Gender = request.Gender;
             user.DateOfBirth = request.DateOfBirth;
 
