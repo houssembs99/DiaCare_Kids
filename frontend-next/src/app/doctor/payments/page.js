@@ -44,10 +44,10 @@ export default function DoctorPayments() {
             const allTrans = transRes.data;
             
             // Separate: bills I paid vs revenue I earned
-            const myBills = allTrans.filter(t => t.role !== 'Medecin' || t.planName?.includes('DiaCare'));
-            const myRevenue = allTrans.filter(t => t.role === 'Medecin' && t.userId === doctorId);
+            const myBills = allTrans.filter(t => !t.paymentIntentId?.startsWith('manual_'));
+            const myRevenue = allTrans.filter(t => t.paymentIntentId?.startsWith('manual_'));
 
-            setMyTransactions(allTrans); // All for 'my_bills' tab (will show all)
+            setMyTransactions(myBills); // Only bills for 'my_bills' tab
             setPatientSubscribers(myRevenue); // Revenue tab: real recorded transactions
 
             // 2. My Packages to get prices
