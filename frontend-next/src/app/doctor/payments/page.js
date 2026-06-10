@@ -157,6 +157,7 @@ export default function DoctorPayments() {
                                             <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Date Paiement</th>
                                             <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Montant</th>
                                             <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Statut</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-right">Facture</th>
                                         </>
                                     ) : (
                                         <>
@@ -215,6 +216,15 @@ export default function DoctorPayments() {
                                                                 <CheckCircle size={12} /> {item.status || 'Payé'}
                                                             </div>
                                                         </div>
+                                                    </td>
+                                                    <td className="px-10 py-8 text-right">
+                                                        <button 
+                                                            onClick={() => handleOpenInvoice({ id: item.userId, fullName: item.userFullName || 'Patient', subscription: { planType: item.planName || 'Standard' }})}
+                                                            className="p-4 bg-white/5 hover:bg-white hover:text-[#0b1b2b] rounded-2xl text-[#088395] transition-all border border-white/10 group" 
+                                                            title="Générer et envoyer la facture"
+                                                        >
+                                                            <Receipt size={18} className="group-hover:scale-110 transition-transform" />
+                                                        </button>
                                                     </td>
                                                 </>
                                             ) : (
@@ -317,8 +327,8 @@ export default function DoctorPayments() {
                     }}
                     plan={{
                         name: selectedUserForInvoice.subscription?.planType || 'Consultation',
-                        price: packages.find(p => p.name === selectedUserForInvoice.subscription?.planType)?.price || 80, 
-                        currency: 'TND',
+                        price: packages.find(p => p.name === selectedUserForInvoice.subscription?.planType)?.price || ((myTransactions.find(t => t.planName === selectedUserForInvoice.subscription?.planType)?.amount || 8000) / 100), 
+                        currency: 'DT',
                         description: `Honoraires de suivi médical (Cabinet) pour ${selectedUserForInvoice.fullName}`
                     }}
                 />
