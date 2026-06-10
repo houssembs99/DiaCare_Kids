@@ -36,37 +36,38 @@ export default function DoctorTreatments() {
             setModalPatientId("");
             setModalActions([]);
             alert("Traitement planifié avec succès !");
-            // Optional: re-fetch treatments to refresh
+            fetchTreatments(); // Refresh list immediately after valid plan
         } catch (err) {
             console.error(err);
             alert("Erreur lors de la planification.");
         }
     };
 
-    useEffect(() => {
-        const fetchTreatments = async () => {
-            setLoading(true);
-            try {
-                const res = await api.get('/doctor-management/patients');
-                const patients = res.data;
-                const generatedTreatments = patients.map((p, idx) => ({
-                    id: p.id || idx,
-                    patientId: p.id,
-                    patient: p.fullName || 'Inconnu',
-                    start: p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('fr-FR') : 'Inconnue',
-                    type: p.medicalNotes?.includes('Lantus') ? 'Insuline GLARGINE' : 'Insuline RAPIDE & LENTE',
-                    dose: p.medicalNotes ? 'Personnalisé' : '10 Unités',
-                    freq: 'Avant repas',
-                    lastMod: 'Aujourd\'hui'
-                }));
-                setTreatments(generatedTreatments);
-            } catch (err) {
-                console.error("Failed to fetch treatments:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchTreatments = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/doctor-management/patients');
+            const patients = res.data;
+            const generatedTreatments = patients.map((p, idx) => ({
+                id: p.id || idx,
+                patientId: p.id,
+                patient: p.fullName || 'Inconnu',
+                start: p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('fr-FR') : 'Inconnue',
+                type: p.medicalNotes?.length > 10 ? 'Traitement Personnalisé' : 'Schéma Initial',
+                dose: p.medicalNotes?.length > 10 ? 'Planifié' : 'À ajuster',
+                freq: 'Selon plan',
+                lastMod: p.medicalNotes?.length > 10 ? 'Récent' : '—',
+                notesPreview: p.medicalNotes || ''
+            }));
+            setTreatments(generatedTreatments);
+        } catch (err) {
+            console.error("Failed to fetch treatments:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchTreatments();
     }, []);
 

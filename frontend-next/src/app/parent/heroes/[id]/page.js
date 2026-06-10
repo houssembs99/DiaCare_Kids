@@ -262,6 +262,37 @@ export default function ChildProfile() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Doctor Treatment Plan */}
+                        {child.medicalNotes && (
+                            <div className="apple-card p-10 bg-[#088395]/5 border-[#088395]/20">
+                                <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                                    <Stethoscope size={20} className="text-[#088395]" />
+                                    Plan de Traitement Prescrit
+                                </h3>
+                                <div className="space-y-4">
+                                    {child.medicalNotes.split('\n---\n').map((note, idx) => {
+                                        const match = note.match(/^\[(\d{2}\/\d{2}\/\d{4})\]\s*(.*)/s);
+                                        const date = match ? match[1] : null;
+                                        const text = match ? match[2].trim() : note.trim();
+                                        return (
+                                            <div key={idx} className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-[#088395]/10">
+                                                <div className="w-2 bg-[#088395] rounded-full flex-shrink-0 mt-1" />
+                                                <div className="space-y-1 flex-1">
+                                                    {date && (
+                                                        <div className="text-[9px] font-black uppercase tracking-widest text-[#088395]">{date}</div>
+                                                    )}
+                                                    <div className="text-xs font-bold text-white/80 leading-relaxed">{text}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-6">
+                                    Ces informations ont été prescrites par votre médecin. En cas de question, contactez-le directement.
+                                </p>
+                            </div>
+                        )}
                     </motion.div>
                 </div>
             </div>

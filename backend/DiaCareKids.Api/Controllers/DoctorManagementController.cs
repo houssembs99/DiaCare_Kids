@@ -134,12 +134,29 @@ namespace DiaCareKids.Api.Controllers
             var doctorId = GetCurrentUserId();
             var patient = await _usersService.GetAsync(patientId);
 
-            if (patient == null || patient.AssociatedDoctorId != doctorId)
+            if (patient == null)
+                return NotFound(new { message = "Patient non trouvé." });
+
+            // Allow direct assignment OR through parent link
+            bool isDirectlyAssigned = patient.AssociatedDoctorId == doctorId;
+            bool isThroughParent = false;
+            if (!string.IsNullOrEmpty(patient.AssociatedParentId))
             {
-                return NotFound(new { message = "Patient non trouvé ou non autorisé." });
+                var parent = await _usersService.GetAsync(patient.AssociatedParentId);
+                if (parent != null && (parent.AssociatedDoctorId == doctorId || parent.AssociatedClinicId == doctorId))
+                    isThroughParent = true;
             }
 
-            patient.MedicalNotes = request.Notes;
+            if (!isDirectlyAssigned && !isThroughParent)
+                return Forbid();
+
+            // Append new notes (prepend so latest is first), don't overwrite history
+            var timestamp = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            var newEntry = $"[{timestamp}] {request.Notes}";
+            patient.MedicalNotes = string.IsNullOrEmpty(patient.MedicalNotes)
+                ? newEntry
+                : newEntry + "\n---\n" + patient.MedicalNotes;
+
             await _usersService.UpdateAsync(patientId, patient);
 
             return Ok(new { message = "Notes médicales mises à jour avec succès", patient });
