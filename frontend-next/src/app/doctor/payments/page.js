@@ -39,19 +39,18 @@ export default function DoctorPayments() {
     const fetchData = async (doctorId) => {
         setIsLoading(true);
         try {
-            // 1. My own bills to DiaCare
+            // 1. My own bills to DiaCare (my own subscription payments)
             const transRes = await api.get(`/Transactions/user/${doctorId}`);
-            setMyTransactions(transRes.data);
+            const allTrans = transRes.data;
+            
+            // Separate: bills I paid vs revenue I earned
+            const myBills = allTrans.filter(t => t.role !== 'Medecin' || t.planName?.includes('DiaCare'));
+            const myRevenue = allTrans.filter(t => t.role === 'Medecin' && t.userId === doctorId);
 
-            // 2. Parents (Patients) managed by me to see their payment status
-            const usersRes = await api.get('/Users');
-            setAllUsers(usersRes.data);
-            const myPatients = usersRes.data.filter(u => 
-                u.associatedDoctorId === doctorId && u.role === 'Parent'
-            );
-            setPatientSubscribers(myPatients);
+            setMyTransactions(allTrans); // All for 'my_bills' tab (will show all)
+            setPatientSubscribers(myRevenue); // Revenue tab: real recorded transactions
 
-            // 3. My Packages to get prices
+            // 2. My Packages to get prices
             const pkgsRes = await api.get('/ClinicPackages');
             setPackages(pkgsRes.data);
 
@@ -90,9 +89,9 @@ export default function DoctorPayments() {
         p.planName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const filteredPatients = patientSubscribers.filter(p => 
-        p.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredRevenue = patientSubscribers.filter(t => 
+        (t.userFullName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (t.planName || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -155,9 +154,9 @@ export default function DoctorPayments() {
                                         <>
                                             <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Patient (Parent)</th>
                                             <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Pack Souscrit</th>
-                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Échéance</th>
-                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Statut Paiement</th>
-                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-right">Actions</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Date Paiement</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Montant</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Statut</th>
                                         </>
                                     ) : (
                                         <>
@@ -173,10 +172,10 @@ export default function DoctorPayments() {
                             <tbody className="divide-y divide-white/5">
                                 {isLoading ? (
                                     <tr><td colSpan="5" className="px-10 py-20 text-center text-white/20 font-black uppercase tracking-widest text-xs italic">Chargement des données sécurisées...</td></tr>
-                                ) : (activeTab === 'revenue' ? filteredPatients : filteredMyBills).length === 0 ? (
+                                ) : (activeTab === 'revenue' ? filteredRevenue : filteredMyBills).length === 0 ? (
                                     <tr><td colSpan="5" className="px-10 py-20 text-center text-white/20 font-black uppercase tracking-widest text-xs italic">Aucune donnée correspondante.</td></tr>
                                 ) : (
-                                    (activeTab === 'revenue' ? filteredPatients : filteredMyBills).map((item, idx) => (
+                                    (activeTab === 'revenue' ? filteredRevenue : filteredMyBills).map((item, idx) => (
                                         <motion.tr
                                             key={item.id}
                                             initial={{ opacity: 0, y: 10 }}
@@ -189,54 +188,33 @@ export default function DoctorPayments() {
                                                     <td className="px-10 py-8">
                                                         <div className="flex items-center gap-4">
                                                             <div className="w-10 h-10 bg-[#088395]/10 rounded-xl flex items-center justify-center font-black text-[#088395]">
-                                                                {item.fullName?.charAt(0)}
+                                                                {(item.userFullName?.charAt(0) || '?')}
                                                             </div>
                                                             <div>
-                                                                <div className="text-sm font-black uppercase italic tracking-tight">{item.fullName}</div>
-                                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                                    {allUsers.filter(u => u.associatedParentId === item.id).map(kid => (
-                                                                        <span key={kid.id} className="text-[8px] font-black uppercase bg-[#088395]/10 text-[#088395] px-2 py-0.5 rounded-md border border-[#088395]/10">
-                                                                            🏆 {kid.fullName}
-                                                                        </span>
-                                                                    ))}
-                                                                    {allUsers.filter(u => u.associatedParentId === item.id).length === 0 && (
-                                                                        <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest italic">Aucun champion rattaché</div>
-                                                                    )}
-                                                                </div>
+                                                                <div className="text-sm font-black uppercase italic tracking-tight">{item.userFullName || 'Patient'}</div>
+                                                                <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">{item.paymentIntentId?.startsWith('manual_') ? 'Activation manuelle' : item.paymentIntentId}</div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-8">
                                                         <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 rounded-lg border border-white/5">
-                                                            {item.subscription?.planType || 'Standard'}
+                                                            {item.planName || 'Standard'}
                                                         </span>
                                                     </td>
                                                     <td className="px-10 py-8 text-center text-xs font-bold text-white/40">
-                                                        {item.subscription?.expiryDate ? new Date(item.subscription.expiryDate).toLocaleDateString() : '—'}
+                                                        {item.date ? new Date(item.date).toLocaleDateString('fr-FR') : '—'}
+                                                    </td>
+                                                    <td className="px-10 py-8 text-center">
+                                                        <div className="text-lg font-black italic tracking-tighter text-[#088395]">
+                                                            {((item.amount || 0) / 100).toFixed(2)} DT
+                                                        </div>
                                                     </td>
                                                     <td className="px-10 py-8">
                                                         <div className="flex justify-center">
-                                                            <button 
-                                                                onClick={() => toggleSubscriptionStatus(item)}
-                                                                className={cn(
-                                                                    "flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
-                                                                    item.subscription?.isActive 
-                                                                        ? "bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20" 
-                                                                        : "bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-green-500/10 hover:text-green-400 hover:border-green-500/20"
-                                                                )}
-                                                            >
-                                                                {item.subscription?.isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
-                                                                {item.subscription?.isActive ? 'Payé (Actif)' : 'Non Payé (Inactif)'}
-                                                            </button>
+                                                            <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-[9px] font-black uppercase tracking-widest">
+                                                                <CheckCircle size={12} /> {item.status || 'Payé'}
+                                                            </div>
                                                         </div>
-                                                    </td>
-                                                    <td className="px-10 py-8 text-right">
-                                                        <button 
-                                                            onClick={() => handleOpenInvoice(item)}
-                                                            className="px-6 py-3 bg-[#088395] hover:bg-[#066a7a] text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ml-auto"
-                                                        >
-                                                            <Receipt size={14} /> Gérer Facture
-                                                        </button>
                                                     </td>
                                                 </>
                                             ) : (
@@ -279,36 +257,34 @@ export default function DoctorPayments() {
                         activeTab === 'revenue' ? "grid-cols-1 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2"
                     )}>
                         <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
-                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Total {activeTab === 'revenue' ? 'Patients' : 'Dépenses'}</p>
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Total {activeTab === 'revenue' ? 'Transactions' : 'Dépenses'}</p>
                             <div className="text-3xl font-black italic tracking-tight">
-                                {activeTab === 'revenue' ? patientSubscribers.length : `${(myTransactions.reduce((acc, c) => acc + c.amount, 0) / 100).toFixed(2)} €`}
+                                {activeTab === 'revenue' ? patientSubscribers.length : `${(myTransactions.reduce((acc, c) => acc + c.amount, 0) / 100).toFixed(2)} DT`}
                             </div>
                         </div>
 
                         {activeTab === 'revenue' && (
                             <>
                                 <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl border-l-[#088395] border-l-4">
-                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Revenu Total (Actif)</p>
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Revenu Total Encaissé</p>
                                     <div className="text-3xl font-black italic tracking-tight text-[#088395]">
-                                        {patientSubscribers.reduce((acc, p) => {
-                                            if (p.subscription?.isActive) {
-                                                const pkg = packages.find(pkg => pkg.name === p.subscription.planType);
-                                                return acc + (pkg?.price || 0);
-                                            }
-                                            return acc;
-                                        }, 0)} DT
+                                        {(patientSubscribers.reduce((acc, t) => acc + (t.amount || 0), 0) / 100).toFixed(2)} DT
                                     </div>
                                 </div>
                                 <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
-                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Abonnements Actifs</p>
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Ce Mois-ci</p>
                                     <div className="text-3xl font-black italic tracking-tight text-green-400">
-                                        {patientSubscribers.filter(p => p.subscription?.isActive).length}
+                                        {(patientSubscribers.filter(t => {
+                                            const d = new Date(t.date);
+                                            const now = new Date();
+                                            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                                        }).reduce((acc, t) => acc + (t.amount || 0), 0) / 100).toFixed(2)} DT
                                     </div>
                                 </div>
                                 <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
-                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">En Attente</p>
-                                    <div className="text-3xl font-black italic tracking-tight text-red-400">
-                                        {patientSubscribers.filter(p => !p.subscription?.isActive).length}
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Nombre Activations</p>
+                                    <div className="text-3xl font-black italic tracking-tight text-white/60">
+                                        {patientSubscribers.length}
                                     </div>
                                 </div>
                             </>

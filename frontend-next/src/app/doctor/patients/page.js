@@ -7,7 +7,8 @@ import {
     Droplet, TrendingUp, Calendar, User,
     ChevronLeft, ChevronRight, Stethoscope,
     ArrowUpRight, AlertCircle, CheckCircle2,
-    Clock, Plus, MoreVertical, Loader2, Users, Trash2
+    Clock, Plus, MoreVertical, Loader2, Users, Trash2,
+    CheckCircle, XCircle, CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -19,12 +20,18 @@ export default function DoctorPatients() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
+    const [allUsers, setAllUsers] = useState([]);
+    const [doctorInfo, setDoctorInfo] = useState(null);
 
     const fetchPatients = async () => {
         setLoading(true);
         try {
             const res = await api.get('/doctor-management/patients');
             setPatients(res.data);
+
+            // Also load all users to find parent subscription status
+            const usersRes = await api.get('/Users');
+            setAllUsers(usersRes.data);
         } catch (err) {
             console.error("Error fetching patients:", err);
         } finally {
@@ -33,6 +40,8 @@ export default function DoctorPatients() {
     };
 
     useEffect(() => {
+        const stored = localStorage.getItem('user');
+        if (stored) setDoctorInfo(JSON.parse(stored));
         fetchPatients();
     }, []);
 
@@ -48,6 +57,25 @@ export default function DoctorPatients() {
         } catch (err) {
             console.error("Erreur lors de la suppression:", err);
             alert("Une erreur est survenue ou vous n'êtes pas autorisé à supprimer ce patient (peut-être est-il rattaché par une clinique).");
+        }
+    };
+
+    const handleActivateSub = async (parentId, parentName, currentStatus, planType) => {
+        const newStatus = !currentStatus;
+        const action = newStatus ? 'activer' : 'désactiver';
+        if (!window.confirm(`Voulez-vous ${action} l'abonnement de la famille ${parentName} ?\n\nNota : L'activation créera automatiquement une transaction de revenu dans votre tableau financier.`)) return;
+
+        try {
+            await api.patch(`/Users/${parentId}/subscription`, {
+                isActive: newStatus,
+                planType: planType || 'Standard',
+                expiryDate: newStatus ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : undefined
+            });
+            alert(`Abonnement ${newStatus ? 'activé' : 'désactivé'} avec succès${ newStatus ? ' — transaction de revenu enregistrée !' : '.'}`);
+            fetchPatients();
+        } catch (err) {
+            console.error('Erreur activation abonnement:', err);
+            alert('Erreur lors de la mise à jour.');
         }
     };
 
@@ -166,6 +194,36 @@ export default function DoctorPatients() {
                                     <h3 className="text-sm font-black uppercase tracking-widest text-white/60">Famille <span className="text-white italic">{group.parentName}</span></h3>
                                     <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{group.kids.length} patient{group.kids.length > 1 ? 's' : ''} rattaché{group.kids.length > 1 ? 's' : ''}</p>
                                 </div>
+                                {/* Subscription status & activation button for this parent */}
+                                {group.parentId && (() => {
+                                    const parentUser = allUsers.find(u => u.id === group.parentId);
+                                    if (!parentUser) return null;
+                                    const isActive = parentUser.subscription?.isActive;
+                                    return (
+                                        <div className="ml-auto flex items-center gap-3">
+                                            <div className={cn(
+                                                "flex items-center gap-2 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border",
+                                                isActive ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20"
+                                            )}>
+                                                {isActive ? <CheckCircle size={10} /> : <XCircle size={10} />}
+                                                {isActive ? 'Abonnement Actif' : 'En Attente Paiement'}
+                                            </div>
+                                            <button
+                                                onClick={() => handleActivateSub(group.parentId, group.parentName, isActive, parentUser.subscription?.planType)}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border",
+                                                    isActive
+                                                        ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500 hover:text-white"
+                                                        : "bg-[#088395]/10 text-[#088395] border-[#088395]/20 hover:bg-[#088395] hover:text-white"
+                                                )}
+                                                title={isActive ? "Désactiver cet abonnement" : "Activer et enregistrer le paiement"}
+                                            >
+                                                <CreditCard size={12} />
+                                                {isActive ? 'Désactiver' : 'Activer & Payer'}
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl">

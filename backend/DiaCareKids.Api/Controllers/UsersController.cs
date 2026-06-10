@@ -2,6 +2,7 @@ using DiaCareKids.Api.Models;
 using DiaCareKids.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DiaCareKids.Api.Controllers
 {
@@ -12,11 +13,15 @@ namespace DiaCareKids.Api.Controllers
     {
         private readonly UsersService _usersService;
         private readonly IPhotoService _photoService;
+        private readonly TransactionsService _transactionsService;
+        private readonly ClinicPackagesService _packagesService;
 
-        public UsersController(UsersService usersService, IPhotoService photoService)
+        public UsersController(UsersService usersService, IPhotoService photoService, TransactionsService transactionsService, ClinicPackagesService packagesService)
         {
             _usersService = usersService;
             _photoService = photoService;
+            _transactionsService = transactionsService;
+            _packagesService = packagesService;
         }
 
         [HttpGet]
@@ -140,11 +145,39 @@ namespace DiaCareKids.Api.Controllers
 
             user.Subscription.IsActive = request.IsActive;
             user.Subscription.PlanType = request.PlanType ?? user.Subscription.PlanType ?? "Basic";
-            // SubscriptionDetails has no StartDate; activation date is implied by setting IsActive
             user.Subscription.ExpiryDate = request.ExpiryDate ?? user.Subscription.ExpiryDate;
             user.Status = request.IsActive ? "Actif" : "En Attente";
 
             await _usersService.UpdateAsync(id, user);
+
+            // === AUTO-TRANSACTION: When a doctor activates a parent subscription ===
+            var callerRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (request.IsActive && callerRole == "Medecin" && !string.IsNullOrEmpty(callerId))
+            {
+                // Look up the package price from doctor's packages
+                var doctorPackages = await _packagesService.GetByClinicIdAsync(callerId);
+                var matchedPkg = doctorPackages.FirstOrDefault(p =>
+                    p.Name.Equals(user.Subscription.PlanType, StringComparison.OrdinalIgnoreCase));
+
+                long amountCentimes = matchedPkg != null ? (long)(matchedPkg.Price * 100) : 0;
+
+                var transaction = new Transaction
+                {
+                    UserId = callerId, // Revenue belongs to the doctor
+                    UserFullName = user.FullName, // Patient name for reference
+                    Role = "Medecin",
+                    AssociatedClinicId = callerId,
+                    Amount = amountCentimes,
+                    PlanName = user.Subscription.PlanType,
+                    PaymentIntentId = $"manual_{id}_{DateTime.UtcNow.Ticks}",
+                    Date = DateTime.UtcNow,
+                    Status = "Payé"
+                };
+                await _transactionsService.CreateAsync(transaction);
+            }
+
             return Ok(new { message = "Statut mis à jour", isActive = user.Subscription.IsActive, status = user.Status });
         }
 
