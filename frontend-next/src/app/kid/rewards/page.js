@@ -51,34 +51,33 @@ export default function KidRewards() {
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user.xp !== undefined) {
-            setXp(user.xp);
-            setLevel(Math.floor(user.xp / 100) + 1);
-        }
+        
+        // Read XP from local user store
+        const currentXp = user.xp || 0;
+        setXp(currentXp);
+        setLevel(Math.floor(currentXp / 100) + 1);
 
-        const fetchHealthData = async () => {
+        // Read energy saved by the Dashboard page — same value, no re-calculation
+        const savedEnergy = parseInt(localStorage.getItem('kidEnergy') || '0', 10);
+        setEnergy(savedEnergy);
+
+        // Optionally sync fresh XP from server in background
+        const syncXp = async () => {
             try {
                 if (user.id) {
-                    const recordRes = await api.get(`/medicalrecords/patient/${user.id}`);
-                    const records = recordRes.data;
-
-                    if (records && records.length > 0) {
-                        const val = records[0].glucoseValue;
-                        if (val) {
-                            let calculatedEnergy = 0;
-                            if (val >= 70 && val <= 140) calculatedEnergy = 90 + Math.random() * 10;
-                            else if (val < 70) calculatedEnergy = Math.max(10, val / 1.5);
-                            else calculatedEnergy = Math.max(20, 100 - (val - 140) / 2);
-                            setEnergy(Math.round(calculatedEnergy));
-                        }
+                    const res = await api.get(`/users/${user.id}`);
+                    if (res.data) {
+                        const freshXp = res.data.xp || 0;
+                        setXp(freshXp);
+                        setLevel(Math.floor(freshXp / 100) + 1);
+                        localStorage.setItem('user', JSON.stringify({ ...user, xp: freshXp }));
                     }
                 }
-            } catch (err) {
-                console.error(err);
+            } catch (e) {
+                console.error('XP sync failed', e);
             }
         };
-
-        fetchHealthData();
+        syncXp();
     }, []);
 
     // 9 Badges based on XP and Energy

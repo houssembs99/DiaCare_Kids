@@ -82,12 +82,16 @@ export default function KidDashboard() {
                             setForce("Feu 🔥");
                             setStatusMessage(t('kid.highEnergyMsg'));
                         }
-                        setEnergy(Math.round(calculatedEnergy));
+                        const finalEnergy = Math.round(calculatedEnergy);
+                        setEnergy(finalEnergy);
+                        // Save to localStorage so Rewards page reads the same value
+                        localStorage.setItem('kidEnergy', finalEnergy.toString());
                     }
                 } else {
                     setStatusMessage("Ta batterie est en attente ! Demande vite à ton super-parent ou à ton docteur d'ajouter tes mesures pour voir ton niveau d'énergie réel ! 🔋🚀");
                     setForce("En attente");
                     setEnergy(0);
+                    localStorage.setItem('kidEnergy', '0');
                 }
             } catch (err) {
                 console.error("Dashboard error:", err);
