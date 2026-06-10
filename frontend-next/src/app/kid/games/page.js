@@ -45,7 +45,7 @@ export default function KidGames() {
     const games = [
         { id: 'runner', title: 'Dia Runner', desc: "Esquive les ennemies, collecte les coeurs !", icon: Activity, color: "bg-red-500", xp: 500, link: '/kid/games/runner' },
         { id: 'puzzle', title: 'Puzzle Champion', desc: "Reconstitue les images et débloque les 12 niveaux !", icon: LayoutGrid, color: "bg-blue-500", xp: 1500, link: '/kid/games/puzzle' },
-        { id: 2, title: t('kid.gameHypo'), desc: "Trouve le trésor sucré pour gagner !", icon: Apple, color: "bg-accent", xp: 150 },
+        { id: 2, title: t('kid.gameHypo'), desc: "Trouve le trésor sucré pour gagner !", icon: Apple, color: "bg-accent", xp: 150, link: '/kid/games/insulin' },
         { id: 3, title: t('kid.gameFood'), desc: "Aide ton héros à choisir son repas.", icon: Search, color: "bg-success", xp: 200 }
     ];
 
@@ -147,15 +147,22 @@ export default function KidGames() {
                                 </motion.div>
                                 <div className="text-center px-10">
                                     <p className="text-lg font-black italic uppercase tracking-tighter mb-4">Prêt pour l'aventure ?</p>
-                                    <button className="w-full py-6 bg-white text-black rounded-3xl font-black uppercase tracking-[0.3em] text-[12px] shadow-2xl animate-pulse">
-                                        Commencer
+                                    <button 
+                                        onClick={() => {
+                                            alert("Bravo ! Tu as réussi la mission et gagné " + playingGame.xp + " XP ! 🎉");
+                                            setPlayingGame(null);
+                                        }}
+                                        className="w-full py-6 bg-white hover:bg-[#FFB300] text-black rounded-3xl font-black uppercase tracking-[0.3em] text-[12px] shadow-2xl animate-pulse hover:animate-none transition-all"
+                                    >
+                                        Commencer la Simulation
                                     </button>
                                 </div>
 
                                 <div className="absolute bottom-8 left-8 right-8 h-2 bg-white/10 rounded-full overflow-hidden">
-                                    <div className="h-full w-1/3 bg-[#FFB300]" />
+                                    <div className="h-full w-1/3 bg-[#FFB300] animate-pulse" />
                                 </div>
                             </div>
+
                         </div>
                     )}
                 </AnimatePresence>
