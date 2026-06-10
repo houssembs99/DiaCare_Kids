@@ -12,12 +12,60 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-const alertsMock = [];
-
 export default function DoctorAlerts() {
     const [filterLevel, setFilterLevel] = useState("All");
+    const [alerts, setAlerts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredAlerts = alertsMock.filter(alert => {
+    useEffect(() => {
+        const fetchAlerts = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get('/doctor-management/patients');
+                const patients = res.data;
+                const generatedAlerts = [];
+                let alertIdStart = 1;
+
+                patients.forEach(p => {
+                    if (p.lastGlucose) {
+                        if (p.lastGlucose < 70) {
+                            generatedAlerts.push({
+                                id: alertIdStart++,
+                                patientId: p.id,
+                                patient: p.fullName || 'Inconnu',
+                                type: 'Hypoglycémie',
+                                level: 'Critique',
+                                value: p.lastGlucose + ' mg/dL',
+                                date: new Date().toLocaleDateString('fr-FR'),
+                                status: 'Non Traitée'
+                            });
+                        } else if (p.lastGlucose > 140) {
+                            generatedAlerts.push({
+                                id: alertIdStart++,
+                                patientId: p.id,
+                                patient: p.fullName || 'Inconnu',
+                                type: 'Hyperglycémie',
+                                level: p.lastGlucose > 200 ? 'Critique' : 'Moyenne',
+                                value: p.lastGlucose + ' mg/dL',
+                                date: new Date().toLocaleDateString('fr-FR'),
+                                status: 'Non Traitée'
+                            });
+                        }
+                    }
+                });
+                
+                setAlerts(generatedAlerts);
+            } catch (err) {
+                console.error("Failed to fetch alerts:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAlerts();
+    }, []);
+
+    const filteredAlerts = alerts.filter(alert => {
         return filterLevel === "All" || alert.level === filterLevel;
     });
 

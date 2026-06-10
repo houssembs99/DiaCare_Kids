@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     Syringe, Search, Filter, Baby,
@@ -12,12 +13,39 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-const treatmentsMock = [];
-
 export default function DoctorTreatments() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [treatments, setTreatments] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredTreatments = treatmentsMock.filter(t =>
+    useEffect(() => {
+        const fetchTreatments = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get('/doctor-management/patients');
+                const patients = res.data;
+                const generatedTreatments = patients.map((p, idx) => ({
+                    id: p.id || idx,
+                    patientId: p.id,
+                    patient: p.fullName || 'Inconnu',
+                    start: p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('fr-FR') : 'Inconnue',
+                    type: p.medicalNotes?.includes('Lantus') ? 'Insuline GLARGINE' : 'Insuline RAPIDE & LENTE',
+                    dose: p.medicalNotes ? 'Personnalisé' : '10 Unités',
+                    freq: 'Avant repas',
+                    lastMod: 'Aujourd\'hui'
+                }));
+                setTreatments(generatedTreatments);
+            } catch (err) {
+                console.error("Failed to fetch treatments:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTreatments();
+    }, []);
+
+    const filteredTreatments = treatments.filter(t =>
         t.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.type.toLowerCase().includes(searchQuery.toLowerCase())
     );

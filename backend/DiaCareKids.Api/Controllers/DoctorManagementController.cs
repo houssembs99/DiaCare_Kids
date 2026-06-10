@@ -38,6 +38,7 @@ namespace DiaCareKids.Api.Controllers
 
             // Unique set of patients
             var allPatients = directPatients.Concat(kidsOfMyParents)
+                .Where(u => u.Role == "Enfant")
                 .GroupBy(p => p.Id)
                 .Select(g => g.First())
                 .ToList();
@@ -63,7 +64,8 @@ namespace DiaCareKids.Api.Controllers
                     p.Status,
                     p.AssociatedParentId,
                     ParentFullName = parentName,
-                    LastGlucose = lastRecord?.GlucoseValue
+                    LastGlucose = lastRecord?.GlucoseValue,
+                    MedicalNotes = p.MedicalNotes
                 });
             }
 
