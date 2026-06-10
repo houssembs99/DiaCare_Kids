@@ -49,14 +49,47 @@ const DoctorStatCard = ({ title, value, icon, color, tendency }) => (
 
 export default function DoctorDashboard() {
     const [filter, setFilter] = useState('7d');
-    const [stats, setStats] = useState({ totalPatients: 0, alerts: 0 });
+    const [stats, setStats] = useState({ totalPatients: 0, stables: 0, alerts: 0, hypo: 0, hyper: 0, list: [] });
     const [loading, setLoading] = useState(true);
 
     const fetchStats = async () => {
         setLoading(true);
         try {
-            const res = await api.get('/doctor-management/stats');
-            setStats(res.data);
+            const res = await api.get('/doctor-management/patients');
+            const patients = res.data;
+            
+            let total = patients.length;
+            let hypo = 0;
+            let hyper = 0;
+            let stables = 0;
+            let alertsList = [];
+            
+            patients.forEach(p => {
+                if (p.lastGlucose) {
+                    if (p.lastGlucose < 70) {
+                        hypo++;
+                        alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' mg/dL' });
+                    } else if (p.lastGlucose > 140) {
+                        hyper++;
+                        if (p.lastGlucose > 200) {
+                             alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' mg/dL' });
+                        }
+                    } else {
+                        stables++;
+                    }
+                } else {
+                    stables++; // default si pas de mesure
+                }
+            });
+
+            setStats({
+                totalPatients: total,
+                stables: stables,
+                alerts: alertsList.length,
+                hypo: hypo,
+                hyper: hyper,
+                list: alertsList.slice(0, 4) // top 4 max
+            });
         } catch (err) {
             console.error("Error fetching stats:", err);
         } finally {
@@ -144,10 +177,10 @@ export default function DoctorDashboard() {
                 {/* Stat Cards SECTION 3.2 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     <DoctorStatCard title="Total Patients" value={loading ? "..." : stats.totalPatients.toString().padStart(2, '0')} icon={<Baby size={24} />} color="bg-[#1E88E5]" tendency={stats.totalPatients > 0 ? `+${stats.totalPatients}` : "0"} />
-                    <DoctorStatCard title="Héros Stables" value={loading ? "..." : stats.totalPatients.toString().padStart(2, '0')} icon={<CheckCircle2 size={24} />} color="bg-success" tendency="100%" />
+                    <DoctorStatCard title="Héros Stables" value={loading ? "..." : stats.stables.toString().padStart(2, '0')} icon={<CheckCircle2 size={24} />} color="bg-success" tendency={stats.stables > 0 ? "Optimal" : "-"} />
                     <DoctorStatCard title="Alertes Critiques" value={loading ? "..." : stats.alerts.toString().padStart(2, '0')} icon={<ShieldAlert size={24} />} color="bg-accent shadow-[0_10px_30px_rgba(255,112,67,0.3)]" />
-                    <DoctorStatCard title="En Hypoglycémie" value="00" icon={<Droplets size={24} />} color="bg-orange-500" />
-                    <DoctorStatCard title="En Hyperglycémie" value="00" icon={<Zap size={24} />} color="bg-yellow-500" />
+                    <DoctorStatCard title="En Hypoglycémie" value={loading ? "..." : stats.hypo.toString().padStart(2, '0')} icon={<Droplets size={24} />} color="bg-orange-500" />
+                    <DoctorStatCard title="En Hyperglycémie" value={loading ? "..." : stats.hyper.toString().padStart(2, '0')} icon={<Zap size={24} />} color="bg-yellow-500" />
                 </div>
 
                 {/* Priority List & Chart SECTION 3.2 */}
@@ -165,7 +198,7 @@ export default function DoctorDashboard() {
                             </div>
 
                             <div className="flex-1 space-y-4">
-                                {[].map((alert, idx) => (
+                                {stats.list.map((alert, idx) => (
                                     <div key={idx} className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-3xl hover:bg-white/10 transition-all group">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 bg-accent text-white rounded-xl flex items-center justify-center font-black">
@@ -178,17 +211,17 @@ export default function DoctorDashboard() {
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div className="text-sm font-black italic text-accent">{alert.value}</div>
-                                            <button className="p-3 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Link href="/doctor/alerts" className="p-3 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <ArrowRight size={14} />
-                                            </button>
+                                            </Link>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <button className="w-full mt-8 py-5 border border-accent/30 rounded-2xl text-accent text-[10px] font-black uppercase tracking-[0.3em] hover:bg-accent hover:text-white transition-all">
+                            <Link href="/doctor/alerts" className="w-full mt-8 py-5 border border-accent/30 rounded-2xl text-accent text-[10px] font-black uppercase tracking-[0.3em] hover:bg-accent hover:text-white transition-all text-center inline-block">
                                 Voir toutes les alertes
-                            </button>
+                            </Link>
                         </div>
                     </div>
 
