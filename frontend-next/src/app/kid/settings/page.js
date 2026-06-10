@@ -58,6 +58,16 @@ export default function KidSettings() {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
 
+    const thresholds = [0, 2000, 3500, 5000, 10000, 20000, 40000, 70000, 100000];
+    const computeLevel = (currentXp) => {
+        let lvl = 1;
+        for (let i = 0; i < thresholds.length; i++) {
+            if (currentXp >= thresholds[i]) lvl = i + 1;
+            else break;
+        }
+        return lvl;
+    };
+
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         if (storedUser.id) {
@@ -144,7 +154,7 @@ export default function KidSettings() {
 
                     <div className="flex items-center gap-3 px-6 py-3 bg-[#FFB300]/10 border border-[#FFB300]/20 rounded-2xl">
                         <Trophy size={18} className="text-[#FFB300]" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">Champion Niveau {Math.floor((user.xp || 0) / 100) + 1}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">Champion Niveau {user ? computeLevel(user.xp || 0) : 1}</span>
                     </div>
                 </div>
 
@@ -198,7 +208,9 @@ export default function KidSettings() {
                                 <div className="grid grid-cols-2 gap-3 w-full">
                                     <div className="bg-white/5 p-4 rounded-3xl border border-white/5 flex flex-col items-center gap-1">
                                         <Star size={16} className="text-[#FFB300] fill-[#FFB300]" />
-                                        <span className="text-[10px] font-black uppercase text-white/60">{(user.xp || 0) % 100}/100 XP</span>
+                                        <span className="text-[10px] font-black uppercase text-white/60">
+                                            {user.xp || 0} / {computeLevel(user.xp || 0) < thresholds.length ? thresholds[computeLevel(user.xp || 0)] : "MAX"} XP
+                                        </span>
                                     </div>
                                     <div className="bg-white/5 p-4 rounded-3xl border border-white/5 flex flex-col items-center gap-1">
                                         <Sparkles size={16} className="text-[#34C759]" />
