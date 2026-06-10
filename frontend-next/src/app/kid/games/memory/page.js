@@ -134,9 +134,12 @@ export default function MemoryGame() {
         try {
             const userStore = JSON.parse(localStorage.getItem('user') || '{}');
             if (userStore.id) {
+                // Call secure backend endpoint
+                await api.post(`/Users/${userStore.id}/add-xp`, { xp: gainedXP });
+                
+                // Update local store immediately for fluid UI
                 userStore.xp = (userStore.xp || 0) + gainedXP;
                 setTotalXP(userStore.xp);
-                api.put(`/Users/${userStore.id}`, userStore); // Simulated XP update
                 localStorage.setItem('user', JSON.stringify(userStore));
             } else {
                 setTotalXP(prev => prev + gainedXP);

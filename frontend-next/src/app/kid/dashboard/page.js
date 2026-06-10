@@ -49,6 +49,17 @@ export default function KidDashboard() {
 
         const fetchHealthData = async () => {
             try {
+                // Sync fresh user data (specifically XP from recent games)
+                try {
+                    const freshUser = await api.get(`/users/${user.id}`);
+                    if (freshUser.data) {
+                        setXp(freshUser.data.xp || 0);
+                        setLevel(Math.floor((freshUser.data.xp || 0) / 100) + 1);
+                        const updatedStore = { ...user, ...freshUser.data };
+                        localStorage.setItem('user', JSON.stringify(updatedStore));
+                    }
+                } catch(e) { console.error("XP Sync failed", e); }
+
                 const recordRes = await api.get(`/medicalrecords/patient/${user.id}`);
                 const records = recordRes.data;
 

@@ -170,6 +170,24 @@ namespace DiaCareKids.Api.Controllers
 
             return Ok(new { avatarUrl = user.AvatarUrl });
         }
+
+        [HttpPost("{id}/add-xp")]
+        [Authorize]
+        public async Task<IActionResult> AddXP(string id, [FromBody] AddXpRequest request)
+        {
+            var user = await _usersService.GetAsync(id);
+            if (user == null) return NotFound("Utilisateur non trouvé.");
+
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = User.IsInRole("Admin") || User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Admin";
+            
+            if (!isAdmin && currentUserId != id) return Forbid();
+
+            user.XP += request.XP;
+            await _usersService.UpdateAsync(id, user);
+
+            return Ok(new { xp = user.XP });
+        }
     }
 
     public class AdminUserRequest : User
@@ -183,5 +201,10 @@ namespace DiaCareKids.Api.Controllers
         public string? PlanType { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
+    }
+
+    public class AddXpRequest
+    {
+        public int XP { get; set; }
     }
 }

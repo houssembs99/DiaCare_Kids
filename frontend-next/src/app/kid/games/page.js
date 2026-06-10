@@ -53,30 +53,16 @@ export default function KidGames() {
             <div className="min-h-screen space-y-10 pb-32 max-w-lg mx-auto px-6 pt-10 text-white">
 
                 {/* Header SECTION 5.1 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none">
                             Centre <span className="text-[#FFB300]">Explo</span>
                         </h1>
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mt-1">S'amuser pour apprendre</p>
                     </div>
-                    <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-[28px] flex items-center justify-center relative shadow-3xl">
-                        <Trophy size={28} className="text-[#FFB300]" />
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-accent rounded-full border-4 border-[#0b1b2b] flex items-center justify-center text-[10px] font-black">3</div>
-                    </div>
                 </div>
 
-                {/* Categories */}
-                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-                    {['Tous', 'Action', 'Puzzle', 'Quêtes'].map((cat, i) => (
-                        <button key={i} className={cn(
-                            "px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap",
-                            i === 0 ? "bg-[#FFB300] text-black border-transparent shadow-xl" : "bg-white/5 border-white/10 text-white/40"
-                        )}>
-                            {cat}
-                        </button>
-                    ))}
-                </div>
+
 
                 {/* Game List SECTION 5.2 */}
                 <div className="space-y-6">
@@ -100,22 +86,7 @@ export default function KidGames() {
                     ))}
                 </div>
 
-                {/* Featured Quest */}
-                <div className="bg-gradient-to-br from-[#FFB300] to-[#FFA000] rounded-[40px] p-8 text-black relative overflow-hidden shadow-2xl group cursor-pointer">
-                    <div className="absolute -right-10 -bottom-10 opacity-20">
-                        <Rocket size={200} />
-                    </div>
-                    <div className="relative z-10">
-                        <div className="w-12 h-12 bg-black/10 rounded-2xl flex items-center justify-center mb-6">
-                            <Target size={24} />
-                        </div>
-                        <h3 className="text-2xl font-black italic uppercase tracking-tighter leading-none mb-2">Grande Mission AR</h3>
-                        <p className="text-[11px] font-bold opacity-60 uppercase tracking-widest">Utilise ta caméra pour voir tes pouvoirs !</p>
-                        <button className="mt-8 px-10 py-4 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl hover:scale-105 active:scale-95 transition-all">
-                            Démarrer
-                        </button>
-                    </div>
-                </div>
+
 
                 {/* Simple Game Modal Simulation */}
                 <AnimatePresence>
