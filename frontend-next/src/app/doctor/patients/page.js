@@ -41,7 +41,18 @@ export default function DoctorPatients() {
             const matchesSearch = (p.fullName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (p.fileNumber || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (p.parentFullName || "").toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesFilter = filterStatus === "All" || p.status === filterStatus;
+            
+            let healthStatus = 'Inconnu';
+            if (p.lastGlucose) {
+                if (p.lastGlucose < 70) healthStatus = 'Critique';
+                else if (p.lastGlucose > 140) healthStatus = 'Surveillance';
+                else healthStatus = 'Stable';
+            } else {
+                healthStatus = 'Stable'; // Default if no data but active
+            }
+            p.healthStatus = healthStatus;
+
+            const matchesFilter = filterStatus === "All" || p.healthStatus === filterStatus;
             return matchesSearch && matchesFilter;
         });
 
@@ -180,14 +191,14 @@ export default function DoctorPatients() {
                                                     <td className="px-10 py-6">
                                                         <div className={cn(
                                                             "flex items-center gap-2 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest w-fit border",
-                                                            p.status === 'Stable' || p.status === 'Actif' ? "bg-success/10 text-success border-success/20" :
-                                                                p.status === 'Surveillance' ? "bg-orange-500/10 text-orange-500 border-orange-500/20" :
+                                                            p.healthStatus === 'Stable' ? "bg-success/10 text-success border-success/20" :
+                                                                p.healthStatus === 'Surveillance' ? "bg-orange-500/10 text-orange-500 border-orange-500/20" :
                                                                     "bg-accent/10 text-accent border-accent/20"
                                                         )}>
-                                                            {(p.status === 'Stable' || p.status === 'Actif') && <CheckCircle2 size={10} />}
-                                                            {p.status === 'Surveillance' && <Activity size={10} />}
-                                                            {p.status === 'Critique' && <AlertCircle size={10} className="animate-pulse" />}
-                                                            {p.status === 'Actif' ? 'STABLE' : (p.status || 'STABLE').toUpperCase()}
+                                                            {p.healthStatus === 'Stable' && <CheckCircle2 size={10} />}
+                                                            {p.healthStatus === 'Surveillance' && <Activity size={10} />}
+                                                            {p.healthStatus === 'Critique' && <AlertCircle size={10} className="animate-pulse" />}
+                                                            {p.healthStatus.toUpperCase()}
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-6 text-right">
