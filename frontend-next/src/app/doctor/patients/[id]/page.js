@@ -388,21 +388,47 @@ export default function PatientDetail() {
 
                             {activeTab === 'notes' && (
                                 <motion.div key="notes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                                    {/* Notes Editor */}
                                     <div className="bg-white/5 border border-white/10 rounded-[45px] p-10">
-                                        <SectionHeader icon={FileText} title="Observations Cliniques" sub="Vos notes privées sur ce patient" />
+                                        <SectionHeader icon={FileText} title="Nouvelle Note / Planification" sub="Ajoutez une note ou planifiez une action (ajoutée à l'historique)" />
                                         <textarea
                                             value={medicalNotes}
                                             onChange={(e) => setMedicalNotes(e.target.value)}
-                                            placeholder="Notez ici les particularités cliniques, les conseils donnés lors de la consultation ou les ajustements de protocole..."
-                                            className="w-full h-80 bg-[#0b1b2b] border border-white/5 rounded-[32px] p-10 text-sm italic font-medium focus:outline-none focus:border-[#088395] transition-all resize-none shadow-inner"
+                                            placeholder="Ex: Prévu le 10/06/2026 : Adaptation doses Rapide, Bilan HbA1c..."
+                                            className="w-full h-40 bg-[#0b1b2b] border border-white/5 rounded-[32px] p-10 text-sm italic font-medium focus:outline-none focus:border-[#088395] transition-all resize-none shadow-inner"
                                         />
                                         <div className="mt-8 flex justify-end">
                                             <button onClick={handleSaveNotes} disabled={savingNotes} className="px-10 py-5 bg-[#088395] rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl flex items-center gap-3">
                                                 {savingNotes ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
-                                                {savingNotes ? "Sauvegarde..." : "Enregistrer mes notes"}
+                                                {savingNotes ? "Sauvegarde..." : "Enregistrer & Ajouter à l'historique"}
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Treatment Plan History */}
+                                    {data?.patient?.medicalNotes && (
+                                        <div className="bg-[#088395]/5 border border-[#088395]/20 rounded-[45px] p-10">
+                                            <SectionHeader icon={Syringe} title="Historique des Plans de Traitement" sub="Toutes les planifications prescrites pour ce patient" />
+                                            <div className="space-y-4">
+                                                {data.patient.medicalNotes.split('\n---\n').map((note, idx) => {
+                                                    const match = note.match(/^\[(\d{2}\/\d{2}\/\d{4})\]\s*(.*)/s);
+                                                    const date = match ? match[1] : null;
+                                                    const text = match ? match[2].trim() : note.trim();
+                                                    return (
+                                                        <div key={idx} className="flex gap-4 p-6 bg-white/5 rounded-2xl border border-[#088395]/10">
+                                                            <div className="w-2 bg-[#088395] rounded-full flex-shrink-0 mt-1" />
+                                                            <div className="space-y-1 flex-1">
+                                                                {date && (
+                                                                    <div className="text-[9px] font-black uppercase tracking-widest text-[#088395]">{date}</div>
+                                                                )}
+                                                                <div className="text-xs font-bold text-white/80 leading-relaxed">{text}</div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </motion.div>
                             )}
 
