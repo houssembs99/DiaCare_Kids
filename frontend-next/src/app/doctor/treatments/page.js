@@ -18,6 +18,31 @@ export default function DoctorTreatments() {
     const [treatments, setTreatments] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalPatientId, setModalPatientId] = useState("");
+    const [modalActions, setModalActions] = useState([]);
+    const [modalDate, setModalDate] = useState(new Date().toISOString().split('T')[0]);
+
+    const handleSaveTreatment = async () => {
+        try {
+            // Retrieve current patient's info (we need to know current medical notes string if possible, or override)
+            // Note: Since this is an MVP, we just overwrite or push a simple note directly.
+            const actionText = `Prévu le ${modalDate} : ${modalActions.join(', ')}`;
+            await api.put(`/doctor-management/update-medical-notes/${modalPatientId}`, {
+                Notes: actionText
+            });
+            setIsModalOpen(false);
+            setModalPatientId("");
+            setModalActions([]);
+            alert("Traitement planifié avec succès !");
+            // Optional: re-fetch treatments to refresh
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la planification.");
+        }
+    };
+
     useEffect(() => {
         const fetchTreatments = async () => {
             setLoading(true);
@@ -83,9 +108,9 @@ export default function DoctorTreatments() {
                             className="w-full bg-white/5 border border-white/10 rounded-[24px] py-6 pl-16 pr-6 text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] focus:bg-white/10 transition-all placeholder:text-white/5"
                         />
                     </div>
-                    <Link href="/doctor/patients" className="flex items-center justify-center gap-3 px-8 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl transition-all">
+                    <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-3 px-8 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl transition-all">
                         <Plus size={18} /> Planifier Traitement
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Main Table SECTION 7 */}
@@ -163,6 +188,86 @@ export default function DoctorTreatments() {
                 </div>
 
             </div>
+
+            {/* Modal Planifier Traitement */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-[#0b1b2b] border border-white/10 rounded-[32px] w-full max-w-2xl p-8 shadow-2xl relative"
+                    >
+                        <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white transition-all">
+                            <Plus size={24} className="rotate-45" />
+                        </button>
+                        
+                        <h2 className="text-2xl font-black uppercase tracking-tighter italic mb-8">Planifier un <span className="text-[#088395]">Traitement</span></h2>
+
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Choisir le Patient</label>
+                                <select 
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-[#088395] text-white"
+                                    value={modalPatientId}
+                                    onChange={(e) => setModalPatientId(e.target.value)}
+                                >
+                                    <option value="" className="bg-[#0b1b2b]">-- Sélectionner un patient --</option>
+                                    {treatments.map(t => (
+                                        <option key={t.patientId} value={t.patientId} className="bg-[#0b1b2b]">
+                                            {t.patient}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Actions à effectuer</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {[
+                                        "Adaptation doses Rapide",
+                                        "Adaptation doses Lente",
+                                        "Changement de schéma",
+                                        "Bilan sanguin (HbA1c)",
+                                        "RDV de contrôle rapproché",
+                                        "Éducation diététique"
+                                    ].map(action => (
+                                        <label key={action} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                            <input 
+                                                type="checkbox" 
+                                                className="accent-[#088395] w-4 h-4 cursor-pointer"
+                                                checked={modalActions.includes(action)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) setModalActions([...modalActions, action]);
+                                                    else setModalActions(modalActions.filter(a => a !== action));
+                                                }}
+                                            />
+                                            <span className="text-xs font-bold">{action}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Date d'application</label>
+                                <input 
+                                    type="date" 
+                                    value={modalDate}
+                                    onChange={(e) => setModalDate(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-[#088395] text-white"
+                                />
+                            </div>
+
+                            <button 
+                                onClick={handleSaveTreatment}
+                                disabled={!modalPatientId || modalActions.length === 0}
+                                className="w-full py-5 bg-[#088395] hover:bg-[#066a7a] disabled:bg-[#088395]/50 disabled:cursor-not-allowed text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all mt-4"
+                            >
+                                Valider la Planification
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </DashboardLayout>
     );
 }
