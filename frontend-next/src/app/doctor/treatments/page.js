@@ -83,9 +83,9 @@ export default function DoctorTreatments() {
                             className="w-full bg-white/5 border border-white/10 rounded-[24px] py-6 pl-16 pr-6 text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] focus:bg-white/10 transition-all placeholder:text-white/5"
                         />
                     </div>
-                    <button className="flex items-center justify-center gap-3 px-8 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl transition-all">
+                    <Link href="/doctor/patients" className="flex items-center justify-center gap-3 px-8 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[24px] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl transition-all">
                         <Plus size={18} /> Planifier Traitement
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Main Table SECTION 7 */}
@@ -144,15 +144,15 @@ export default function DoctorTreatments() {
                                         </td>
                                         <td className="px-10 py-8 text-right">
                                             <div className="flex items-center justify-end gap-3">
-                                                <Link href={`/doctor/patients/1`} className="p-4 bg-white/5 hover:bg-[#088395] rounded-xl text-white transition-all group/btn">
+                                                <Link href={`/doctor/patients/${t.patientId}`} className="p-4 bg-white/5 hover:bg-[#088395] rounded-xl text-white transition-all group/btn" title="Voir le Dossier Patient">
                                                     <ArrowUpRight size={18} className="group-hover/btn:scale-110 transition-transform" />
                                                 </Link>
-                                                <button className="p-4 bg-white/5 hover:bg-white hover:text-black rounded-xl text-white/20 transition-all">
+                                                <Link href={`/doctor/patients/${t.patientId}`} className="p-4 bg-white/5 hover:bg-white hover:text-black rounded-xl text-white/20 transition-all" title="Éditer le Traitement">
                                                     <Edit3 size={18} />
-                                                </button>
-                                                <button className="p-4 bg-white/5 hover:bg-white/10 rounded-xl text-white/20 transition-all">
+                                                </Link>
+                                                <Link href={`/doctor/patients/${t.patientId}`} className="p-4 bg-white/5 hover:bg-white/10 rounded-xl text-white/20 transition-all" title="Historique">
                                                     <History size={18} />
-                                                </button>
+                                                </Link>
                                             </div>
                                         </td>
                                     </motion.tr>
