@@ -68,7 +68,8 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
             'Medecin': 'doctor',
             'Clinique': 'clinic',
             'Admin': 'admin',
-            'Parent': 'parent'
+            'Parent': 'parent',
+            'Enfant': 'kid'
         };
         return mapping[roleName] || roleName.toLowerCase();
     };
@@ -125,6 +126,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         { name: t('sidebar.stats'), href: '/parent/history', icon: <HistoryIcon size={20} /> },
         { name: t('sidebar.messaging'), href: '/parent/messaging', icon: <MessageCircle size={20} /> },
         { name: t('sidebar.education'), href: '/parent/education', icon: <BookOpen size={20} /> },
+        { name: t('sidebar.settings'), href: '/parent/profile', icon: <Settings size={20} /> },
     ];
 
     const standardLinks = [
@@ -141,6 +143,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         { name: t('kid.mesJeux'), href: '/kid/games', icon: <Gamepad2 size={24} /> },
         { name: t('kid.jApprends'), href: '/kid/learn', icon: <Brain size={24} /> },
         { name: t('kid.recompenses'), href: '/kid/rewards', icon: <Trophy size={24} /> },
+        { name: t('sidebar.settings'), href: '/kid/settings', icon: <Settings size={24} /> },
     ];
 
     const sidebarLinks = isAdmin ? adminLinks : isClinic ? clinicLinks : (role === 'Medecin' ? doctorLinks : (role === 'Parent' ? parentLinks : (role === 'Enfant' ? kidLinks : standardLinks)));
