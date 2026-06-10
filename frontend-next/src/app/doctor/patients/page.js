@@ -7,7 +7,7 @@ import {
     Droplet, TrendingUp, Calendar, User,
     ChevronLeft, ChevronRight, Stethoscope,
     ArrowUpRight, AlertCircle, CheckCircle2,
-    Clock, Plus, MoreVertical, Loader2, Users
+    Clock, Plus, MoreVertical, Loader2, Users, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,21 @@ export default function DoctorPatients() {
     useEffect(() => {
         fetchPatients();
     }, []);
+
+    const handleDeletePatient = async (patientId, patientName) => {
+        if (!window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement le patient ${patientName} ? Cette action est irréversible.`)) {
+            return;
+        }
+
+        try {
+            await api.delete(`/doctor-management/patients/${patientId}`);
+            alert('Patient supprimé avec succès.');
+            fetchPatients();
+        } catch (err) {
+            console.error("Erreur lors de la suppression:", err);
+            alert("Une erreur est survenue ou vous n'êtes pas autorisé à supprimer ce patient (peut-être est-il rattaché par une clinique).");
+        }
+    };
 
     const groupedPatients = useMemo(() => {
         const filtered = patients.filter(p => {
@@ -202,9 +217,18 @@ export default function DoctorPatients() {
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-6 text-right">
-                                                        <Link href={`/doctor/patients/${p.id}`} className="p-3 bg-white/5 hover:bg-white hover:text-[#088395] rounded-xl text-white transition-all inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-widest group/btn border border-white/5">
-                                                            Explorer <ArrowUpRight size={14} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                                                        </Link>
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button 
+                                                                onClick={() => handleDeletePatient(p.id, p.fullName)}
+                                                                className="p-3 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 rounded-xl transition-all group/trash shadow-sm border border-red-500/20"
+                                                                title="Supprimer le patient"
+                                                            >
+                                                                <Trash2 size={14} className="group-hover/trash:scale-110 transition-transform" />
+                                                            </button>
+                                                            <Link href={`/doctor/patients/${p.id}`} className="p-3 bg-[#088395]/10 hover:bg-[#088395] hover:text-white rounded-xl text-[#088395] transition-all inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-widest group/btn border border-[#088395]/20">
+                                                                Explorer <ArrowUpRight size={14} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                                                            </Link>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );

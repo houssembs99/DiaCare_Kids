@@ -143,6 +143,22 @@ namespace DiaCareKids.Api.Controllers
             return Ok(new { message = "Notes médicales mises à jour avec succès", patient });
         }
 
+        [HttpDelete("patients/{id}")]
+        public async Task<IActionResult> RemovePatient(string id)
+        {
+            var doctorId = GetCurrentUserId();
+            var patient = await _usersService.GetAsync(id);
+
+            if (patient == null || patient.AssociatedDoctorId != doctorId)
+            {
+                return NotFound(new { message = "Patient non trouvé ou non autorisé." });
+            }
+
+            await _usersService.RemoveAsync(id);
+
+            return Ok(new { message = "Patient supprimé avec succès." });
+        }
+
         [HttpGet("stats")]
         public async Task<ActionResult> GetStats()
         {
