@@ -70,7 +70,10 @@ export default function KidDashboard() {
                     if (val) {
                         let calculatedEnergy = 0;
                         if (val >= 70 && val <= 140) {
-                            calculatedEnergy = 90 + Math.random() * 10;
+                            // Perfect range: energy proportional to how centered glucose is
+                            const center = 105; // midpoint of 70-140
+                            const deviation = Math.abs(val - center);
+                            calculatedEnergy = 100 - (deviation / center) * 20;
                             setForce("Maxima ⚡");
                             setStatusMessage(t('kid.perfectMsg'));
                         } else if (val < 70) {

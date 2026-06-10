@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
 import api from '@/lib/api';
 
-const BadgeCard = ({ name, icon: Icon, color, unlocked, delay }) => (
+const BadgeCard = ({ name, icon: Icon, color, unlocked, delay, xpRequired }) => (
     <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -26,15 +26,19 @@ const BadgeCard = ({ name, icon: Icon, color, unlocked, delay }) => (
     >
         {unlocked && <div className={cn("absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity", color)} />}
         <div className={cn(
-            "w-16 h-16 rounded-3xl flex items-center justify-center mb-3 shadow-3xl transition-transform group-hover:scale-110",
+            "w-14 h-14 rounded-3xl flex items-center justify-center mb-2 shadow-3xl transition-transform group-hover:scale-110",
             unlocked ? cn("text-white", color) : "bg-white/5 text-white/20"
         )}>
-            <Icon size={32} />
+            <Icon size={28} />
         </div>
         <span className={cn(
-            "text-[9px] font-black uppercase tracking-tighter text-center",
+            "text-[9px] font-black uppercase tracking-tighter text-center leading-tight mb-1",
             unlocked ? "text-white" : "text-white/20"
         )}>{name}</span>
+        <span className={cn(
+            "text-[8px] font-bold uppercase tracking-widest",
+            unlocked ? "text-[#FFB300]" : "text-white/15"
+        )}>{xpRequired === 0 ? "Dès le début" : `${xpRequired} XP`}</span>
         {unlocked && (
             <div className="absolute top-2 right-2">
                 <CheckCircle2 size={12} className="text-success" />
@@ -82,19 +86,19 @@ export default function KidRewards() {
 
     // 9 Badges based on XP and Energy
     const badges = [
-        { id: 1, name: "Champion Débutant", icon: Trophy, color: "bg-[#FFB300]", unlocked: xp >= 0 },
-        { id: 2, name: "Explorateur", icon: Sparkles, color: "bg-blue-500", unlocked: xp >= 200 },
-        { id: 3, name: "Maître du Repas", icon: Heart, color: "bg-accent", unlocked: xp >= 500 },
-        { id: 4, name: "Vif Éclair", icon: Zap, color: "bg-orange-500", unlocked: xp >= 1000 },
-        { id: 5, name: "Super Énergie", icon: BatteryCharging, color: "bg-green-500", unlocked: xp >= 1500 && energy > 50 },
-        { id: 6, name: "Garde du Corps", icon: ShieldCheck, color: "bg-success", unlocked: xp >= 3000 },
-        { id: 7, name: "Flamme Dorée", icon: Flame, color: "bg-red-500", unlocked: xp >= 5000 && energy > 70 },
-        { id: 8, name: "Génie Diabète", icon: Award, color: "bg-purple-500", unlocked: xp >= 7500 },
-        { id: 9, name: "Pilote Rocket", icon: Rocket, color: "bg-indigo-500", unlocked: xp >= 10000 }
+        { id: 1, name: "Champion Débutant", icon: Trophy,         color: "bg-[#FFB300]",  unlocked: xp >= 0,       xpRequired: 0       },
+        { id: 2, name: "Explorateur",        icon: Sparkles,       color: "bg-blue-500",   unlocked: xp >= 2000,    xpRequired: 2000    },
+        { id: 3, name: "Maître du Repas",    icon: Heart,          color: "bg-accent",     unlocked: xp >= 3500,    xpRequired: 3500    },
+        { id: 4, name: "Vif Éclair",         icon: Zap,            color: "bg-orange-500", unlocked: xp >= 5000,    xpRequired: 5000    },
+        { id: 5, name: "Super Énergie",      icon: BatteryCharging,color: "bg-green-500",  unlocked: xp >= 10000 && energy > 50, xpRequired: 10000   },
+        { id: 6, name: "Garde du Corps",     icon: ShieldCheck,    color: "bg-success",    unlocked: xp >= 20000,   xpRequired: 20000   },
+        { id: 7, name: "Flamme Dorée",       icon: Flame,          color: "bg-red-500",    unlocked: xp >= 40000 && energy > 70, xpRequired: 40000   },
+        { id: 8, name: "Génie Diabète",      icon: Award,          color: "bg-purple-500", unlocked: xp >= 70000,   xpRequired: 70000   },
+        { id: 9, name: "Pilote Rocket",      icon: Rocket,         color: "bg-indigo-500", unlocked: xp >= 100000,  xpRequired: 100000  }
     ];
 
     const unlockedCount = badges.filter(b => b.unlocked).length;
-    const canOpenChest = xp >= 10000 || unlockedCount === 9; // Ultimate goal!
+    const canOpenChest = xp >= 100000 || unlockedCount === 9;
 
     const handleOpenChest = () => {
         if (!canOpenChest) {
@@ -125,10 +129,10 @@ export default function KidRewards() {
                     </div>
 
                     <div className="text-center space-y-8 w-full px-4 md:px-10">
-                        {/* Progress 1: 3000 XP Goal */}
+                        {/* Progress 1: 10000 XP Goal */}
                         <div className="space-y-2 relative">
                             <div className="flex justify-between items-center px-4">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">{xp >= 3000 ? "3000" : xp} / 3000 XP</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">{Math.min(xp, 10000)} / 10 000 XP</span>
                                 <span className="text-[10px] items-center flex gap-1 font-black uppercase tracking-widest text-white/50">
                                     <Star size={10}/> Palier 1
                                 </span>
@@ -136,16 +140,16 @@ export default function KidRewards() {
                             <div className="h-4 bg-white/5 border border-white/10 rounded-full overflow-hidden shadow-inner p-1">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min((xp / 3000) * 100, 100)}%` }}
+                                    animate={{ width: `${Math.min((xp / 10000) * 100, 100)}%` }}
                                     className="h-full bg-gradient-to-r from-[#FFB300] to-[#FFA000] rounded-full shadow-[0_0_20px_rgba(255,179,0,0.5)]"
                                 />
                             </div>
                         </div>
 
-                        {/* Progress 2: 10000 XP Goal */}
+                        {/* Progress 2: 100000 XP Goal */}
                         <div className="space-y-2 relative">
                             <div className="flex justify-between items-center px-4">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{xp >= 10000 ? "10000" : xp} / 10000 XP</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{Math.min(xp, 100000)} / 100 000 XP</span>
                                 <span className="text-[10px] items-center flex gap-1 font-black uppercase tracking-widest text-white/50">
                                     <Trophy size={10}/> Palier Ultime
                                 </span>
@@ -153,7 +157,7 @@ export default function KidRewards() {
                             <div className="h-4 bg-white/5 border border-white/10 rounded-full overflow-hidden shadow-inner p-1">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min((xp / 10000) * 100, 100)}%` }}
+                                    animate={{ width: `${Math.min((xp / 100000) * 100, 100)}%` }}
                                     className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)]"
                                 />
                             </div>
@@ -179,6 +183,7 @@ export default function KidRewards() {
                                 color={badge.color}
                                 unlocked={badge.unlocked}
                                 delay={idx * 0.1}
+                                xpRequired={badge.xpRequired}
                             />
                         ))}
                     </div>
@@ -208,7 +213,7 @@ export default function KidRewards() {
                             <div>
                                 <h3 className="text-xl font-black italic uppercase tracking-tighter leading-none mb-1">Super Coffre</h3>
                                 <p className="text-[9px] font-bold opacity-80 uppercase tracking-widest">
-                                    {canOpenChest ? "Prêt à être ouvert !" : "Déverrouille-le à 10000 XP"}
+                                    {canOpenChest ? "Prêt à être ouvert !" : "Déverrouille-le à 100 000 XP"}
                                 </p>
                             </div>
                         </div>
