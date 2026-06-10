@@ -175,12 +175,13 @@ export default function DoctorAlerts() {
                                         </td>
                                         <td className="px-10 py-8 text-right">
                                             <div className="flex items-center justify-end gap-3">
-                                                <Link href={`/doctor/patients/1`} className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-2xl text-white transition-all group/btn border border-white/5">
+                                                <Link href={`/doctor/patients/${alert.patientId}`} className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-2xl text-white transition-all group/btn border border-white/5" title="Consulter le dossier patient">
                                                     <ArrowUpRight size={18} className="group-hover/btn:scale-125 transition-transform" />
                                                 </Link>
-                                                <button className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl text-white/20 transition-all">
+                                                <Link href={`/doctor/messaging?patient=${alert.patientId}`} className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl text-white/20 transition-all" title="Envoyer un message">
                                                     <MessageSquare size={18} />
-                                                </button>
+                                                </Link>
+
                                             </div>
                                         </td>
                                     </motion.tr>
