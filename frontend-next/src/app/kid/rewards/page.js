@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
 import api from '@/lib/api';
 
-const BadgeCard = ({ name, icon: Icon, color, unlocked, delay, xpRequired }) => (
+const BadgeCard = ({ name, icon: Icon, color, unlocked, delay, xpRequired, fromStartLabel }) => (
     <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -38,7 +38,7 @@ const BadgeCard = ({ name, icon: Icon, color, unlocked, delay, xpRequired }) => 
         <span className={cn(
             "text-[8px] font-bold uppercase tracking-widest",
             unlocked ? "text-[#FFB300]" : "text-white/15"
-        )}>{xpRequired === 0 ? "Dès le début" : `${xpRequired} XP`}</span>
+        )}>{xpRequired === 0 ? fromStartLabel : `${xpRequired} XP`}</span>
         {unlocked && (
             <div className="absolute top-2 right-2">
                 <CheckCircle2 size={12} className="text-success" />
@@ -95,37 +95,50 @@ export default function KidRewards() {
         syncXp();
     }, []);
 
-    // 9 Badges based on XP and Energy
-    const badges = [
-        { id: 1, name: "Champion Débutant", icon: Trophy,         color: "bg-[#FFB300]",  unlocked: xp >= 0,       xpRequired: 0       },
-        { id: 2, name: "Explorateur",        icon: Sparkles,       color: "bg-blue-500",   unlocked: xp >= 2000,    xpRequired: 2000    },
-        { id: 3, name: "Maître du Repas",    icon: Heart,          color: "bg-accent",     unlocked: xp >= 3500,    xpRequired: 3500    },
-        { id: 4, name: "Vif Éclair",         icon: Zap,            color: "bg-orange-500", unlocked: xp >= 5000,    xpRequired: 5000    },
-        { id: 5, name: "Super Énergie",      icon: BatteryCharging,color: "bg-green-500",  unlocked: xp >= 10000 && energy > 50, xpRequired: 10000   },
-        { id: 6, name: "Garde du Corps",     icon: ShieldCheck,    color: "bg-success",    unlocked: xp >= 20000,   xpRequired: 20000   },
-        { id: 7, name: "Flamme Dorée",       icon: Flame,          color: "bg-red-500",    unlocked: xp >= 40000 && energy > 70, xpRequired: 40000   },
-        { id: 8, name: "Génie Diabète",      icon: Award,          color: "bg-purple-500", unlocked: xp >= 70000,   xpRequired: 70000   },
-        { id: 9, name: "Pilote Rocket",      icon: Rocket,         color: "bg-indigo-500", unlocked: xp >= 100000,  xpRequired: 100000  }
+    // Translated badge names array (9 items)
+    const badgeNames = t('kid.rewards.badgeNames') || [
+        "Champion Débutant","Explorateur","Maître du Repas","Vif Éclair",
+        "Super Énergie","Garde du Corps","Flamme Dorée","Génie Diabète","Pilote Rocket"
     ];
+
+    const BADGE_ICONS   = [Trophy, Sparkles, Heart, Zap, BatteryCharging, ShieldCheck, Flame, Award, Rocket];
+    const BADGE_COLORS  = ["bg-[#FFB300]","bg-blue-500","bg-accent","bg-orange-500","bg-green-500","bg-success","bg-red-500","bg-purple-500","bg-indigo-500"];
+    const XP_THRESHOLDS = [0, 2000, 3500, 5000, 10000, 20000, 40000, 70000, 100000];
+    const ENERGY_NEEDS  = [false, false, false, false, true,  false,  true,   false,   false];
+    const ENERGY_MINS   = [0,     0,     0,     0,     50,    0,      70,     0,       0];
+
+    // 9 Badges based on XP and Energy
+    const badges = badgeNames.map((name, i) => ({
+        id: i + 1,
+        name,
+        icon: BADGE_ICONS[i],
+        color: BADGE_COLORS[i],
+        unlocked: xp >= XP_THRESHOLDS[i] && (!ENERGY_NEEDS[i] || energy > ENERGY_MINS[i]),
+        xpRequired: XP_THRESHOLDS[i],
+    }));
 
     const unlockedCount = badges.filter(b => b.unlocked).length;
     const canOpenChest = xp >= 100000 || unlockedCount === 9;
 
-    // Current badge icon lookup
-    const BADGE_NAMES = ["Champion Débutant","Explorateur","Maître du Repas","Vif Éclair","Super Énergie","Garde du Corps","Flamme Dorée","Génie Diabète","Pilote Rocket"];
-    const BADGE_ICONS = [Trophy, Sparkles, Heart, Zap, BatteryCharging, ShieldCheck, Flame, Award, Rocket];
-    const BADGE_COLORS = ["bg-[#FFB300]","bg-blue-500","bg-accent","bg-orange-500","bg-green-500","bg-success","bg-red-500","bg-purple-500","bg-indigo-500"];
+    // Current badge (header display)
     const currentIdx = Math.min(level - 1, 8);
     const CurrentBadgeIcon = BADGE_ICONS[currentIdx];
     const currentBadgeColor = BADGE_COLORS[currentIdx];
-    const currentBadgeName = BADGE_NAMES[currentIdx];
+    const currentBadgeName = badgeNames[currentIdx];
+
+    // Label for 10 000 XP tier = current level badge name
+    const tier1Label = t('kid.rewards.tier1Label') || currentBadgeName;
+    // Label for 100 000 XP tier
+    const tierUltimateLabel = t('kid.rewards.tierUltimate') || 'Pilote Rocket';
+
+    const fromStartLabel = t('kid.rewards.fromStart') || 'Dès le début';
 
     const handleOpenChest = () => {
         if (!canOpenChest) {
-            alert("Tu dois encore accumuler de l'XP ou gagner des badges pour ouvrir le Super Coffre !");
+            alert(t('kid.rewards.alertLocked') || "Tu dois encore accumuler de l'XP ou gagner des badges pour ouvrir le Super Coffre !");
             return;
         }
-        alert("Félicitations !! Tu reçois ton cadeau de tes parents ! 🎁🎉");
+        alert(t('kid.rewards.alertWon') || "Félicitations !! Tu reçois ton cadeau de tes parents ! 🎁🎉");
     };
 
     return (
@@ -140,21 +153,30 @@ export default function KidRewards() {
                             transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
                             className="absolute -inset-10 bg-gradient-to-tr from-[#FFB300] to-transparent blur-3xl opacity-20"
                         />
+
+                        {/* Badge name shown ABOVE the icon */}
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                                {currentBadgeName}
+                            </span>
+                        </div>
+
                         <div className={`w-32 h-32 border-4 border-white/10 rounded-[48px] flex items-center justify-center text-white relative z-10 shadow-5xl outline outline-8 outline-white/5 ${currentBadgeColor}`}>
                             <CurrentBadgeIcon size={64} />
                         </div>
+                        {/* Badge name pill below the icon */}
                         <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-8 py-2 bg-[#FFB300] text-black rounded-full font-black text-xs uppercase tracking-widest shadow-2xl whitespace-nowrap">
                             {currentBadgeName}
                         </div>
                     </div>
 
                     <div className="text-center space-y-8 w-full px-4 md:px-10">
-                        {/* Progress 1: 10000 XP Goal */}
+                        {/* Progress 1: 10000 XP Goal — labeled with current level name */}
                         <div className="space-y-2 relative">
                             <div className="flex justify-between items-center px-4">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-[#FFB300]">{Math.min(xp, 10000)} / 10 000 XP</span>
                                 <span className="text-[10px] items-center flex gap-1 font-black uppercase tracking-widest text-white/50">
-                                    <Star size={10}/> Palier 1
+                                    <Star size={10}/> {currentBadgeName}
                                 </span>
                             </div>
                             <div className="h-4 bg-white/5 border border-white/10 rounded-full overflow-hidden shadow-inner p-1">
@@ -166,12 +188,12 @@ export default function KidRewards() {
                             </div>
                         </div>
 
-                        {/* Progress 2: 100000 XP Goal */}
+                        {/* Progress 2: 100000 XP Goal — labeled "Pilote Rocket" */}
                         <div className="space-y-2 relative">
                             <div className="flex justify-between items-center px-4">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{Math.min(xp, 100000)} / 100 000 XP</span>
                                 <span className="text-[10px] items-center flex gap-1 font-black uppercase tracking-widest text-white/50">
-                                    <Trophy size={10}/> Palier Ultime
+                                    <Rocket size={10}/> {tierUltimateLabel}
                                 </span>
                             </div>
                             <div className="h-4 bg-white/5 border border-white/10 rounded-full overflow-hidden shadow-inner p-1">
@@ -188,7 +210,9 @@ export default function KidRewards() {
                 {/* Badge Collection SECTION 7.2 */}
                 <div className="space-y-6">
                     <div className="flex items-center px-4">
-                        <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30">Tes Badges ({unlockedCount}/9)</h2>
+                        <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30">
+                            {t('kid.rewards.myBadges') || 'Tes Badges'} ({unlockedCount}/9)
+                        </h2>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
@@ -201,6 +225,7 @@ export default function KidRewards() {
                                 unlocked={badge.unlocked}
                                 delay={idx * 0.1}
                                 xpRequired={badge.xpRequired}
+                                fromStartLabel={fromStartLabel}
                             />
                         ))}
                     </div>
@@ -228,9 +253,13 @@ export default function KidRewards() {
                                 <Medal size={32} className={canOpenChest ? "text-[#FFB300]" : "text-white/30"} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black italic uppercase tracking-tighter leading-none mb-1">Super Coffre</h3>
+                                <h3 className="text-xl font-black italic uppercase tracking-tighter leading-none mb-1">
+                                    {t('kid.rewards.superChest') || 'Super Coffre'}
+                                </h3>
                                 <p className="text-[9px] font-bold opacity-80 uppercase tracking-widest">
-                                    {canOpenChest ? "Prêt à être ouvert !" : "Déverrouille-le à 100 000 XP"}
+                                    {canOpenChest
+                                        ? (t('kid.rewards.chestReady') || 'Prêt à être ouvert !')
+                                        : (t('kid.rewards.chestLocked') || 'Déverrouille-le à 100 000 XP')}
                                 </p>
                             </div>
                         </div>
@@ -242,7 +271,7 @@ export default function KidRewards() {
                                     : "bg-white/10 text-white/30 cursor-not-allowed"
                             )}
                         >
-                            Ouvrir mon Cadeau
+                            {t('kid.rewards.openGift') || 'Ouvrir mon Cadeau'}
                         </button>
                     </div>
                 </div>
@@ -250,7 +279,9 @@ export default function KidRewards() {
                 {/* Positive reinforcement message */}
                 <div className="flex items-center justify-center gap-4 py-8">
                     <div className="w-12 h-[1px] bg-white/10" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/10 italic">Tu es incroyable !</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/10 italic">
+                        {t('kid.rewards.youAreAmazing') || 'Tu es incroyable !'}
+                    </span>
                     <div className="w-12 h-[1px] bg-white/10" />
                 </div>
 

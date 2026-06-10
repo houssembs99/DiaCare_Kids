@@ -157,6 +157,30 @@ export const translations = {
                 perfectDesc: "Regarde comme Hamouch est en forme ! C'est le moment ideal pour jouer ou apprendre.",
                 sportTitle: "Mode Sport",
                 sportDesc: "Mange une petite collation avec du sucre avant de faire du sport pour garder ton energie !"
+            },
+            rewards: {
+                myBadges: "Tes Badges",
+                fromStart: "Dès le début",
+                tier1Label: "Champion Débutant",
+                tierUltimate: "Pilote Rocket",
+                superChest: "Super Coffre",
+                chestReady: "Prêt à être ouvert !",
+                chestLocked: "Déverrouille-le à 100 000 XP",
+                openGift: "Ouvrir mon Cadeau",
+                youAreAmazing: "Tu es incroyable !",
+                alertLocked: "Tu dois encore accumuler de l'XP ou gagner des badges pour ouvrir le Super Coffre !",
+                alertWon: "Félicitations !! Tu reçois ton cadeau de tes parents ! 🎁🎉",
+                badgeNames: [
+                    "Champion Débutant",
+                    "Explorateur",
+                    "Maître du Repas",
+                    "Vif Éclair",
+                    "Super Énergie",
+                    "Garde du Corps",
+                    "Flamme Dorée",
+                    "Génie Diabète",
+                    "Pilote Rocket"
+                ]
             }
         },
         doctor: {
@@ -359,6 +383,30 @@ export const translations = {
                 perfectDesc: "Look how fit Hamouch is! It's the perfect time to play or learn.",
                 sportTitle: "Sport Mode",
                 sportDesc: "Before running, let's check if we have enough fuel!"
+            },
+            rewards: {
+                myBadges: "Your Badges",
+                fromStart: "From the start",
+                tier1Label: "Rookie Champion",
+                tierUltimate: "Rocket Pilot",
+                superChest: "Super Chest",
+                chestReady: "Ready to open!",
+                chestLocked: "Unlock it at 100,000 XP",
+                openGift: "Open my Gift",
+                youAreAmazing: "You are amazing!",
+                alertLocked: "You need more XP or badges to open the Super Chest!",
+                alertWon: "Congratulations!! You receive your gift from your parents! 🎁🎉",
+                badgeNames: [
+                    "Rookie Champion",
+                    "Explorer",
+                    "Meal Master",
+                    "Quick Flash",
+                    "Super Energy",
+                    "Bodyguard",
+                    "Golden Flame",
+                    "Diabetes Genius",
+                    "Rocket Pilot"
+                ]
             }
         },
         doctor: {
@@ -561,6 +609,30 @@ export const translations = {
                 perfectDesc: "انظر كم حموش نشيط! هذا هو الوقت المثالي للعب أو التعلم.",
                 sportTitle: "وضع الرياضة",
                 sportDesc: "تناول وجبة خفيفة مع السكر قبل ممارسة الرياضة للحفاظ على طاقتك!"
+            },
+            rewards: {
+                myBadges: "شاراتي",
+                fromStart: "من البداية",
+                tier1Label: "بطل مبتدئ",
+                tierUltimate: "رائد الصاروخ",
+                superChest: "الصندوق الخارق",
+                chestReady: "جاهز للفتح!",
+                chestLocked: "افتحه عند 100,000 نقطة",
+                openGift: "افتح هديتي",
+                youAreAmazing: "أنت رائع!",
+                alertLocked: "تحتاج إلى المزيد من النقاط أو الشارات لفتح الصندوق الخارق!",
+                alertWon: "تهانينا!! تحصل على هديتك من والديك! 🎁🎉",
+                badgeNames: [
+                    "بطل مبتدئ",
+                    "مستكشف",
+                    "خبير الوجبات",
+                    "البرق السريع",
+                    "طاقة خارقة",
+                    "الحارس",
+                    "اللهب الذهبي",
+                    "عبقري السكري",
+                    "رائد الصاروخ"
+                ]
             }
         },
         doctor: {
