@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     AlertTriangle, Search, Filter, Clock,
