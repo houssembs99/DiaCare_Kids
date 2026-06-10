@@ -150,27 +150,39 @@ namespace DiaCareKids.Api.Controllers
 
             await _usersService.UpdateAsync(id, user);
 
-            // === AUTO-TRANSACTION: When a doctor activates a parent subscription ===
+            // === AUTO-TRANSACTION: When a doctor/clinic activates a parent subscription ===
             var callerRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var callerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (request.IsActive && callerRole == "Medecin" && !string.IsNullOrEmpty(callerId))
+            if (request.IsActive && (callerRole == "Medecin" || callerRole == "Clinique") && !string.IsNullOrEmpty(callerId))
             {
-                // Look up the package price from doctor's packages
-                var doctorPackages = await _packagesService.GetByClinicIdAsync(callerId);
-                var matchedPkg = doctorPackages.FirstOrDefault(p =>
+                // Look up the package price from doctor/clinic's packages
+                var providerPackages = await _packagesService.GetByClinicIdAsync(callerId);
+                var matchedPkg = providerPackages.FirstOrDefault(p =>
                     p.Name.Equals(user.Subscription.PlanType, StringComparison.OrdinalIgnoreCase));
 
-                long amountCentimes = matchedPkg != null ? (long)(matchedPkg.Price * 100) : 0;
+                if (matchedPkg == null && providerPackages.Any())
+                {
+                    // Fallback to the first available package if the specific one is not found or it's a new parent
+                    matchedPkg = providerPackages.First();
+                }
+
+                // If no packages exist at all, fallback to a standard pricing of 80 DT (8000 cents)
+                long amountCentimes = matchedPkg != null ? (long)(matchedPkg.Price * 100) : 8000;
+                string finalPlanName = matchedPkg != null ? matchedPkg.Name : (user.Subscription.PlanType ?? "Standard");
+
+                // Update the user's plan to the successfully matched one to keep data consistent
+                user.Subscription.PlanType = finalPlanName;
+                await _usersService.UpdateAsync(id, user);
 
                 var transaction = new Transaction
                 {
-                    UserId = callerId, // Revenue belongs to the doctor
-                    UserFullName = user.FullName, // Patient name for reference
-                    Role = "Medecin",
+                    UserId = callerId, // Revenue belongs to the provider
+                    UserFullName = user.FullName, // Patient/Parent name for reference
+                    Role = callerRole,
                     AssociatedClinicId = callerId,
                     Amount = amountCentimes,
-                    PlanName = user.Subscription.PlanType,
+                    PlanName = finalPlanName,
                     PaymentIntentId = $"manual_{id}_{DateTime.UtcNow.Ticks}",
                     Date = DateTime.UtcNow,
                     Status = "Payé"
