@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/LanguageContext';
+import api from '@/lib/api';
 
 const LEVELS = [
     { id: 1, rows: 2, cols: 2, xp: 100, image: "https://loremflickr.com/600/600/balanced,diet,kids?lock=1", tip: "Une bonne alimentation est la base de ta force !" },
@@ -143,6 +144,15 @@ export default function PuzzleGame() {
             setCompletedLevels(newCompleted);
             setUnlockedLevels(newUnlocked);
             saveProgress(newUnlocked, newCompleted, newScore);
+
+            // Fetch current user and sync XP
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.id) {
+                const newXp = (user.xp || 0) + currentLevel.xp;
+                const updatedUser = { ...user, xp: newXp };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                api.post(`/users/${user.id}/add-xp`, { XP: currentLevel.xp }).catch(e => console.error("Could not sync XP", e));
+            }
         }
     };
 

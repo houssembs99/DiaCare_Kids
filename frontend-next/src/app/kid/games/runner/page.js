@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Heart, Activity, ArrowLeft, Trophy } from 'lucide-react';
+import api from '@/lib/api';
 
 const GAME_SPEED = 2.5;
 const PLAYER_SPEED = 20;
@@ -139,6 +140,26 @@ export default function RunnerGame() {
         }
         return () => cancelAnimationFrame(requestRef.current);
     }, [isPlaying, updateGame]);
+
+    // Save XP when game is over
+    useEffect(() => {
+        if (isGameOver && score > 0) {
+            const saveXP = async () => {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (user.id) {
+                    try {
+                        const newXp = (user.xp || 0) + score;
+                        const updatedUser = { ...user, xp: newXp };
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                        await api.post(`/users/${user.id}/add-xp`, { XP: score });
+                    } catch (e) {
+                        console.error("Failed to add XP", e);
+                    }
+                }
+            };
+            saveXP();
+        }
+    }, [isGameOver]);
 
     // Spawners
     useEffect(() => {
