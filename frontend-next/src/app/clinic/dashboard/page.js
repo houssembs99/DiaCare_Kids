@@ -72,8 +72,14 @@ export default function ClinicDashboard() {
         fetchStats();
     }, []);
 
+    const last7DaysLabels = [...Array(7)].map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'][d.getDay()];
+    });
+
     const lineData = {
-        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'], // In a real app we'd compute the last 7 days names
+        labels: last7DaysLabels,
         datasets: [{
             label: 'Patients Actifs',
             data: stats.charts?.evolution || [0, 0, 0, 0, 0, 0, 0],
@@ -90,7 +96,7 @@ export default function ClinicDashboard() {
     };
 
     const barData = {
-        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        labels: last7DaysLabels,
         datasets: [{
             label: 'Alertes Critiques',
             data: stats.charts?.alerts || [0, 0, 0, 0, 0, 0, 0],
