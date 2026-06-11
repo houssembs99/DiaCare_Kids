@@ -210,6 +210,10 @@ export const translations = {
             treatment: "Traitement Actuel",
             submitEnroll: "Valider l'Inscription"
         },
+        clinic: {
+            overviewTitle: "Supervision",
+            overviewItalic: "Clinique"
+        },
         sidebar: {
             dashboard: "Dashboard",
             doctors: "Médecins",
@@ -438,6 +442,10 @@ export const translations = {
             treatment: "Current Treatment",
             submitEnroll: "Validate Enrollment"
         },
+        clinic: {
+            overviewTitle: "Clinic",
+            overviewItalic: "Overview"
+        },
         sidebar: {
             dashboard: "Dashboard",
             doctors: "Doctors",
@@ -665,6 +673,10 @@ export const translations = {
             birthDate: "تاريخ الميلاد",
             treatment: "العلاج الحالي",
             submitEnroll: "تأكيد التسجيل"
+        },
+        clinic: {
+            overviewTitle: "نظرة عامة",
+            overviewItalic: "للعيادة"
         },
         sidebar: {
             dashboard: "لوحة التحكم",

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/api';
+import { useLanguage } from '@/lib/LanguageContext';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     Users, Stethoscope, Baby, AlertTriangle,
@@ -54,6 +55,7 @@ const ClinicStatCard = ({ title, value, icon, tendency, tendencyType, isAlert })
 );
 
 export default function ClinicDashboard() {
+    const { t } = useLanguage();
     const [timeFilter, setTimeFilter] = useState('7d');
     const [stats, setStats] = useState({ usedDoctors: 0, usedPatients: 0, type: '', clinicName: '' });
 
@@ -138,7 +140,7 @@ export default function ClinicDashboard() {
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="space-y-2">
                         <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none uppercase italic">
-                            Clinic <span className="text-white/40">Overview</span>
+                            {t('clinic.overviewTitle')} <span className="text-white/40">{t('clinic.overviewItalic')}</span>
                         </h1>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Gestion et supervision de l'activité médicale</p>
                     </div>
