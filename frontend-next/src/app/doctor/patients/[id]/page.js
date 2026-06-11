@@ -143,33 +143,83 @@ export default function PatientDetail() {
         setIsIAAnalysing(true);
         setIaReport(null);
         
-        // Simuler un appel API d'analyse prédictive qui prend du temps
+        // Simuler un appel API qui prend du temps
         setTimeout(() => {
             const patientName = data?.patient?.fullName || "Le patient";
             
-            // Calculer quelques stats si des dossiers existent pour rendre l'analyse plus dynamique
+            // 1. Calcul des vraies données
             let recentTrend = "stable";
             let avgGlucose = 110;
-            if (data?.records && data.records.length > 1) {
+            let lastMealTime = "récemment";
+
+            if (data?.records && data.records.length > 0) {
+                // Trier du plus récent au plus ancien
                 const recent = [...data.records].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
                 avgGlucose = recent.reduce((sum, r) => sum + (r.glucoseValue || 0), 0) / recent.length;
-                if (recent[0].glucoseValue > recent[recent.length-1].glucoseValue) recentTrend = "en hausse constante";
-                else if (recent[0].glucoseValue < recent[recent.length-1].glucoseValue) recentTrend = "en baisse constante";
-                else recentTrend = "fluctuante";
+                
+                if (recent.length > 1) {
+                    if (recent[0].glucoseValue > recent[recent.length-1].glucoseValue + 10) recentTrend = "en hausse constante";
+                    else if (recent[0].glucoseValue < recent[recent.length-1].glucoseValue - 10) recentTrend = "en baisse constante";
+                    else recentTrend = "relativement stable";
+                }
             }
-            
-            // Générer un rapport en s'inspirant des instructions (compte rendu prédictif et recommandations)
+
+            // 2. Moteur de règles mathématiques pour générer des phrases DYNAMIQUES
+            let risksText = "";
+            let alertText = "";
+            let recs = [];
+            let predictedVal = Math.round(avgGlucose);
+
+            // Scénario A : HYPOGLYCÉMIE
+            if (avgGlucose < 70) {
+                risksText = `Analyse basée sur les récents relevés. ${patientName} est en situation de risque hypoglycémique sévère. Tendance globale ${recentTrend}. La moyenne actuelle est de ${Math.round(avgGlucose)} mg/dL, ce qui est sous le seuil de sécurité. Risque immédiat de malaise.`;
+                alertText = `L'IA prévoit une chute continue vers ${Math.round(avgGlucose * 0.85)} mg/dL à la prochaine mesure. Tendance globale: ↘ Baisse critique.`;
+                recs = [
+                    "Resucrage immédiat nécessaire (15g de glucides rapides).",
+                    "Suspendre temporairement l'administration d'insuline rapide.",
+                    "Nouvelle mesure obligatoire dans 15 minutes."
+                ];
+            } 
+            // Scénario B : BON CONTRÔLE (Normaux)
+            else if (avgGlucose >= 70 && avgGlucose <= 140) {
+                risksText = `Excellent équilibre glycémique détecté pour ${patientName}. La tendance est ${recentTrend} avec une moyenne saine de ${Math.round(avgGlucose)} mg/dL. Aucun risque majeur identifié pour la journée en cours.`;
+                alertText = `L'IA prévoit un maintien stable à environ ${Math.round(avgGlucose * (recentTrend === "en hausse constante" ? 1.05 : 0.95))} mg/dL d'ici la fin de la journée. Tendance globale: → Stable.`;
+                recs = [
+                    "Maintenir le schéma thérapeutique actuel (insuline basale/bolus).",
+                    "Continuer le même ratio glucides/insuline selon les repas.",
+                    "Féliciter l'enfant/parent pour la bonne gestion."
+                ];
+            } 
+            // Scénario C : HYPERGLYCÉMIE LÉGÈRE
+            else if (avgGlucose > 140 && avgGlucose <= 180) {
+                risksText = `Analyse en cours : ${patientName} présente une légère hyperglycémie avec une moyenne de ${Math.round(avgGlucose)} mg/dL. La dynamique est ${recentTrend}. Risque modéré de soif et fatigue accrue si non corrigé avant le prochain repas.`;
+                alertText = `L'IA prévoit une glycémie de ${Math.round(avgGlucose * 1.1)} mg/dL d'ici les prochaines heures si aucun bolus correctif n'est administré. Tendance globale: ↑ Hausse modérée.`;
+                recs = [
+                    "Ajuster le ratio glucides/insuline au prochain repas (+5% requis).",
+                    "Encourager l'hydratation avec de l'eau.",
+                    "Surveiller particulièrement la zone post-prandiale (après repas)."
+                ];
+            } 
+            // Scénario D : HYPERGLYCÉMIE SÉVÈRE
+            else {
+                risksText = `ALERTE : Variations glycémiques très élevées détectées. ${patientName} a une moyenne critique de ${Math.round(avgGlucose)} mg/dL. Tendance ${recentTrend}. Risque très élevé d'acidocétose si prolongé.`;
+                alertText = `L'IA prévoit une glycémie franchissant les ${Math.round(avgGlucose * 1.15)} mg/dL rapidement. Tendance globale: ⇡ Hausse critique.`;
+                recs = [
+                    "Prescrire un bolus de correction d'insuline rapide immédiatement.",
+                    "Vérifier la présence de cétones dans les urines/sang.",
+                    "Limiter toute activité physique intense jusqu'au retour sous 180 mg/dL.",
+                    "Planifier un appel d'urgence avec les parents."
+                ];
+            }
+
             setIaReport({
-                risks: `Analyse des 15 derniers jours terminée. ${patientName} présente des variations glycémiques fréquentes après 18h. Tendance actuelle ${recentTrend} avec une moyenne estimée à ${Math.round(avgGlucose)} mg/dL. Risque modéré d'hypoglycémie nocturne détecté entre 02h00 et 04h00 basé sur les schémas récents de consommation de glucides.`,
-                predictiveAlert: `L'IA DiaPote prévoit une glycémie de ${Math.round(avgGlucose * 1.15)} mg/dL d'ici demain matin si le traitement actuel est maintenu sans modification. Tendance globale: ↑ Hausse.`,
-                recommendations: [
-                    "Ajuster le ratio glucides/insuline pour le repas du soir (+10% requis).",
-                    "Planifier une collation légère sans sucre rapide vers 22h si la glycémie est inférieure à 100 mg/dL.",
-                    "Surveiller particulièrement la zone 18h-20h lors des jours d'activité physique."
-                ]
+                risks: risksText,
+                predictiveAlert: alertText,
+                recommendations: recs
             });
+            
             setIsIAAnalysing(false);
-        }, 2500);
+        }, 2000);
     };
 
 
