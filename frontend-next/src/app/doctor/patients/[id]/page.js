@@ -172,43 +172,43 @@ export default function PatientDetail() {
 
             // Scénario A : HYPOGLYCÉMIE
             if (avgGlucose < 70) {
-                risksText = `Analyse basée sur les récents relevés. ${patientName} est en situation de risque hypoglycémique sévère. Tendance globale ${recentTrend}. La moyenne actuelle est de ${Math.round(avgGlucose)} mg/dL, ce qui est sous le seuil de sécurité. Risque immédiat de malaise.`;
-                alertText = `L'IA prévoit une chute continue vers ${Math.round(avgGlucose * 0.85)} mg/dL à la prochaine mesure. Tendance globale: ↘ Baisse critique.`;
+                risksText = `Analyse pronostique clinique : le patient se situe sous le seuil d'alerte avec une moyenne de ${Math.round(avgGlucose)} mg/dL. Le profil cinétique est ${recentTrend}. Risque immédiat de neuroglycopénie, d'altération de l'état de conscience et de réponse adrénergique anormale.`;
+                alertText = `Prédiction algorithmique de détérioration : chute projetée vers ${Math.round(avgGlucose * 0.85)} mg/dL suggérant une sur-insulinisation ou un déficit d'apport compensatoire. Dynamique : ↘ Hypoglycémie aiguë.`;
                 recs = [
-                    "Resucrage immédiat nécessaire (15g de glucides rapides).",
-                    "Suspendre temporairement l'administration d'insuline rapide.",
-                    "Nouvelle mesure obligatoire dans 15 minutes."
+                    "Administration thérapeutique immédiate de 15g de glucides à index glycémique élevé (resucrage per os).",
+                    "Suspension transitoire du schéma basal (arrêt pompe) ou inhibition de tout bolus correctif actif.",
+                    "Contrôle capillaire de validation croisée exigé à H+15 minutes post-resucrage."
                 ];
             } 
             // Scénario B : BON CONTRÔLE (Normaux)
             else if (avgGlucose >= 70 && avgGlucose <= 140) {
-                risksText = `Excellent équilibre glycémique détecté pour ${patientName}. La tendance est ${recentTrend} avec une moyenne saine de ${Math.round(avgGlucose)} mg/dL. Aucun risque majeur identifié pour la journée en cours.`;
-                alertText = `L'IA prévoit un maintien stable à environ ${Math.round(avgGlucose * (recentTrend === "en hausse constante" ? 1.05 : 0.95))} mg/dL d'ici la fin de la journée. Tendance globale: → Stable.`;
+                risksText = `L'analyse des séries temporelles (Time in Range) indique une variabilité glycémique (CV) physiologique. La moyenne de ${Math.round(avgGlucose)} mg/dL (Tendance : ${recentTrend}) reflète une excellente couverture insulinique et un risque de complication métabolique nul.`;
+                alertText = `Prévision du maintien d'une homéostasie optimale avec une dérive mineure vers ${Math.round(avgGlucose * (recentTrend === "en hausse constante" ? 1.05 : 0.95))} mg/dL sur le court terme. Dynamique : → Euglycémie stable.`;
                 recs = [
-                    "Maintenir le schéma thérapeutique actuel (insuline basale/bolus).",
-                    "Continuer le même ratio glucides/insuline selon les repas.",
-                    "Féliciter l'enfant/parent pour la bonne gestion."
+                    "Maintien strict de l'insulinothérapie actuelle (titration basale et ratios prandiaux physiologiques confirmés).",
+                    "Poursuite du monitoring interstitiel en continu sans intervention corrective.",
+                    "Renforcement positif clinique préconisé sur la compliance familiale au schéma thérapeutique."
                 ];
             } 
             // Scénario C : HYPERGLYCÉMIE LÉGÈRE
             else if (avgGlucose > 140 && avgGlucose <= 180) {
-                risksText = `Analyse en cours : ${patientName} présente une légère hyperglycémie avec une moyenne de ${Math.round(avgGlucose)} mg/dL. La dynamique est ${recentTrend}. Risque modéré de soif et fatigue accrue si non corrigé avant le prochain repas.`;
-                alertText = `L'IA prévoit une glycémie de ${Math.round(avgGlucose * 1.1)} mg/dL d'ici les prochaines heures si aucun bolus correctif n'est administré. Tendance globale: ↑ Hausse modérée.`;
+                risksText = `Évaluation objectivant une dysglycémie modérée et non-critique (Moy: ${Math.round(avgGlucose)} mg/dL). Le profil d'évolution est ${recentTrend}. Risque clinique sous-jacent d'hyperosmolarité débutante, de déshydratation intra-cellulaire légère et d'asthénie post-prandiale.`;
+                alertText = `Télémétrie ML.NET : dérive progressive projetée vers ${Math.round(avgGlucose * 1.1)} mg/dL, indicative d'un éventuel sous-dosage prandial. Dynamique : ↑ Tendance haussière légère.`;
                 recs = [
-                    "Ajuster le ratio glucides/insuline au prochain repas (+5% requis).",
-                    "Encourager l'hydratation avec de l'eau.",
-                    "Surveiller particulièrement la zone post-prandiale (après repas)."
+                    "Prescription d'un bolus de correction proportionnel défini par le facteur de sensibilité à l'insuline (FSI) propre à l'enfant.",
+                    "Ajustement stratégique prospectif (+5% à +10%) du ratio insuline/glucides pour les prochains repas équivalents.",
+                    "Augmentation per os des apports hydriques (eau exclusive) afin de contrecarrer la polyurie osmotique."
                 ];
             } 
             // Scénario D : HYPERGLYCÉMIE SÉVÈRE
             else {
-                risksText = `ALERTE : Variations glycémiques très élevées détectées. ${patientName} a une moyenne critique de ${Math.round(avgGlucose)} mg/dL. Tendance ${recentTrend}. Risque très élevé d'acidocétose si prolongé.`;
-                alertText = `L'IA prévoit une glycémie franchissant les ${Math.round(avgGlucose * 1.15)} mg/dL rapidement. Tendance globale: ⇡ Hausse critique.`;
+                risksText = `ALERTE MAJEURE : Déséquilibre métabolique sévère avec moyenne critique à ${Math.round(avgGlucose)} mg/dL. Dynamique d'évolution ${recentTrend}. Forte probabilité de lipolyse compensatoire exposant le patient à un risque immédiat d'acidocétose diabétique (ACD).`;
+                alertText = `Modélisation critique : franchissement imminent du seuil toxique estimé à ${Math.round(avgGlucose * 1.15)} mg/dL, traduisant un déficit insulinique absolu ou une insulinorésistance aiguë. Dynamique : ⇡ Escalade critique.`;
                 recs = [
-                    "Prescrire un bolus de correction d'insuline rapide immédiatement.",
-                    "Vérifier la présence de cétones dans les urines/sang.",
-                    "Limiter toute activité physique intense jusqu'au retour sous 180 mg/dL.",
-                    "Planifier un appel d'urgence avec les parents."
+                    "Bolus de correction en urgence par insuline d'action ultra-rapide (administration par stylo conseillée pour écarter un défaut de pompe/cathéter).",
+                    "Dépistage urgent par bandelette de la cétonémie sanguine (ou cétonurie) pour statuer sur l'acidocétose.",
+                    "Proscription médicale stricte de tout exercice ou hypercatabolisme jusqu'au rétablissement d'une glycémie < 180 mg/dL.",
+                    "Déclenchement du protocole d'escalade : surveillance horaire et évacuation hospitalière si pH ou cétones hors-noms."
                 ];
             }
 

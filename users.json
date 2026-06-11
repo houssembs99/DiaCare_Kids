@@ -1,0 +1,212 @@
+[
+  {
+    "email": "h.bensalahh@gmail.com",
+    "role": "Admin",
+    "pass": "$2a$11$z.ymtMSVZ7k8OJpuw0HIZuJw4F8Eo.1MsOWpdvJIqORNlss7SQbAW"
+  },
+  {
+    "email": "h.bensalahh@gmail.com",
+    "role": "Admin",
+    "pass": "$2a$11$sxS6uVj74J.mB2SJZ2Nmm..Ad7OQ1cNCcieSc49WjZJsZPC8Vgqbq"
+  },
+  {
+    "email": "admin@diacarekids.top",
+    "role": "Admin",
+    "pass": "$2a$11$Zc2mre2gCIoc0VgXCrge8OFs7GwfdNi8PWg5A/Gamm9y/fSjKiN3K"
+  },
+  {
+    "email": "clinique@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$6SV9jS.vt7ww/mhG6kAZ9OtXMMq3sFHBTNvhrMgTdOznBKIiYp2Nm"
+  },
+  {
+    "email": "admin@gmail.com",
+    "role": "Admin",
+    "pass": "$2a$11$U0TmqGGKlJa./3v00npZNOmbxa.wdBVO.LqtCGRMbFhpoUYQ1VllK"
+  },
+  {
+    "email": "jasmine@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$JuD2LH.infhTTfOjyL5Qa.cD6F/FA5sTTI6w7rhmoo9BtbcZd/19O"
+  },
+  {
+    "email": "medecin1@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$3AwfobTxvgY4s4zNgix4W.OAIo8dJD6gBlf7Vw2S3/dMDilYvXMFy"
+  },
+  {
+    "email": "medecin2@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$U26aLydd8/Sfcr3Dxku.LuR1TTAM6ePgLEQYZDhzv4dsLbQD4cvuG"
+  },
+  {
+    "email": "medecin3@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$jvjIi/10lc.P3A2OFtiKyOqzcnonhTB9/4hPyt8wOG4WEn2nLcwKi"
+  },
+  {
+    "email": "medecin4@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$7maQVYccoZ4lZVR5raE7fuFsa7gOSGOx2necs8tWh9qYof.Crw5oe"
+  },
+  {
+    "email": "parent3@gmail.com",
+    "role": "Parent",
+    "pass": "$2a$11$5N8n68jCUsC9a8jThWVZkO8QMxtjnY4iGJzdU/wJ/ddUl1jSGcL0O"
+  },
+  {
+    "email": "patient31@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$OXVRipg9ea/Wliwja9IHieI.1B/fBjkTzXNA.5gZ790.agUPfHm12"
+  },
+  {
+    "email": "patient32@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$4bU/ePfiWjAbCzETk9he/.xssGOwdErBQTiU.UQSTKDCRYyErKXua"
+  },
+  {
+    "email": "patient0031@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$vDReuaErrPce6vKnhgA1C.YltRfqDdFPKlpylHJhOjPsz2TsPyP1W"
+  },
+  {
+    "email": "medecin@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$lj2xnkVjKPQJGHy2eFJpFefFlEaXcxZmb.ZFLxl2fg3/WWD5G8uCa"
+  },
+  {
+    "email": "agentclinique@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$eG7CgI4hpp0Vlz4mtRPJxedHWp0mCMXAaBV86DOIZRzK3d3Mr1nfO"
+  },
+  {
+    "email": "monji@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$UFuuW9jRw4BMRuDOMKJzI.QLMOUglo1ITtLj3.c5ruNnS30qDOxB6"
+  },
+  {
+    "email": "adminadmin@gmail.com",
+    "role": "Admin",
+    "pass": "$2a$11$nJjowrn/aCvyZPbRuXM6VeZAcxazavC0/HDs.lrHR5HXSfgoiqh2u"
+  },
+  {
+    "email": "anas@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$9atI4GBv9t5ApJFcm.gIR.5CP7jh0qDKQ2QBLdM0vp9oYbWFGiDdC"
+  },
+  {
+    "email": "jasmin@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$SWq.I8zDBEroIWCjTwNJ9uLbvDwc5hnaL1EQIwjdQks6URgqbvDI6"
+  },
+  {
+    "email": "parent_test_1779361975659@gmail.com",
+    "role": "Parent",
+    "pass": "$2a$11$k784BKIs5oUxELB7Q5IGdO2Noys/iWAFSrPiIIv3pP90amhfNNDHu"
+  },
+  {
+    "email": "kamel@gmail.com",
+    "role": "Parent",
+    "pass": "$2a$11$5z.jrPIK0t1FDJgOgCc.Ou0cJxlDFMPbfWueGmKymMI964Im4n7qa"
+  },
+  {
+    "email": "",
+    "role": "Medecin",
+    "pass": "$2b$10$gHnrrM5QjVGwDcj9faVHW.K3gjXtm3To9PY7ST6js9EvfJekzUYla"
+  },
+  {
+    "email": "ahmed@gmail.com",
+    "role": "Parent",
+    "pass": "$2b$10$4RGdpvygVj9XKvOeB72X..wl.3SEVXphMiiM1CpS/tatvC1K0NcvW"
+  },
+  {
+    "email": "amen@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$QNWuNx2dLyevNKfsOi9B8.vZxNb8DEHF8Y4uh36Fsk630qcGFn3zm"
+  },
+  {
+    "email": "clinique2@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$NlUyuGNDYiyEpfcqXrkPDeZUfKKvPaWgj4L2hkq6srp3458ecuXc."
+  },
+  {
+    "email": "hhoussem.hbs@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$.TLI9b2GF8YL2wHN2w9/Vu90/C6uXH/9X7of.eOKb6l2eAaru9nQ2"
+  },
+  {
+    "email": "diacarekids@gmail.com",
+    "role": "Admin",
+    "pass": "$2a$11$lrhNAHZXQIQSDupX1MlwIuklePHGRudTk/DAmwzR/FUtkq.yz2iAG"
+  },
+  {
+    "email": "nefzawa@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$DDVUszHyjOU26x/JLLdmkufv8EZguBFWM2HuGhrjQjARFDMK/Ozr6"
+  },
+  {
+    "email": "mehdi@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$5S9aGu.rrirO6wSod0.gnuLcbkJ9hNcLa31w1/xciGrTBACS7Mrre"
+  },
+  {
+    "email": "jamel@gmail.com",
+    "role": "Parent",
+    "pass": "$2a$11$jbMf0KOJgqT3tJqyL3NytusUngElkYH5LtR9onyD7yB5fGf7XajTS"
+  },
+  {
+    "email": "mahdi@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$Lo9wkFRWpKVVXeuCk53D7unc1VRdl/pJwslyWDA/Wkc7ouP0t7BgW"
+  },
+  {
+    "email": "ali@gmail.com",
+    "role": "Parent",
+    "pass": "$2a$11$zMI8HOR3aAoJGcjO0wxPLuYg6rM/3x5jkzKQxbL9b6l1RES5.Y7.6"
+  },
+  {
+    "email": "amine@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$yALOWjK7aVkZZY3DKgSN7eCFsT.FHOnK9cce9dJDxoyHYdTumDR6y"
+  },
+  {
+    "email": "dabeb@gmail.com",
+    "role": "Clinique",
+    "pass": "$2a$11$fsvnrSmxFGqCIeMJtZHrLeQWmDkh5EiZG6j8uHfPhVBjEAuQW5ZYa"
+  },
+  {
+    "email": "nawras7@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$0ArqrmLLQlu/9rhNou1X1e/20yypCJNS8hgqZUY2GwMm06G..7zUy"
+  },
+  {
+    "email": "medali@gmail.com",
+    "role": "Parent",
+    "pass": "$2a$11$VpmcoE1jZHa2HKI6uGKCaefjN8zz7A1ppBuKLLGHLyqvzzRhq.NZ."
+  },
+  {
+    "email": "tasnim@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$53Hi.bjdS23e3lt2P5gfiu2Qh6EJH5N77zP2QfX4DKMnBOgRHcyy."
+  },
+  {
+    "email": "nour@gmail.com",
+    "role": "Enfant",
+    "pass": "$2a$11$AWT46mrqRn1et8OC.P7kFebYyorzaoGWzGrhU0xXjQ2XBYnQV6DfK"
+  },
+  {
+    "email": "balkis@gmail.com",
+    "role": "Medecin",
+    "pass": "$2a$11$hGiCfU52S99muSpEuFFeu.FRU/0fIj5ITm6OW170mz5t0L/XrNaM."
+  },
+  {
+    "email": "hedi@gmail.com",
+    "role": "Parent",
+    "pass": "$2a$11$3ES/ifMIn4W0z7VGOAVSGeVQV53XEs8i7PiBtNj0hrhb5HBAmLApe"
+  },
+  {
+    "email": "oussema",
+    "role": "Enfant",
+    "pass": "$2a$11$b19wug0swm8BBwTRR.kZluHfPBirnleagzzI9bppqmWCOEQxfsYhe"
+  }
+]
