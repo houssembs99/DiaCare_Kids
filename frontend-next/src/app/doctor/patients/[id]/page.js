@@ -164,51 +164,84 @@ export default function PatientDetail() {
                 }
             }
 
-            // 2. Moteur de règles mathématiques pour générer des phrases DYNAMIQUES
+            // 2. Moteur de règles mathématiques contextuelles 
+            let lastRecord = data?.records?.length > 0
+                ? [...data.records].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
+                : null;
+            let currentVal = lastRecord ? lastRecord.glucoseValue : avgGlucose;
+            let timing = lastRecord ? lastRecord.timing : 'before';
+            let insulinInjected = lastRecord ? lastRecord.insulinDose > 0 : false;
+            let activity = lastRecord && lastRecord.activityLevel === "Modérée";
+            
+            let seuilBas = 0.70;
+            let seuilHaut = 1.30;
+            let contextLabel = "À jeun / Avant repas";
+
+            if (timing === 'before') { 
+                seuilBas = 0.70; seuilHaut = 1.30; contextLabel = "Avant repas";
+            } else if (timing === 'after') { 
+                seuilBas = 0.70; seuilHaut = 1.80; contextLabel = "Après repas (1-2h)";
+            } else if (timing === 'bedtime') { 
+                seuilBas = 0.80; seuilHaut = 1.50; contextLabel = "Avant coucher";
+            } else if (activity) { 
+                seuilBas = 0.70; seuilHaut = 1.80; contextLabel = "Activité physique";
+            }
+
+            let evalType = 'normal';
+            if (insulinInjected) {
+                if (currentVal < 0.70 || currentVal < seuilBas) evalType = 'hypo';
+                else if (currentVal >= 2.50) evalType = 'hyper_severe';
+                else if (currentVal > 1.80 || currentVal > seuilHaut) evalType = 'hyper';
+            } else {
+                if (currentVal < seuilBas) evalType = 'hypo';
+                else if (currentVal > 2.00) evalType = 'hyper_severe';
+                else if (currentVal > seuilHaut) evalType = 'hyper';
+            }
+
             let risksText = "";
             let alertText = "";
             let recs = [];
-            let predictedVal = Number((avgGlucose).toFixed(2));
+            let predictedVal = Number((currentVal).toFixed(2));
 
             // Scénario A : HYPOGLYCÉMIE
-            if (avgGlucose < 0.70) {
-                risksText = `Analyse pronostique clinique : le patient se situe sous le seuil d'alerte avec une moyenne de ${Number((avgGlucose).toFixed(2))} g/L. Le profil cinétique est ${recentTrend}. Risque immédiat de neuroglycopénie, d'altération de l'état de conscience et de réponse adrénergique anormale.`;
-                alertText = `Prédiction algorithmique de détérioration : chute projetée vers ${Number((avgGlucose - 0.1).toFixed(2))} g/L suggérant une sur-insulinisation ou un déficit d'apport compensatoire. Dynamique : ↘ Hypoglycémie aiguë.`;
+            if (evalType === 'hypo') {
+                risksText = `Analyse contextuelle (${contextLabel}) : le patient est sous le seuil d'alerte avec une mesure de ${Number((currentVal).toFixed(2))} g/L. Le profil cinétique est ${recentTrend}. Risque immédiat de neuroglycopénie.`;
+                alertText = `Télémétrie : chute projetée, nécessitant une compensation rapide. Dynamique : ↘ Hypoglycémie avérée.`;
                 recs = [
                     "Administration thérapeutique immédiate de 15g de glucides à index glycémique élevé (resucrage per os).",
-                    "Suspension transitoire du schéma basal (arrêt pompe) ou inhibition de tout bolus correctif actif.",
+                    "Suspension transitoire du schéma basal (arrêt pompe) si équipé.",
                     "Contrôle capillaire de validation croisée exigé à H+15 minutes post-resucrage."
                 ];
             } 
-            // Scénario B : BON CONTRÔLE (Normaux)
-            else if (avgGlucose >= 0.70 && avgGlucose <= 1.40) {
-                risksText = `L'analyse des séries temporelles (Time in Range) indique une variabilité glycémique (CV) physiologique. La moyenne de ${Number((avgGlucose).toFixed(2))} g/L (Tendance : ${recentTrend}) reflète une excellente couverture insulinique et un risque de complication métabolique nul.`;
-                alertText = `Prévision du maintien d'une homéostasie optimale avec une dérive mineure vers ${Number((avgGlucose).toFixed(2))} g/L sur le court terme. Dynamique : → Euglycémie stable.`;
+            // Scénario B : BON CONTRÔLE
+            else if (evalType === 'normal') {
+                risksText = `L'analyse contextuelle (${contextLabel}) révèle une variabilité physiologique. La valeur de ${Number((currentVal).toFixed(2))} g/L est dans la cible attendue (${seuilBas}-${seuilHaut} g/L). Risque de complication métabolique nul.`;
+                alertText = `Prévision du maintien d'une homéostasie optimale avec une dynamique stable.`;
                 recs = [
-                    "Maintien strict de l'insulinothérapie actuelle (titration basale et ratios prandiaux physiologiques confirmés).",
+                    "Maintien strict de l'insulinothérapie actuelle (titration basale et ratios prandiaux confirmés).",
                     "Poursuite du monitoring interstitiel en continu sans intervention corrective.",
-                    "Renforcement positif clinique préconisé sur la compliance familiale au schéma thérapeutique."
+                    "Renforcement positif sur la compliance familiale au schéma thérapeutique."
                 ];
             } 
             // Scénario C : HYPERGLYCÉMIE LÉGÈRE
-            else if (avgGlucose > 1.40 && avgGlucose <= 1.80) {
-                risksText = `Évaluation objectivant une dysglycémie modérée et non-critique (Moy: ${Number((avgGlucose).toFixed(2))} g/L). Le profil d'évolution est ${recentTrend}. Risque clinique sous-jacent d'hyperosmolarité débutante, de déshydratation intra-cellulaire légère et d'asthénie post-prandiale.`;
-                alertText = `Télémétrie ML.NET : dérive progressive projetée vers ${Number((avgGlucose + 0.1).toFixed(2))} g/L, indicative d'un éventuel sous-dosage prandial. Dynamique : ↑ Tendance haussière légère.`;
+            else if (evalType === 'hyper') {
+                risksText = `Évaluation indiquant une dysglycémie modérée dans le contexte de : ${contextLabel} (Val: ${Number((currentVal).toFixed(2))} g/L). Risque sous-jacent d'hyperosmolarité débutante et d'asthénie.`;
+                alertText = `Dérive indicative d'un éventuel sous-dosage ou d'une surestimation des glucides. L'objectif était < ${seuilHaut} g/L. Dynamique : ↑ Tendance haussière.`;
                 recs = [
-                    "Prescription d'un bolus de correction proportionnel défini par le facteur de sensibilité à l'insuline (FSI) propre à l'enfant.",
-                    "Ajustement stratégique prospectif (+5% à +10%) du ratio insuline/glucides pour les prochains repas équivalents.",
+                    "Prescription d'un bolus de correction proportionnel au facteur de sensibilité (FSI), si non fait dans les dernières 2h.",
+                    "Ajustement stratégique prospectif (+5% à +10%) du ratio insuline/glucides pour les prochains repas.",
                     "Augmentation per os des apports hydriques (eau exclusive) afin de contrecarrer la polyurie osmotique."
                 ];
             } 
             // Scénario D : HYPERGLYCÉMIE SÉVÈRE
             else {
-                risksText = `ALERTE MAJEURE : Déséquilibre métabolique sévère avec moyenne critique à ${Number((avgGlucose).toFixed(2))} g/L. Dynamique d'évolution ${recentTrend}. Forte probabilité de lipolyse compensatoire exposant le patient à un risque immédiat d'acidocétose diabétique (ACD).`;
-                alertText = `Modélisation critique : franchissement imminent du seuil toxique estimé à ${Number((avgGlucose + 0.2).toFixed(2))} g/L, traduisant un déficit insulinique absolu ou une insulinorésistance aiguë. Dynamique : ⇡ Escalade critique.`;
+                risksText = `ALERTE MAJEURE contextuelle (${contextLabel}) : Déséquilibre métabolique sévère objectivé à ${Number((currentVal).toFixed(2))} g/L. Forte probabilité de lipolyse compensatoire exposant le patient à un risque immédiat d'acidocétose diabétique.`;
+                alertText = `Modélisation critique : dépassement grave du seuil de tolérance (au-delà de 2.00/2.50 g/L). Traduit un déficit insulinique absolu. Dynamique : ⇡ Escalade critique.`;
                 recs = [
-                    "Bolus de correction en urgence par insuline d'action ultra-rapide (administration par stylo conseillée pour écarter un défaut de pompe/cathéter).",
-                    "Dépistage urgent par bandelette de la cétonémie sanguine (ou cétonurie) pour statuer sur l'acidocétose.",
+                    "Dépistage urgent de la cétonémie (ou cétonurie) pour statuer sur une potentielle acidocétose.",
+                    "Bolus de correction en urgence par insuline d'action ultra-rapide au stylo (pour écarter un défaut cathéter).",
                     "Proscription médicale stricte de tout exercice ou hypercatabolisme jusqu'au rétablissement d'une glycémie < 1.80 g/L.",
-                    "Déclenchement du protocole d'escalade : surveillance horaire et évacuation hospitalière si pH ou cétones hors-noms."
+                    "Déclenchement du protocole d'escalade et évacuation hospitalière si pH ou cétones hors normes."
                 ];
             }
 

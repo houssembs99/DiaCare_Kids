@@ -74,13 +74,47 @@ export default function AddMeasure() {
             const res = await api.post('/medicalrecords', payload);
             console.log("API Response:", res.data);
             
+            const val = parseFloat(glucose);
+            
+            // Évaluation contextuelle selon les règles médicales
+            let alertTypeToSet = null;
+            let seuilBas = 0.70;
+            let seuilHaut = 1.30;
+
+            if (moment === 'before') {
+                seuilBas = 0.70;
+                seuilHaut = 1.30;
+            } else if (moment === 'after') {
+                seuilBas = 0.70;
+                seuilHaut = 1.80;
+            } else if (moment === 'bedtime') {
+                seuilBas = 0.80;
+                seuilHaut = 1.50;
+            } else if (activity) {
+                seuilBas = 0.70;
+                seuilHaut = 1.80; // après/avant activité
+                // Note: avant activité, < 0.90 demande attention
+            }
+
+            if (insulin) {
+                if (val < 0.70 || val < seuilBas) alertTypeToSet = 'hypo';
+                else if (val >= 2.50) alertTypeToSet = 'hyper'; // hyper importante
+                else if (val > 1.80 || val > seuilHaut) alertTypeToSet = 'hyper';
+            } else {
+                if (val < seuilBas) alertTypeToSet = 'hypo';
+                else if (val > 2.00) alertTypeToSet = 'hyper'; // anormale
+                else if (moment === 'after' && val <= 1.40) {
+                    // Montée temporaire tolérée
+                } else if (val > seuilHaut) alertTypeToSet = 'hyper';
+            }
+
             if (res.data.aiPrediction) {
                 setAiData(res.data);
                 setShowAiResult(true);
-            } else if (parseFloat(glucose) < 0.70) {
+            } else if (alertTypeToSet === 'hypo') {
                 setAlertType('hypo');
                 setShowAlert(true);
-            } else if (parseFloat(glucose) > 2.50) {
+            } else if (alertTypeToSet === 'hyper') {
                 setAlertType('hyper');
                 setShowAlert(true);
             } else {
