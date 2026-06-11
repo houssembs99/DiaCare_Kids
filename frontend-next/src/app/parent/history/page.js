@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import {
     Activity, Calendar, Filter, ArrowUpRight,
     ArrowDownRight, Circle, Clock, Syringe,
-    ChevronLeft, ChevronRight, FileText, Loader2
+    ChevronLeft, ChevronRight, FileText, Loader2, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -31,24 +31,46 @@ const SectionHeader = ({ title, sub }) => (
 export default function HistoryPage() {
     const [period, setPeriod] = useState('7d');
     const [loading, setLoading] = useState(true);
+    const [children, setChildren] = useState([]);
+    const [selectedChildId, setSelectedChildId] = useState('');
     const [data, setData] = useState({
         chart: null,
         history: [],
-        average: 1.42
+        average: 0
     });
 
     useEffect(() => {
-        fetchHistory(period);
-    }, [period]);
+        const initData = async () => {
+            try {
+                const childRes = await api.get('/parent/children');
+                setChildren(childRes.data || []);
+                if (childRes.data && childRes.data.length > 0) {
+                    setSelectedChildId(childRes.data[0].id);
+                } else {
+                    fetchHistory(period, '');
+                }
+            } catch (error) {
+                console.error("Error fetching children", error);
+            }
+        };
+        initData();
+    }, []);
 
-    const fetchHistory = async (p) => {
+    useEffect(() => {
+        if (selectedChildId !== '') {
+            fetchHistory(period, selectedChildId);
+        }
+    }, [period, selectedChildId]);
+
+    const fetchHistory = async (p, childId) => {
         setLoading(true);
         try {
             let days = 7;
             if (p === '30d') days = 30;
             if (p === '90d') days = 90;
 
-            const res = await api.get(`/parent/history?days=${days}`);
+            const url = childId ? `/parent/history?days=${days}&childId=${childId}` : `/parent/history?days=${days}`;
+            const res = await api.get(url);
             const rawRecords = res.data || [];
 
             generateData(p, rawRecords);
@@ -57,6 +79,17 @@ export default function HistoryPage() {
             generateData(p, []);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!confirm("Voulez-vous vraiment supprimer cette mesure ?")) return;
+        try {
+            await api.delete(`/medicalrecords/${id}`);
+            // Refresh data
+            fetchHistory(period, selectedChildId);
+        } catch (error) {
+            console.error("Erreur de suppression", error);
         }
     };
 
@@ -129,6 +162,24 @@ export default function HistoryPage() {
                         <FileText size={20} />
                     </button>
                 </div>
+
+                {/* Child Switcher */}
+                {children.length > 1 && (
+                    <div className="flex gap-2 p-2 bg-white/5 rounded-[24px] border border-white/10 backdrop-blur-xl print:hidden">
+                        {children.map(child => (
+                            <button
+                                key={child.id}
+                                onClick={() => setSelectedChildId(child.id)}
+                                className={cn(
+                                    "flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all line-clamp-1 truncate px-2",
+                                    selectedChildId === child.id ? "bg-[#088395] text-white shadow-xl" : "text-white/40 hover:text-white"
+                                )}
+                            >
+                                {child.fullName.split(' ')[0]}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 
                 {/* Print Title (Only visible during print) */}
                 <div className="hidden print:block text-black text-center mb-8">
@@ -238,8 +289,12 @@ export default function HistoryPage() {
                                                         <Syringe size={12} /> {item.insulin}
                                                     </div>
                                                 </div>
-                                                <button className="p-3 bg-white/5 rounded-xl group-hover:bg-white/10 transition-all print:hidden">
-                                                    <FileText size={14} className="text-white/20" />
+                                                <button 
+                                                    onClick={() => handleDelete(item.id)}
+                                                    className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 transition-all print:hidden"
+                                                    title="Supprimer la mesure"
+                                                >
+                                                    <Trash2 size={14} />
                                                 </button>
                                             </div>
                                         </motion.div>

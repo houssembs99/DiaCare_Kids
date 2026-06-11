@@ -93,5 +93,19 @@ namespace DiaCareKids.Api.Controllers
         [HttpGet("patient/{patientId}")]
         public async Task<List<MedicalRecord>> Get(string patientId) => 
             await _recordsService.GetByPatientAsync(patientId);
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                await _recordsService.RemoveAsync(id);
+                return Ok(new { message = "Mesure supprimée avec succès." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erreur lors de la suppression.", details = ex.Message });
+            }
+        }
     }
 }

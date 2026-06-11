@@ -140,7 +140,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpGet("history")]
-        public async Task<IActionResult> GetHistory([FromQuery] int days = 30)
+        public async Task<IActionResult> GetHistory([FromQuery] int days = 30, [FromQuery] string? childId = null)
         {
             var parentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(parentId)) return Unauthorized();
@@ -148,6 +148,10 @@ namespace DiaCareKids.Api.Controllers
             var children = await _usersService.GetByParentIdAsync(parentId);
             var kidIds = children.Select(c => c.Id!).ToList();
             
+            if (!string.IsNullOrEmpty(childId) && kidIds.Contains(childId)) {
+                kidIds = new List<string> { childId };
+            }
+
             // Get records up to an arbitrary limit, then filter by date locally
             var records = await _recordsService.GetLatestForPatientsAsync(kidIds, 500);
 

@@ -28,5 +28,8 @@ namespace DiaCareKids.Api.Services
                                          .Limit(limit)
                                          .ToListAsync();
         }
+
+        public async Task RemoveAsync(string id) =>
+            await _recordsCollection.DeleteOneAsync(x => x.Id == id);
     }
 }
