@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
+import Link from 'next/link';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     Users, Stethoscope, Baby, AlertTriangle,
@@ -240,9 +241,9 @@ export default function ClinicDashboard() {
                             ))}
                         </div>
 
-                        <button className="w-full mt-6 py-5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-[#088395] transition-all flex items-center justify-center gap-3">
+                        <Link href="/clinic/alerts" className="w-full mt-6 py-5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-[#088395] transition-all flex items-center justify-center gap-3">
                             Voir historique complet <ArrowRight size={14} />
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
