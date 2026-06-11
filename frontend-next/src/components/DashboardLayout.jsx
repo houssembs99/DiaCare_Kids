@@ -166,7 +166,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
                                     Veuillez payer en ligne ou contacter l'administration pour débloquer votre accès.
                                 </p>
                             </div>
-                            <Link href="/pricing" className="bg-accent text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-accent/80 transition-colors shadow-lg shadow-accent/20">
+                            <Link href="/pricing" className="bg-accent text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-accent/0.80 transition-colors shadow-lg shadow-accent/20">
                                 Payer en Ligne
                             </Link>
                         </div>
@@ -241,7 +241,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
 
             {/* Bottom Navigation for Kid Role (Gamified) */}
             {role === 'Enfant' && (
-                <div className="fixed bottom-0 left-0 right-0 bg-[#0b1b2b]/80 backdrop-blur-2xl border-t border-white/10 px-4 py-4 flex justify-around items-center z-[60] rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+                <div className="fixed bottom-0 left-0 right-0 bg-[#0b1b2b]/0.80 backdrop-blur-2xl border-t border-white/10 px-4 py-4 flex justify-around items-center z-[60] rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
                     {kidLinks.map((link) => {
                         const isActive = pathname === link.href;
                         const isEducation = link.name === t('kid.jApprends');

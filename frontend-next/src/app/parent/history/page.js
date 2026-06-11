@@ -50,7 +50,7 @@ export default function HistoryPage() {
         
         if (p === '7d') {
             labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-            values = [110, 145, 185, 130, 95, 120, 140];
+            values = [110, 145, 185, 130, 95, 120, 1.40];
             history = [
                 { id: 1, time: '08:30', val: 110, status: 'stable', note: 'Petit déjeuner', insulin: '4u' },
                 { id: 2, time: '12:45', val: 145, status: 'stable', note: 'Déjeuner', insulin: '6u' },
@@ -195,7 +195,7 @@ export default function HistoryPage() {
                                                 </div>
                                                 <div className="h-10 w-[1px] bg-white/10" />
                                                 <div>
-                                                    <div className="text-2xl font-black italic leading-none mb-1">{item.val} <span className="text-[10px] opacity-20 not-italic">mg/dL</span></div>
+                                                    <div className="text-2xl font-black italic leading-none mb-1">{item.val} <span className="text-[10px] opacity-20 not-italic">g/L</span></div>
                                                     <div className="text-[8px] font-bold text-white/20 uppercase tracking-[0.2em]">{item.note}</div>
                                                 </div>
                                             </div>

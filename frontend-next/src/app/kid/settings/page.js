@@ -184,7 +184,7 @@ export default function KidSettings() {
 
                                             {/* Progress overlap when uploading */}
                                             {uploading && (
-                                                <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20">
+                                                <div className="absolute inset-0 bg-black/0.80 flex items-center justify-center z-20">
                                                     <Loader2 size={32} className="text-[#FFB300] animate-spin" />
                                                 </div>
                                             )}

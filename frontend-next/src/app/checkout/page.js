@@ -71,7 +71,7 @@ const CheckoutForm = ({ amount, planName, onSuccess }) => {
             <button
                 type="submit"
                 disabled={isProcessing || !stripe || !elements}
-                className="w-full py-5 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/80 transition-all shadow-xl disabled:opacity-50"
+                className="w-full py-5 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/0.80 transition-all shadow-xl disabled:opacity-50"
             >
                 {isProcessing ? "Traitement..." : `Payer ${(amount / 100).toFixed(2)} €`}
             </button>
@@ -162,7 +162,7 @@ export default function CustomCheckoutPage({ searchParams }) {
                         <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-left space-y-2">
                             <p className="text-xs font-black uppercase tracking-widest text-white/40 mb-3">Prochaines étapes</p>
                             {['Contactez votre clinique pour le paiement', 'La clinique valide votre inscription', 'Votre accès est activé automatiquement'].map((step, i) => (
-                                <div key={i} className="flex items-center gap-3 text-sm text-white/70">
+                                <div key={i} className="flex items-center gap-3 text-sm text-white/0.70">
                                     <div className="w-6 h-6 rounded-full bg-[#088395]/20 text-[#088395] flex items-center justify-center text-xs font-black">{i + 1}</div>
                                     <span>{step}</span>
                                 </div>
@@ -170,7 +170,7 @@ export default function CustomCheckoutPage({ searchParams }) {
                         </div>
                         <button 
                             onClick={() => window.location.href = '/auth'} 
-                            className="w-full py-4 bg-[#088395] hover:bg-[#088395]/80 text-white rounded-xl font-black uppercase tracking-widest transition-all shadow-lg"
+                            className="w-full py-4 bg-[#088395] hover:bg-[#088395]/0.80 text-white rounded-xl font-black uppercase tracking-widest transition-all shadow-lg"
                         >
                             Se Connecter
                         </button>

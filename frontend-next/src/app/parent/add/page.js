@@ -77,10 +77,10 @@ export default function AddMeasure() {
             if (res.data.aiPrediction) {
                 setAiData(res.data);
                 setShowAiResult(true);
-            } else if (parseFloat(glucose) < 70) {
+            } else if (parseFloat(glucose) < 0.70) {
                 setAlertType('hypo');
                 setShowAlert(true);
-            } else if (parseFloat(glucose) > 250) {
+            } else if (parseFloat(glucose) > 2.50) {
                 setAlertType('hyper');
                 setShowAlert(true);
             } else {
@@ -141,7 +141,7 @@ export default function AddMeasure() {
                                 placeholder="--"
                                 className="bg-transparent text-center text-7xl font-black italic tracking-tighter w-40 focus:outline-none placeholder:text-white/10"
                             />
-                            <span className="text-2xl font-bold opacity-30">mg/dL</span>
+                            <span className="text-2xl font-bold opacity-30">g/L</span>
                         </div>
                     </div>
                 </div>
@@ -270,7 +270,7 @@ export default function AddMeasure() {
                                         <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Glycémie Prédictive</div>
                                         <div className="text-5xl font-black italic flex items-baseline justify-center gap-2">
                                             {Math.round(aiData?.aiPrediction)}
-                                            <span className="text-sm opacity-40">mg/dL</span>
+                                            <span className="text-sm opacity-40">g/L</span>
                                         </div>
                                         <div className={cn(
                                             "mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest",

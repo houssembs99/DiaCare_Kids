@@ -199,7 +199,7 @@ export default function ClinicDashboard() {
                         <h3 className="text-xl font-black uppercase tracking-tighter leading-none mb-1">Répartition</h3>
                         <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest mb-10">Patients par médecin principal</p>
                         <div className="h-[250px] relative">
-                            <Doughnut data={doughnutData} options={{ ...chartOptions, cutout: '70%' }} />
+                            <Doughnut data={doughnutData} options={{ ...chartOptions, cutout: '0.70%' }} />
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-3xl font-black italic">{stats.usedPatients}</span>
                                 <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">Total</span>

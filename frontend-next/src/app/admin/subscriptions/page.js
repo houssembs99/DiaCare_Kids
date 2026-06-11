@@ -261,7 +261,7 @@ export default function AdminSubscriptions() {
                 <AnimatePresence>
                     {isModalOpen && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
                             <motion.div 
                                 initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                                 className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-lg w-full relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
@@ -360,7 +360,7 @@ export default function AdminSubscriptions() {
                                         <label className="text-[10px] font-bold text-[#1E88E5] uppercase tracking-widest cursor-pointer">Mettre en Avant (Tag Populaire)</label>
                                         <input type="checkbox" checked={formData.isPopular} onChange={e => setFormData({ ...formData, isPopular: e.target.checked })} className="w-5 h-5 rounded bg-white/10 border-white/20 text-[#1E88E5] focus:ring-[#1E88E5]" />
                                     </div>
-                                    <button type="submit" className="w-full py-5 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/80 transition-colors mt-8">
+                                    <button type="submit" className="w-full py-5 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/0.80 transition-colors mt-8">
                                         <Save size={20} /> {editingPlan ? "Enregistrer les modifications" : "Créer l'offre"}
                                     </button>
                                 </form>

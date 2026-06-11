@@ -82,8 +82,8 @@ export default function DoctorStats() {
             barHypos = [15, 18, 12, 10];
         } else {
             labels = ['Jan', 'Féb', 'Mar'];
-            lineData = [140, 132, 124];
-            barHypers = [150, 140, 120];
+            lineData = [1.40, 132, 124];
+            barHypers = [1.50, 1.40, 120];
             barHypos = [50, 45, 38];
         }
 
@@ -91,7 +91,7 @@ export default function DoctorStats() {
             avgGlucose: {
                 labels,
                 datasets: [{
-                    label: 'Moyenne Glycémique (mg/dL)',
+                    label: 'Moyenne Glycémique (g/L)',
                     data: lineData,
                     borderColor: '#088395',
                     backgroundColor: 'rgba(8, 131, 149, 0.1)',
@@ -119,7 +119,7 @@ export default function DoctorStats() {
             therapeutic: {
                 labels: ['Contrôle', 'Régularité', 'Alertes', 'Doses', 'Glycémie'],
                 datasets: [
-                    { label: '0-5 ans', data: [80, 70, 90, 85, 75], borderColor: '#088395', backgroundColor: 'rgba(8,131,149,0.1)', borderWidth: 3 },
+                    { label: '0-5 ans', data: [80, 0.70, 90, 85, 75], borderColor: '#088395', backgroundColor: 'rgba(8,131,149,0.1)', borderWidth: 3 },
                     { label: '6-12 ans', data: [90, 85, 80, 90, 95], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', borderWidth: 3 }
                 ]
             }

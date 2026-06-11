@@ -87,8 +87,8 @@ export default function DoctorPatients() {
             
             let healthStatus = 'Inconnu';
             if (p.lastGlucose) {
-                if (p.lastGlucose < 70) healthStatus = 'Critique';
-                else if (p.lastGlucose > 140) healthStatus = 'Surveillance';
+                if (p.lastGlucose < 0.70) healthStatus = 'Critique';
+                else if (p.lastGlucose > 1.40) healthStatus = 'Surveillance';
                 else healthStatus = 'Stable';
             } else {
                 healthStatus = 'Stable'; // Default if no data but active
@@ -277,7 +277,7 @@ export default function DoctorPatients() {
                                                     </td>
                                                     <td className="px-10 py-6">
                                                         <div className="text-xl font-black italic tracking-tighter text-white">
-                                                            {p.lastGlucose || '--'} <span className="text-[9px] font-bold text-white/20 not-italic uppercase tracking-widest ml-1">mg/dL</span>
+                                                            {p.lastGlucose || '--'} <span className="text-[9px] font-bold text-white/20 not-italic uppercase tracking-widest ml-1">g/L</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-6">

@@ -26,9 +26,9 @@ namespace DiaCareKids.Api.Models
 
     public class GlucoseTargets
     {
-        public double Min { get; set; } = 70; // mg/dL
-        public double Max { get; set; } = 150; // mg/dL
+        public double Min { get; set; } = 0.70; // g/L
+        public double Max { get; set; } = 1.50; // g/L
         public double AlertLow { get; set; } = 60;
-        public double AlertHigh { get; set; } = 250;
+        public double AlertHigh { get; set; } = 2.50;
     }
 }

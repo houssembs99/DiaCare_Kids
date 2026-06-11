@@ -102,7 +102,7 @@ export default function ClinicPackagesPage() {
                         <p className="text-white/50 text-sm font-bold tracking-widest uppercase">Créez et gérez les offres pour vos patients</p>
                     </div>
                     {!isEditing && (
-                        <button onClick={handleNew} className="btn-apple bg-[#088395] hover:bg-[#088395]/80 text-white flex items-center gap-2 px-6 py-3 rounded-2xl shadow-xl">
+                        <button onClick={handleNew} className="btn-apple bg-[#088395] hover:bg-[#088395]/0.80 text-white flex items-center gap-2 px-6 py-3 rounded-2xl shadow-xl">
                             <Plus size={20} /> Nouveau Pack
                         </button>
                     )}
@@ -143,7 +143,7 @@ export default function ClinicPackagesPage() {
                                 <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-3 rounded-xl bg-white/5 text-white hover:bg-white/10 font-bold uppercase tracking-widest text-xs transition-all">
                                     Annuler
                                 </button>
-                                <button type="submit" className="px-6 py-3 rounded-xl bg-[#088395] text-white hover:bg-[#088395]/80 font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-2 shadow-lg">
+                                <button type="submit" className="px-6 py-3 rounded-xl bg-[#088395] text-white hover:bg-[#088395]/0.80 font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-2 shadow-lg">
                                     <Check size={16} /> Enregistrer
                                 </button>
                             </div>
@@ -164,7 +164,7 @@ export default function ClinicPackagesPage() {
                                 <div className="text-2xl font-black text-[#088395] mb-4">{pkg.price} {pkg.currency} <span className="text-sm text-white/40 uppercase font-bold tracking-widest">/ {pkg.paymentFrequency}</span></div>
                                 <ul className="space-y-2 mb-6 flex-1">
                                     {pkg.services.map((service, i) => (
-                                        <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+                                        <li key={i} className="flex items-start gap-2 text-sm text-white/0.70">
                                             <Check size={16} className="text-[#088395] mt-0.5" />
                                             <span>{service}</span>
                                         </li>

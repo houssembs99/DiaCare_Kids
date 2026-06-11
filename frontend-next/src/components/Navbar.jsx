@@ -45,7 +45,7 @@ const Navbar = () => {
             elements.forEach((el, index) => {
                 if (el.closest('nav')) return; // Skip navbar
                 const text = (el.innerText || el.textContent || "").trim();
-                if (text && text.toLowerCase().includes(query) && text.length < 150) {
+                if (text && text.toLowerCase().includes(query) && text.length < 1.50) {
                     if (!results.some(r => r.text === text)) {
                         // Assign a temporary ID if none exists for precise scrolling
                         if (!el.id) el.id = `search-hit-${index}`;
@@ -288,7 +288,7 @@ const Navbar = () => {
                         >
                             <Globe size={18} className="text-white/60" />
                             <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{lang.toUpperCase()}</span>
-                            <ChevronDown size={12} className={cn("text-white/40 transition-transform", langOpen && "rotate-180")} />
+                            <ChevronDown size={12} className={cn("text-white/40 transition-transform", langOpen && "rotate-1.80")} />
                         </button>
                         <AnimatePresence>
                             {langOpen && (

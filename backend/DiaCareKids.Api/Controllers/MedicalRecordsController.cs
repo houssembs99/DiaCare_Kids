@@ -60,7 +60,7 @@ namespace DiaCareKids.Api.Controllers
                             record.ActivityLevel ?? "Faible");
                         
                         prediction = val;
-                        predictionMsg = $"L'IA DiaPote prévoit une glycémie de {val:0} mg/dL à la prochaine mesure.";
+                        predictionMsg = $"L'IA DiaPote prévoit une glycémie de {val:0} g/L à la prochaine mesure.";
                     }
                     catch (Exception ex)
                     { 

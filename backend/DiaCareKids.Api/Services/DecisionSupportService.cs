@@ -36,7 +36,7 @@ namespace DiaCareKids.Api.Services
                 {
                     result.IsAlert = true;
                     result.Level = "Attention (Hyper)";
-                    result.Recommendation = "⚠️ VALEUR ÉLEVÉE : Vérifiez l'hydratation et les corps cétoniques si > 250 mg/dL. Contactez le médecin si la valeur persiste.";
+                    result.Recommendation = "⚠️ VALEUR ÉLEVÉE : Vérifiez l'hydratation et les corps cétoniques si > 2.50 g/L. Contactez le médecin si la valeur persiste.";
                 }
                 // Règle 3: Légèrement au dessus des cibles
                 else if (val > targets.Max)

@@ -219,13 +219,13 @@ export default function ClinicDoctors() {
                                                     <>
                                                         <button
                                                             onClick={() => handleApprove(doc.id)}
-                                                            className="flex items-center gap-2 px-6 py-3 bg-success hover:bg-success/80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg"
+                                                            className="flex items-center gap-2 px-6 py-3 bg-success hover:bg-success/0.80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg"
                                                         >
                                                             <UserCheck size={14} /> Approuver
                                                         </button>
                                                         <button
                                                             onClick={() => handleReject(doc.id)}
-                                                            className="flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent/80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg"
+                                                            className="flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent/0.80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg"
                                                         >
                                                             <UserX size={14} /> Refuser
                                                         </button>

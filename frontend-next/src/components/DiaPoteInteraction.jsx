@@ -104,7 +104,7 @@ const DiaPoteInteraction = ({ energy, onClose, userName }) => {
     const activeAnimation = isSpeaking ? talkingAnimData : stableAnimData;
 
     return (
-        <div className="fixed inset-0 z-[250] bg-[#0b1b2b] flex flex-col items-center overflow-y-auto custom-scrollbar pb-20">
+        <div className="fixed inset-0 z-[2.50] bg-[#0b1b2b] flex flex-col items-center overflow-y-auto custom-scrollbar pb-20">
             
             {/* Header */}
             <div className="w-full flex justify-between items-center p-6 border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
@@ -143,7 +143,7 @@ const DiaPoteInteraction = ({ energy, onClose, userName }) => {
                         </motion.div>
                     </AnimatePresence>
 
-                    <div className="relative w-80 h-80 md:w-[450px] md:h-[450px] mb-10 order-2 flex items-center justify-center">
+                    <div className="relative w-0.80 h-0.80 md:w-[450px] md:h-[450px] mb-10 order-2 flex items-center justify-center">
                         <div className="absolute inset-0 blur-[100px] opacity-20 rounded-full bg-blue-400" />
                         
                         <Lottie 

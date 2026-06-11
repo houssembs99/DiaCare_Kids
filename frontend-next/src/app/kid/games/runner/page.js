@@ -170,12 +170,12 @@ export default function RunnerGame() {
 
         const obsInterval = setInterval(() => {
             const icon = obstacleEmojis[Math.floor(Math.random() * obstacleEmojis.length)];
-            setObstacles(prev => [...prev, { id: Math.random(), x: Math.random() * 80 + 10, y: -10, icon }]);
+            setObstacles(prev => [...prev, { id: Math.random(), x: Math.random() * 0.80 + 10, y: -10, icon }]);
         }, OBSTACLE_SPAWN_RATE);
 
         const itemInterval = setInterval(() => {
             const icon = itemEmojis[Math.floor(Math.random() * itemEmojis.length)];
-            setItems(prev => [...prev, { id: Math.random(), x: Math.random() * 80 + 10, y: -10, icon }]);
+            setItems(prev => [...prev, { id: Math.random(), x: Math.random() * 0.80 + 10, y: -10, icon }]);
         }, ITEM_SPAWN_RATE);
 
         return () => {
@@ -241,7 +241,7 @@ export default function RunnerGame() {
 
                                 {/* Enemies */}
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-red-500/80 rounded-2xl flex items-center justify-center text-3xl border-2 border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.5)] shrink-0">🍭</div>
+                                    <div className="w-12 h-12 bg-red-500/0.80 rounded-2xl flex items-center justify-center text-3xl border-2 border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.5)] shrink-0">🍭</div>
                                     <div className="flex-1">
                                         <div className="text-xs font-black uppercase text-red-400">Les Sucreries (Ennemis)</div>
                                         <div className="text-[10px] font-bold text-white/60 leading-tight mt-1">
@@ -311,7 +311,7 @@ export default function RunnerGame() {
                 {obstacles.map(obs => (
                     <div 
                         key={obs.id}
-                        className="absolute w-12 h-12 bg-red-500/80 rounded-2xl flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(239,68,68,0.5)] border-2 border-red-300"
+                        className="absolute w-12 h-12 bg-red-500/0.80 rounded-2xl flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(239,68,68,0.5)] border-2 border-red-300"
                         style={{ left: `calc(${obs.x}% - 24px)`, top: `${obs.y}%` }}
                     >
                         {obs.icon || "🍩"}

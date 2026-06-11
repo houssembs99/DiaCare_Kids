@@ -58,11 +58,11 @@ export default function PatientDetailPage() {
                     diagnosisDate: "12 Mars 2023",
                     type: "Type 1",
                     treatment: "Insuline (Pompe)",
-                    targets: { min: 80, max: 140 },
+                    targets: { min: 80, max: 1.40 },
                     status: "Critique"
                 });
                 setRecords([
-                    { timestamp: "2026-02-21T08:00:00Z", glucoseValue: 180 },
+                    { timestamp: "2026-02-21T08:00:00Z", glucoseValue: 1.0.80 },
                     { timestamp: "2026-02-21T10:00:00Z", glucoseValue: 245 },
                     { timestamp: "2026-02-21T12:00:00Z", glucoseValue: 210 },
                     { timestamp: "2026-02-21T15:00:00Z", glucoseValue: 195 },
@@ -75,7 +75,7 @@ export default function PatientDetailPage() {
     const chartData = {
         labels: records.map(r => new Date(r.timestamp).toLocaleTimeString([], { hour: '2d', minute: '2d' })),
         datasets: [{
-            label: 'Glycémie (mg/dL)',
+            label: 'Glycémie (g/L)',
             data: records.map(r => r.glucoseValue),
             borderColor: '#0071E3',
             backgroundColor: 'rgba(0, 113, 227, 0.05)',
@@ -117,7 +117,7 @@ export default function PatientDetailPage() {
     const exportPDF = () => {
         const doc = new jsPDF();
         doc.text(`Fiche Patient - ${patient.fullName}`, 20, 10);
-        const tableColumn = ["Date/Heure", "Valeur (mg/dL)", "Type"];
+        const tableColumn = ["Date/Heure", "Valeur (g/L)", "Type"];
         const tableRows = records.map(r => [
             new Date(r.timestamp).toLocaleString(),
             r.glucoseValue,
@@ -194,7 +194,7 @@ export default function PatientDetailPage() {
                             <h3 className="text-sm font-black uppercase tracking-widest relative z-10 flex items-center gap-2">
                                 <Sparkles size={16} /> DiaPote Suggestion
                             </h3>
-                            <p className="text-[11px] font-bold leading-relaxed opacity-80 italic relative z-10">
+                            <p className="text-[11px] font-bold leading-relaxed opacity-0.80 italic relative z-10">
                                 "Ajustement probable : Basale +2% entre 02h et 04h en raison du phénomène de l'aube détecté 3 jours de suite."
                             </p>
                             <button
@@ -239,7 +239,7 @@ export default function PatientDetailPage() {
                                 <Target className="text-primary" /> Objectifs
                             </h3>
                             <div className="space-y-6">
-                                <ObjectiveSlide label="Glycémie Cible" value="80 - 140" unit="mg/dL" progress={65} />
+                                <ObjectiveSlide label="Glycémie Cible" value="0.80 - 1.40" unit="g/L" progress={65} />
                                 <ObjectiveSlide label="Temps dans la cible" value="72%" unit="Total" progress={72} color="bg-success" />
                             </div>
                         </div>

@@ -181,13 +181,13 @@ export default function PricingPage() {
                                 <div className="space-y-3 mb-8">
                                     {plan.role === 'Clinique' ? (
                                         <>
-                                            <div className="flex items-center gap-3 text-white/70 text-xs font-bold uppercase tracking-wide">
+                                            <div className="flex items-center gap-3 text-white/0.70 text-xs font-bold uppercase tracking-wide">
                                                 <Users size={14} className="text-[#1E88E5]" />
                                                 <span>
                                                     {plan.maxDoctors === -1 ? 'Médecins illimités' : `${plan.maxDoctors} Médecins Max`}
                                                 </span>
                                             </div>
-                                            <div className="flex items-center gap-3 text-white/70 text-xs font-bold uppercase tracking-wide">
+                                            <div className="flex items-center gap-3 text-white/0.70 text-xs font-bold uppercase tracking-wide">
                                                 <Zap size={14} className="text-yellow-500" />
                                                 <span>
                                                     {plan.maxPatients === -1 ? 'Patients illimités' : `${plan.maxPatients} Patients Max`}
@@ -195,7 +195,7 @@ export default function PricingPage() {
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="flex items-center gap-3 text-white/70 text-xs font-bold uppercase tracking-wide">
+                                        <div className="flex items-center gap-3 text-white/0.70 text-xs font-bold uppercase tracking-wide">
                                             <Baby size={14} className="text-[#1E88E5]" />
                                             <span>
                                                 Jusqu'à {plan.maxKids} {plan.maxKids > 1 ? 'Enfants' : 'Enfant'}
@@ -206,7 +206,7 @@ export default function PricingPage() {
 
                                 <ul className="space-y-4 mb-8">
                                     {plan.features.map(feature => (
-                                        <li key={feature} className="flex items-center gap-3 text-white/80 font-bold text-xs uppercase tracking-wide">
+                                        <li key={feature} className="flex items-center gap-3 text-white/0.80 font-bold text-xs uppercase tracking-wide">
                                             <div className="w-5 h-5 rounded-full bg-success/20 text-success flex items-center justify-center border border-success/20">
                                                 <Check size={12} strokeWidth={4} />
                                             </div>

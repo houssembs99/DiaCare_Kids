@@ -21,7 +21,7 @@ export default function AdminNotifications() {
                     <div className="w-24 h-24 bg-orange-500/10 rounded-full flex items-center justify-center mb-6">
                         <Bell size={40} className="text-orange-500" />
                     </div>
-                    <h2 className="text-2xl font-black uppercase tracking-widest text-white/80 mb-4">Aucune nouvelle alerte</h2>
+                    <h2 className="text-2xl font-black uppercase tracking-widest text-white/0.80 mb-4">Aucune nouvelle alerte</h2>
                     <p className="text-sm font-bold text-white/40 max-w-md leading-relaxed">
                         Cette interface affichera les demandes d'assistance, les alertes de paiements échoués et les alertes médicales critiques nécessitant votre attention en tant qu'administrateur.
                     </p>

@@ -96,19 +96,19 @@ export default function KidDashboard() {
 
                     if (val) {
                         let calculatedEnergy = 0;
-                        if (val >= 70 && val <= 140) {
+                        if (val >= 0.70 && val <= 1.40) {
                             // Perfect range: energy proportional to how centered glucose is
-                            const center = 105; // midpoint of 70-140
+                            const center = 105; // midpoint of 0.70-1.40
                             const deviation = Math.abs(val - center);
                             calculatedEnergy = 100 - (deviation / center) * 20;
                             setForce("Maxima ⚡");
                             setStatusMessage(t('kid.perfectMsg'));
-                        } else if (val < 70) {
+                        } else if (val < 0.70) {
                             calculatedEnergy = Math.max(10, val / 1.5);
                             setForce("Fatigue 💤");
                             setStatusMessage(t('kid.lowEnergyMsg'));
                         } else {
-                            calculatedEnergy = Math.max(20, 100 - (val - 140) / 2);
+                            calculatedEnergy = Math.max(20, 100 - (val - 1.40) / 2);
                             setForce("Feu 🔥");
                             setStatusMessage(t('kid.highEnergyMsg'));
                         }
@@ -260,7 +260,7 @@ export default function KidDashboard() {
                                     animate={{ width: `${energy}%` }}
                                     className={cn(
                                         "h-full rounded-full transition-all duration-1000",
-                                        energy > 70 ? "bg-gradient-to-r from-[#34C759] to-[#4CAF50] shadow-[0_0_20px_rgba(52,199,89,0.4)]" :
+                                        energy > 0.70 ? "bg-gradient-to-r from-[#34C759] to-[#4CAF50] shadow-[0_0_20px_rgba(52,199,89,0.4)]" :
                                         (energy < 40 ? "bg-gradient-to-r from-[#FF3B30] to-[#F44336] shadow-[0_0_20px_rgba(255,59,48,0.4)]" : "bg-gradient-to-r from-[#FF9500] to-[#FFB300] shadow-[0_0_20px_rgba(255,149,0,0.4)]")
                                     )}
                                 />

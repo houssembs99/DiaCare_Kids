@@ -29,25 +29,25 @@ export default function DoctorAlerts() {
 
                 patients.forEach(p => {
                     if (p.lastGlucose) {
-                        if (p.lastGlucose < 70) {
+                        if (p.lastGlucose < 0.70) {
                             generatedAlerts.push({
                                 id: alertIdStart++,
                                 patientId: p.id,
                                 patient: p.fullName || 'Inconnu',
                                 type: 'Hypoglycémie',
                                 level: 'Critique',
-                                value: p.lastGlucose + ' mg/dL',
+                                value: p.lastGlucose + ' g/L',
                                 date: new Date().toLocaleDateString('fr-FR'),
                                 status: 'Non Traitée'
                             });
-                        } else if (p.lastGlucose > 140) {
+                        } else if (p.lastGlucose > 1.40) {
                             generatedAlerts.push({
                                 id: alertIdStart++,
                                 patientId: p.id,
                                 patient: p.fullName || 'Inconnu',
                                 type: 'Hyperglycémie',
                                 level: p.lastGlucose > 200 ? 'Critique' : 'Moyenne',
-                                value: p.lastGlucose + ' mg/dL',
+                                value: p.lastGlucose + ' g/L',
                                 date: new Date().toLocaleDateString('fr-FR'),
                                 status: 'Non Traitée'
                             });

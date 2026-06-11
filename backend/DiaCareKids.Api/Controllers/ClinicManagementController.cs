@@ -243,8 +243,8 @@ namespace DiaCareKids.Api.Controllers
                         var dayIndex = (record.Timestamp.Date - today.AddDays(-6)).Days;
                         if (dayIndex >= 0 && dayIndex < 7)
                         {
-                            // Define critical alerts (glucose < 70 or > 250)
-                            if (record.GlucoseValue.HasValue && (record.GlucoseValue < 70 || record.GlucoseValue > 250))
+                            // Define critical alerts (glucose < 0.70 or > 2.50)
+                            if (record.GlucoseValue.HasValue && (record.GlucoseValue < 0.70 || record.GlucoseValue > 2.50))
                             {
                                 alertsPerDay[dayIndex]++;
                             }
@@ -253,8 +253,8 @@ namespace DiaCareKids.Api.Controllers
 
                     if (record.Timestamp.Date == today && record.GlucoseValue.HasValue)
                     {
-                        if (record.GlucoseValue < 70) hyposToday++;
-                        if (record.GlucoseValue > 250) hypersToday++;
+                        if (record.GlucoseValue < 0.70) hyposToday++;
+                        if (record.GlucoseValue > 2.50) hypersToday++;
                     }
                 }
 
@@ -269,9 +269,9 @@ namespace DiaCareKids.Api.Controllers
                     string action = "Nouvelle Mesure";
                     if (record.GlucoseValue.HasValue)
                     {
-                        action = $"Glycémie: {record.GlucoseValue} mg/dL";
-                        if (record.GlucoseValue < 70 || record.GlucoseValue > 250) type = "danger";
-                        else if (record.GlucoseValue >= 70 && record.GlucoseValue <= 140) type = "success";
+                        action = $"Glycémie: {record.GlucoseValue} g/L";
+                        if (record.GlucoseValue < 0.70 || record.GlucoseValue > 2.50) type = "danger";
+                        else if (record.GlucoseValue >= 0.70 && record.GlucoseValue <= 1.40) type = "success";
                     }
                     else if (record.InsulinDose.HasValue)
                     {
@@ -398,8 +398,8 @@ namespace DiaCareKids.Api.Controllers
                 var glucoseRecords = records.Where(r => r.GlucoseValue.HasValue).ToList();
                 if (glucoseRecords.Any())
                 {
-                    hypos = glucoseRecords.Count(r => r.GlucoseValue < 70);
-                    hypers = glucoseRecords.Count(r => r.GlucoseValue > 180);
+                    hypos = glucoseRecords.Count(r => r.GlucoseValue < 0.70);
+                    hypers = glucoseRecords.Count(r => r.GlucoseValue > 1.80);
                     meanGlucose = Math.Round(glucoseRecords.Average(r => r.GlucoseValue!.Value), 0);
                 }
             }
@@ -417,7 +417,7 @@ namespace DiaCareKids.Api.Controllers
             double reactivity = 88.0;
             double adherence = 85.0;
             double doses = 90.0;
-            double meanScore = meanGlucose >= 80 && meanGlucose <= 130 ? 95.0 : 75.0;
+            double meanScore = meanGlucose >= 0.80 && meanGlucose <= 130 ? 95.0 : 75.0;
 
             return Ok(new
             {

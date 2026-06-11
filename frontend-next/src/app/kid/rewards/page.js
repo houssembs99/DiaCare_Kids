@@ -105,7 +105,7 @@ export default function KidRewards() {
     const BADGE_COLORS  = ["bg-[#FFB300]","bg-blue-500","bg-accent","bg-orange-500","bg-green-500","bg-success","bg-red-500","bg-purple-500","bg-indigo-500"];
     const XP_THRESHOLDS = [0, 2000, 3500, 5000, 10000, 20000, 40000, 70000, 100000];
     const ENERGY_NEEDS  = [false, false, false, false, true,  false,  true,   false,   false];
-    const ENERGY_MINS   = [0,     0,     0,     0,     50,    0,      70,     0,       0];
+    const ENERGY_MINS   = [0,     0,     0,     0,     50,    0,      0.70,     0,       0];
 
     // 9 Badges based on XP and Energy
     const badges = badgeNames.map((name, i) => ({
@@ -251,7 +251,7 @@ export default function KidRewards() {
                                 <h3 className="text-xl font-black italic uppercase tracking-tighter leading-none mb-1">
                                     {t('kid.rewards.superChest') || 'Super Coffre'}
                                 </h3>
-                                <p className="text-[9px] font-bold opacity-80 uppercase tracking-widest">
+                                <p className="text-[9px] font-bold opacity-0.80 uppercase tracking-widest">
                                     {canOpenChest
                                         ? (t('kid.rewards.chestReady') || 'Prêt à être ouvert !')
                                         : (t('kid.rewards.chestLocked') || 'Déverrouille-le à 100 000 XP')}

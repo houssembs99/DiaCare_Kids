@@ -181,7 +181,7 @@ export default function AdminDoctors() {
         doc.text("Liste des Médecins Partenaires", 14, 22);
 
         doc.setFontSize(10);
-        doc.setTextColor(150);
+        doc.setTextColor(1.50);
         doc.text(`Généré le: ${new Date().toLocaleDateString('fr-FR')} - DiaCare Kids`, 14, 30);
 
         const tableColumn = ["Nom", "Clinique", "Email", "Patients", "Abonnement", "Statut"];
@@ -265,10 +265,10 @@ export default function AdminDoctors() {
                                         transition={{ duration: 0.15 }}
                                         className="absolute right-0 top-[110%] w-48 bg-[#0b1b2b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[60]"
                                     >
-                                        <button onClick={exportToCSV} className="w-full flex items-center gap-3 px-4 py-4 text-xs font-bold uppercase tracking-widest text-white/80 hover:bg-white/5 hover:text-white transition-colors text-left">
+                                        <button onClick={exportToCSV} className="w-full flex items-center gap-3 px-4 py-4 text-xs font-bold uppercase tracking-widest text-white/0.80 hover:bg-white/5 hover:text-white transition-colors text-left">
                                             <FileText size={16} className="text-success" /> Format CSV
                                         </button>
-                                        <button onClick={exportToPDF} className="w-full flex items-center gap-3 px-4 py-4 text-xs font-bold uppercase tracking-widest text-white/80 hover:bg-white/5 hover:text-white transition-colors text-left border-t border-white/5">
+                                        <button onClick={exportToPDF} className="w-full flex items-center gap-3 px-4 py-4 text-xs font-bold uppercase tracking-widest text-white/0.80 hover:bg-white/5 hover:text-white transition-colors text-left border-t border-white/5">
                                             <FileDown size={16} className="text-error" /> Format PDF
                                         </button>
                                     </motion.div>
@@ -378,7 +378,7 @@ export default function AdminDoctors() {
             <AnimatePresence>
                 {(isAddModalOpen || isEditModalOpen) && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm"
                             onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }}
                         />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -411,7 +411,7 @@ export default function AdminDoctors() {
                                         <option value="Premium">Premium</option>
                                     </select>
                                 </div>
-                                <button type="submit" className="w-full py-5 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/80 transition-colors mt-8">
+                                <button type="submit" className="w-full py-5 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/0.80 transition-colors mt-8">
                                     <Save size={20} /> {isEditModalOpen ? "Mettre à jour" : "Enregistrer"}
                                 </button>
                             </form>
@@ -424,7 +424,7 @@ export default function AdminDoctors() {
             <AnimatePresence>
                 {isDeleteModalOpen && selectedDoctor && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="bg-[#0b1b2b] border border-error/20 rounded-[32px] p-8 max-w-sm w-full relative z-10 shadow-[0_0_50px_rgba(255,59,48,0.2)] text-center"
                         >
@@ -435,7 +435,7 @@ export default function AdminDoctors() {
                             <p className="text-white/60 text-sm mb-8">Êtes-vous sûr de vouloir supprimer le médecin <span className="text-white font-bold">{selectedDoctor.name}</span> ? Cette action est irréversible.</p>
                             <div className="flex gap-4">
                                 <button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-colors">Annuler</button>
-                                <button onClick={confirmDelete} className="flex-1 py-4 bg-error text-white rounded-2xl font-black uppercase tracking-widest hover:bg-error/80 transition-colors">Supprimer</button>
+                                <button onClick={confirmDelete} className="flex-1 py-4 bg-error text-white rounded-2xl font-black uppercase tracking-widest hover:bg-error/0.80 transition-colors">Supprimer</button>
                             </div>
                         </motion.div>
                     </div>
@@ -446,7 +446,7 @@ export default function AdminDoctors() {
             <AnimatePresence>
                 {isToggleStatusModalOpen && selectedDoctor && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsToggleStatusModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm" onClick={() => setIsToggleStatusModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative z-10 shadow-2xl text-center"
                         >
@@ -483,7 +483,7 @@ export default function AdminDoctors() {
             <AnimatePresence>
                 {isViewModalOpen && selectedDoctor && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsViewModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm" onClick={() => setIsViewModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-md w-full relative z-10 shadow-2xl"
                         >

@@ -67,13 +67,13 @@ export default function DoctorDashboard() {
             
             patients.forEach(p => {
                 if (p.lastGlucose) {
-                    if (p.lastGlucose < 70) {
+                    if (p.lastGlucose < 0.70) {
                         hypo++;
-                        alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' mg/dL' });
-                    } else if (p.lastGlucose > 140) {
+                        alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' g/L' });
+                    } else if (p.lastGlucose > 1.40) {
                         hyper++;
                         if (p.lastGlucose > 200) {
-                             alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' mg/dL' });
+                             alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' g/L' });
                         }
                     } else {
                         stables++;
@@ -105,8 +105,8 @@ export default function DoctorDashboard() {
     const chartData = {
         labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
         datasets: [{
-            label: 'Moyenne Glycémique (mg/dL)',
-            data: [145, 138, 152, 148, 142, 135, 140],
+            label: 'Moyenne Glycémique (g/L)',
+            data: [145, 138, 152, 148, 142, 135, 1.40],
             borderColor: '#088395',
             backgroundColor: 'rgba(8, 131, 149, 0.1)',
             fill: true,
@@ -231,7 +231,7 @@ export default function DoctorDashboard() {
                         <div className="flex justify-between items-center mb-10">
                             <div>
                                 <h3 className="text-xl font-black uppercase tracking-tighter italic leading-none mb-1">Évolution Patientèle</h3>
-                                <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Moyenne glycémique combinée (mg/dL)</p>
+                                <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Moyenne glycémique combinée (g/L)</p>
                             </div>
                             <div className="p-4 bg-white/5 border border-white/10 rounded-2xl text-[#088395]">
                                 <Activity size={24} />

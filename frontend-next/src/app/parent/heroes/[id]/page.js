@@ -282,7 +282,7 @@ export default function ChildProfile() {
                                                     {date && (
                                                         <div className="text-[9px] font-black uppercase tracking-widest text-[#088395]">{date}</div>
                                                     )}
-                                                    <div className="text-xs font-bold text-white/80 leading-relaxed">{text}</div>
+                                                    <div className="text-xs font-bold text-white/0.80 leading-relaxed">{text}</div>
                                                 </div>
                                             </div>
                                         );

@@ -41,8 +41,8 @@ export default function EducationPage() {
 
     const articles = [
         { id: 1, title: "Comprendre le Diabète de Type 1", desc: "Les bases essentielles pour les parents.", icon: BookOpen, color: "bg-[#088395]", content: "Le diabète de type 1 est une maladie auto-immune où le pancréas ne produit plus d'insuline. Chez les enfants, cela nécessite un suivi rigoureux..." },
-        { id: 2, title: "Gérer une Hypoglycémie", desc: "Réagir vite et efficacement.", icon: Activity, color: "bg-accent", content: "L'hypoglycémie (< 70 mg/dL) nécessite le resucrage immédiat. Donnez 15g de glucides rapides (jus, sucre) et attendez 15 minutes..." },
-        { id: 3, title: "Gérer une Hyperglycémie", desc: "Quand s'inquiéter et que faire ?", icon: Zap, color: "bg-orange-500", content: "L'hyperglycémie peut être due à un manque d'insuline, au stress ou à l'alimentation. Vérifiez l'acétone si le taux dépasse 250 mg/dL..." },
+        { id: 2, title: "Gérer une Hypoglycémie", desc: "Réagir vite et efficacement.", icon: Activity, color: "bg-accent", content: "L'hypoglycémie (< 0.70 g/L) nécessite le resucrage immédiat. Donnez 15g de glucides rapides (jus, sucre) et attendez 15 minutes..." },
+        { id: 3, title: "Gérer une Hyperglycémie", desc: "Quand s'inquiéter et que faire ?", icon: Zap, color: "bg-orange-500", content: "L'hyperglycémie peut être due à un manque d'insuline, au stress ou à l'alimentation. Vérifiez l'acétone si le taux dépasse 2.50 g/L..." },
         { id: 4, title: "Conseils Nutritionnels", desc: "Équilibrer les plaisirs et la santé.", icon: Apple, color: "bg-success", content: "Il n'y a pas d'aliments interdits, mais privilégiez les glucides complexes et contrôlez les portions pour stabiliser la glycémie..." }
     ];
 
@@ -106,7 +106,7 @@ export default function EducationPage() {
                 {/* Article Modal */}
                 <AnimatePresence>
                     {selectedArticle && (
-                        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/0.80 backdrop-blur-md">
                             <motion.div
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}

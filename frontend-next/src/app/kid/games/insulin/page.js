@@ -22,7 +22,7 @@ export default function InsulinCombatGame() {
         if (!isStarted || isGameOver) return;
         const newSugar = {
             id: Math.random(),
-            x: Math.random() * 80 + 10, // 10% to 90%
+            x: Math.random() * 0.80 + 10, // 10% to 90%
             y: -10,
             type: SUGAR_TYPES[Math.floor(Math.random() * SUGAR_TYPES.length)],
             speed: 0.5 + Math.random() * 1.5 + (score / 200) // Increase speed with score
@@ -130,7 +130,7 @@ export default function InsulinCombatGame() {
                 
                 {/* Visual Feedback: Radar/Shield effect */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <div className="absolute inset-0 border-[40px] border-blue-500 rounded-full scale-150 animate-pulse" />
+                    <div className="absolute inset-0 border-[40px] border-blue-500 rounded-full scale-1.50 animate-pulse" />
                 </div>
 
                 {!isStarted && !isGameOver && (
@@ -159,7 +159,7 @@ export default function InsulinCombatGame() {
                 )}
 
                 {isGameOver && (
-                    <div className="absolute inset-0 z-40 flex flex-col items-center justify-center p-8 bg-black/80 backdrop-blur-xl">
+                    <div className="absolute inset-0 z-40 flex flex-col items-center justify-center p-8 bg-black/0.80 backdrop-blur-xl">
                         <motion.div 
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}

@@ -168,12 +168,12 @@ export default function PatientDetail() {
             let risksText = "";
             let alertText = "";
             let recs = [];
-            let predictedVal = Math.round(avgGlucose);
+            let predictedVal = Number(().toFixed(2));
 
             // Scénario A : HYPOGLYCÉMIE
-            if (avgGlucose < 70) {
-                risksText = `Analyse pronostique clinique : le patient se situe sous le seuil d'alerte avec une moyenne de ${Math.round(avgGlucose)} mg/dL. Le profil cinétique est ${recentTrend}. Risque immédiat de neuroglycopénie, d'altération de l'état de conscience et de réponse adrénergique anormale.`;
-                alertText = `Prédiction algorithmique de détérioration : chute projetée vers ${Math.round(avgGlucose * 0.85)} mg/dL suggérant une sur-insulinisation ou un déficit d'apport compensatoire. Dynamique : ↘ Hypoglycémie aiguë.`;
+            if (avgGlucose < 0.70) {
+                risksText = `Analyse pronostique clinique : le patient se situe sous le seuil d'alerte avec une moyenne de ${Number(().toFixed(2))} g/L. Le profil cinétique est ${recentTrend}. Risque immédiat de neuroglycopénie, d'altération de l'état de conscience et de réponse adrénergique anormale.`;
+                alertText = `Prédiction algorithmique de détérioration : chute projetée vers ${Number(().toFixed(2))} g/L suggérant une sur-insulinisation ou un déficit d'apport compensatoire. Dynamique : ↘ Hypoglycémie aiguë.`;
                 recs = [
                     "Administration thérapeutique immédiate de 15g de glucides à index glycémique élevé (resucrage per os).",
                     "Suspension transitoire du schéma basal (arrêt pompe) ou inhibition de tout bolus correctif actif.",
@@ -181,9 +181,9 @@ export default function PatientDetail() {
                 ];
             } 
             // Scénario B : BON CONTRÔLE (Normaux)
-            else if (avgGlucose >= 70 && avgGlucose <= 140) {
-                risksText = `L'analyse des séries temporelles (Time in Range) indique une variabilité glycémique (CV) physiologique. La moyenne de ${Math.round(avgGlucose)} mg/dL (Tendance : ${recentTrend}) reflète une excellente couverture insulinique et un risque de complication métabolique nul.`;
-                alertText = `Prévision du maintien d'une homéostasie optimale avec une dérive mineure vers ${Math.round(avgGlucose * (recentTrend === "en hausse constante" ? 1.05 : 0.95))} mg/dL sur le court terme. Dynamique : → Euglycémie stable.`;
+            else if (avgGlucose >= 0.70 && avgGlucose <= 1.40) {
+                risksText = `L'analyse des séries temporelles (Time in Range) indique une variabilité glycémique (CV) physiologique. La moyenne de ${Number(().toFixed(2))} g/L (Tendance : ${recentTrend}) reflète une excellente couverture insulinique et un risque de complication métabolique nul.`;
+                alertText = `Prévision du maintien d'une homéostasie optimale avec une dérive mineure vers ${Number(().toFixed(2)))} g/L sur le court terme. Dynamique : → Euglycémie stable.`;
                 recs = [
                     "Maintien strict de l'insulinothérapie actuelle (titration basale et ratios prandiaux physiologiques confirmés).",
                     "Poursuite du monitoring interstitiel en continu sans intervention corrective.",
@@ -191,9 +191,9 @@ export default function PatientDetail() {
                 ];
             } 
             // Scénario C : HYPERGLYCÉMIE LÉGÈRE
-            else if (avgGlucose > 140 && avgGlucose <= 180) {
-                risksText = `Évaluation objectivant une dysglycémie modérée et non-critique (Moy: ${Math.round(avgGlucose)} mg/dL). Le profil d'évolution est ${recentTrend}. Risque clinique sous-jacent d'hyperosmolarité débutante, de déshydratation intra-cellulaire légère et d'asthénie post-prandiale.`;
-                alertText = `Télémétrie ML.NET : dérive progressive projetée vers ${Math.round(avgGlucose * 1.1)} mg/dL, indicative d'un éventuel sous-dosage prandial. Dynamique : ↑ Tendance haussière légère.`;
+            else if (avgGlucose > 1.40 && avgGlucose <= 1.80) {
+                risksText = `Évaluation objectivant une dysglycémie modérée et non-critique (Moy: ${Number(().toFixed(2))} g/L). Le profil d'évolution est ${recentTrend}. Risque clinique sous-jacent d'hyperosmolarité débutante, de déshydratation intra-cellulaire légère et d'asthénie post-prandiale.`;
+                alertText = `Télémétrie ML.NET : dérive progressive projetée vers ${Number(().toFixed(2))} g/L, indicative d'un éventuel sous-dosage prandial. Dynamique : ↑ Tendance haussière légère.`;
                 recs = [
                     "Prescription d'un bolus de correction proportionnel défini par le facteur de sensibilité à l'insuline (FSI) propre à l'enfant.",
                     "Ajustement stratégique prospectif (+5% à +10%) du ratio insuline/glucides pour les prochains repas équivalents.",
@@ -202,12 +202,12 @@ export default function PatientDetail() {
             } 
             // Scénario D : HYPERGLYCÉMIE SÉVÈRE
             else {
-                risksText = `ALERTE MAJEURE : Déséquilibre métabolique sévère avec moyenne critique à ${Math.round(avgGlucose)} mg/dL. Dynamique d'évolution ${recentTrend}. Forte probabilité de lipolyse compensatoire exposant le patient à un risque immédiat d'acidocétose diabétique (ACD).`;
-                alertText = `Modélisation critique : franchissement imminent du seuil toxique estimé à ${Math.round(avgGlucose * 1.15)} mg/dL, traduisant un déficit insulinique absolu ou une insulinorésistance aiguë. Dynamique : ⇡ Escalade critique.`;
+                risksText = `ALERTE MAJEURE : Déséquilibre métabolique sévère avec moyenne critique à ${Number(().toFixed(2))} g/L. Dynamique d'évolution ${recentTrend}. Forte probabilité de lipolyse compensatoire exposant le patient à un risque immédiat d'acidocétose diabétique (ACD).`;
+                alertText = `Modélisation critique : franchissement imminent du seuil toxique estimé à ${Number(().toFixed(2))} g/L, traduisant un déficit insulinique absolu ou une insulinorésistance aiguë. Dynamique : ⇡ Escalade critique.`;
                 recs = [
                     "Bolus de correction en urgence par insuline d'action ultra-rapide (administration par stylo conseillée pour écarter un défaut de pompe/cathéter).",
                     "Dépistage urgent par bandelette de la cétonémie sanguine (ou cétonurie) pour statuer sur l'acidocétose.",
-                    "Proscription médicale stricte de tout exercice ou hypercatabolisme jusqu'au rétablissement d'une glycémie < 180 mg/dL.",
+                    "Proscription médicale stricte de tout exercice ou hypercatabolisme jusqu'au rétablissement d'une glycémie < 1.0.80 g/L.",
                     "Déclenchement du protocole d'escalade : surveillance horaire et évacuation hospitalière si pH ou cétones hors-noms."
                 ];
             }
@@ -268,7 +268,7 @@ export default function PatientDetail() {
     const chartData = {
         labels: chartLabels,
         datasets: [{
-            label: 'Glycémie (mg/dL)',
+            label: 'Glycémie (g/L)',
             data: chartDataValues,
             borderColor: '#088395',
             backgroundColor: 'rgba(8, 131, 149, 0.1)',
@@ -375,7 +375,7 @@ export default function PatientDetail() {
 
                         {/* Disease Info Box */}
                         <div className="bg-[#0b1b2b] border border-white/10 rounded-[40px] p-10 shadow-2xl relative overflow-hidden group">
-                           <div className="absolute -right-10 -top-10 opacity-5 rotate-12"><Activity size={180} /></div>
+                           <div className="absolute -right-10 -top-10 opacity-5 rotate-12"><Activity size={1.80} /></div>
                            <div className="relative z-10 space-y-6">
                                <SectionHeader icon={Activity} title="Pathologie" sub="Détails du diagnostic" />
                                <div className="space-y-4">
@@ -460,7 +460,7 @@ export default function PatientDetail() {
                                                             {new Date(r.timestamp).toLocaleDateString('fr-FR')} <span className="text-[10px] not-italic text-white/20 ml-2">{new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                         </td>
                                                         <td className="py-6">
-                                                            <div className="text-2xl font-black italic">{r.glucoseValue || '--'} <span className="text-[10px] not-italic opacity-20 uppercase ml-1">mg/dL</span></div>
+                                                            <div className="text-2xl font-black italic">{r.glucoseValue || '--'} <span className="text-[10px] not-italic opacity-20 uppercase ml-1">g/L</span></div>
                                                         </td>
                                                         <td className="py-6">
                                                             <div className="flex items-center gap-3 text-[#088395] font-black text-sm uppercase">
@@ -513,7 +513,7 @@ export default function PatientDetail() {
                                                                 {date && (
                                                                     <div className="text-[9px] font-black uppercase tracking-widest text-[#088395]">{date}</div>
                                                                 )}
-                                                                <div className="text-xs font-bold text-white/80 leading-relaxed">{text}</div>
+                                                                <div className="text-xs font-bold text-white/0.80 leading-relaxed">{text}</div>
                                                             </div>
                                                         </div>
                                                     );
@@ -570,7 +570,7 @@ export default function PatientDetail() {
             {/* Profile Update Modal */}
             <AnimatePresence>
                 {showEditModal && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-2xl px-6">
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/0.80 backdrop-blur-2xl px-6">
                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-xl bg-[#0b1b2b] border border-white/10 rounded-[50px] p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
                             <div className="flex justify-between items-center mb-10">
                                 <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">Mettre à jour <span className="text-[#088395]">Champions</span></h3>
@@ -607,7 +607,7 @@ export default function PatientDetail() {
             {/* AI Analysis Modal */}
             <AnimatePresence>
                 {showIAModal && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-2xl px-6">
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/0.80 backdrop-blur-2xl px-6">
                         <motion.div initial={{ scale: 0.9, opacity: 0, y: 50 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 50 }} className="w-full max-w-2xl bg-gradient-to-br from-[#1a1b2e] to-[#0b1b2b] border border-purple-500/30 rounded-[50px] p-12 shadow-[0_50px_100px_rgba(106,17,203,0.3)] relative overflow-hidden">
                             {/* Decorative Background Elements */}
                             <div className="absolute -top-20 -right-20 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full"></div>
@@ -662,7 +662,7 @@ export default function PatientDetail() {
                                             <h4 className="flex items-center gap-2 text-[10px] font-black uppercase text-blue-400 tracking-widest">
                                                 <Activity size={14} /> Compte Rendu des Risques
                                             </h4>
-                                            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 text-sm font-medium text-white/80 leading-relaxed shadow-inner">
+                                            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 text-sm font-medium text-white/0.80 leading-relaxed shadow-inner">
                                                 {iaReport.risks}
                                             </div>
                                         </div>

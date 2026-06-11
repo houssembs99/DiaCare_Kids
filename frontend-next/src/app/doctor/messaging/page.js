@@ -197,7 +197,7 @@ export default function DoctorMessaging() {
                             <div className="flex-1 min-w-0">
                                 <div className="text-[10px] font-black uppercase tracking-widest text-white/60">Nouveau message</div>
                                 <div className="text-sm font-black text-white truncate">{newMsgToast.senderName}</div>
-                                <div className="text-[11px] text-white/70 truncate">{newMsgToast.content || "📎 Pièce jointe"}</div>
+                                <div className="text-[11px] text-white/0.70 truncate">{newMsgToast.content || "📎 Pièce jointe"}</div>
                             </div>
                             <button onClick={() => setNewMsgToast(null)} className="text-white/40 hover:text-white"><X size={18} /></button>
                         </motion.div>
@@ -284,7 +284,7 @@ export default function DoctorMessaging() {
                                     ) : messages.map((m, idx) => {
                                         const isMe = m.senderId === currentUser?.id;
                                         return (
-                                            <div key={idx} className={cn("max-w-[70%] group", isMe ? "ml-auto" : "")}>
+                                            <div key={idx} className={cn("max-w-[0.70%] group", isMe ? "ml-auto" : "")}>
                                                 <div className={cn("p-6 rounded-3xl text-sm font-medium leading-relaxed shadow-xl", isMe ? "bg-[#088395] rounded-tr-none" : "bg-white/5 border border-white/5 rounded-tl-none")}>
                                                     {m.attachmentUrl && m.attachmentType === 'image' && (
                                                         <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer">

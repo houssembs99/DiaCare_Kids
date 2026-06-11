@@ -267,7 +267,7 @@ export default function AdminPayments() {
                                         <td className="px-10 py-8 text-right">
                                             <button
                                                 onClick={(e) => handleSendInvoiceClick(e, user)}
-                                                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E88E5] text-white rounded-xl font-black uppercase tracking-widest hover:bg-[#1E88E5]/80 transition-all text-xs"
+                                                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E88E5] text-white rounded-xl font-black uppercase tracking-widest hover:bg-[#1E88E5]/0.80 transition-all text-xs"
                                             >
                                                 <Send size={14} /> Envoyer Facture
                                             </button>
@@ -284,7 +284,7 @@ export default function AdminPayments() {
             <AnimatePresence>
                 {isDetailsModalOpen && selectedUser && (
                     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsDetailsModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm" onClick={() => setIsDetailsModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="bg-[#0b1b2b] border border-white/10 rounded-[40px] p-10 max-w-2xl w-full relative z-10 shadow-2xl"
                         >
@@ -390,7 +390,7 @@ export default function AdminPayments() {
             <AnimatePresence>
                 {isInvoiceModalOpen && selectedUser && !showPreview && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsInvoiceModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm" onClick={() => setIsInvoiceModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-md w-full relative z-10 shadow-2xl"
                         >
@@ -469,7 +469,7 @@ export default function AdminPayments() {
                                     </button>
                                     <button 
                                         type="submit"
-                                        className="flex-1 py-4 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/80 transition-all"
+                                        className="flex-1 py-4 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/0.80 transition-all"
                                     >
                                         Aperçu Facture
                                     </button>
@@ -484,7 +484,7 @@ export default function AdminPayments() {
             <AnimatePresence>
                 {isNewInvoiceModalOpen && !showPreview && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsNewInvoiceModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/0.80 backdrop-blur-sm" onClick={() => setIsNewInvoiceModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-md w-full relative z-10 shadow-2xl"
                         >

@@ -77,7 +77,7 @@ const DiaPoteMascot = ({ userName = "Ami", onClose }) => {
     const activeAnimation = isTalking ? talkingAnimData : stableAnimData;
 
     return (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
+        <div className="fixed inset-0 z-[2.50] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}

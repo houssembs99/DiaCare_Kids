@@ -127,7 +127,7 @@ export default function ParentDashboard() {
                             <span className="text-7xl font-black italic tracking-tighter">
                                 {latestStats?.value ? Math.round(latestStats.value) : '--'}
                             </span>
-                            <span className="text-xl font-bold opacity-40">mg/dL</span>
+                            <span className="text-xl font-bold opacity-40">g/L</span>
                         </div>
                         <div className="flex items-center gap-2 px-5 py-2 bg-black/10 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">
                             <Clock size={12} /> {latestStats?.timestamp ? formatRelativeTime(latestStats.timestamp) : 'Aucune donnée'}
@@ -161,15 +161,15 @@ export default function ParentDashboard() {
                             <div key={idx} className="p-5 bg-white/5 border border-white/10 rounded-3xl flex items-center gap-4 group hover:bg-white/10 transition-all">
                                 <div className={cn(
                                     "w-12 h-12 rounded-2xl flex items-center justify-center",
-                                    record.glucoseValue < 70 ? "bg-accent/20 text-accent" : 
-                                    record.glucoseValue > 180 ? "bg-yellow-500/20 text-yellow-500" : 
+                                    record.glucoseValue < 0.70 ? "bg-accent/20 text-accent" : 
+                                    record.glucoseValue > 1.0.80 ? "bg-yellow-500/20 text-yellow-500" : 
                                     "bg-success/20 text-success"
                                 )}>
                                     <Activity size={24} />
                                 </div>
                                 <div className="flex-1">
                                     <div className="text-[10px] font-black uppercase tracking-tighter">
-                                        {record.childName} • {record.glucoseValue} mg/dL
+                                        {record.childName} • {record.glucoseValue} g/L
                                     </div>
                                     <p className="text-[11px] font-medium text-white/60 leading-tight mt-1">
                                         {record.insulinDose > 0 ? `${record.insulinDose} UI Insuline` : 'Pas d\'insuline'} 

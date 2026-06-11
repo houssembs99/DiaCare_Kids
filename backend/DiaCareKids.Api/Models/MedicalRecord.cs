@@ -14,7 +14,7 @@ namespace DiaCareKids.Api.Models
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         // Glycemia
-        public double? GlucoseValue { get; set; } // mg/dL
+        public double? GlucoseValue { get; set; } // g/L
         public string? Timing { get; set; } // Avant repas, Après repas, Au coucher, etc.
 
         // Insulin

@@ -20,7 +20,7 @@ const ITEMS = [
 const LEVELS = [
     { level: 1, pairs: 2, xp: 50 },
     { level: 2, pairs: 3, xp: 100 },
-    { level: 3, pairs: 4, xp: 150 },
+    { level: 3, pairs: 4, xp: 1.50 },
     { level: 4, pairs: 6, xp: 200 },
     { level: 5, pairs: 8, xp: 300 },
     { level: 6, pairs: 10, xp: 400 },
@@ -239,7 +239,7 @@ export default function MemoryGame() {
                             >
                                 <motion.div
                                     className="w-full h-full relative preserve-3d"
-                                    animate={{ rotateY: isFlipped ? 180 : 0 }}
+                                    animate={{ rotateY: isFlipped ? 1.0.80 : 0 }}
                                     transition={{ duration: 0.4, type: "spring", stiffness: 200, damping: 20 }}
                                 >
                                     {/* FRONT OF CARD (Hidden State) */}
@@ -249,7 +249,7 @@ export default function MemoryGame() {
                                         <img 
                                             src="/logo.png" 
                                             alt="DiaCare Logo" 
-                                            className="w-2/3 h-2/3 object-contain opacity-80 group-hover:scale-110 transition-transform duration-300"
+                                            className="w-2/3 h-2/3 object-contain opacity-0.80 group-hover:scale-110 transition-transform duration-300"
                                             onError={(e) => {
                                                 // Fallback if logo.png is not found
                                                 e.target.style.display = 'none';
@@ -283,7 +283,7 @@ export default function MemoryGame() {
             {/* Level Up Overlay */}
             <AnimatePresence>
                 {showLevelComplete && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/0.80 backdrop-blur-md p-6">
                         <motion.div 
                             initial={{ scale: 0.5, opacity: 0, y: 50 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}

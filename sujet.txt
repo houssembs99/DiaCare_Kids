@@ -144,9 +144,9 @@ Basé sur des règles métier simples.
 
 Exemples :
 
-Si glycémie < 70 mg/dL → Alerte hypoglycémie
+Si glycémie < 0.70 g/L → Alerte hypoglycémie
 
-Si glycémie > 250 mg/dL → Surveillance renforcée
+Si glycémie > 2.50 g/L → Surveillance renforcée
 
 Si anomalies répétées → Suggestion de consultation
 

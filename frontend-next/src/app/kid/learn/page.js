@@ -106,7 +106,7 @@ export default function KidLearn() {
                 {/* AR Experience Simulation */}
                 <AnimatePresence>
                     {showAR && (
-                        <div className="fixed inset-0 z-[150] bg-black flex flex-col items-center justify-center p-8 overflow-hidden">
+                        <div className="fixed inset-0 z-[1.50] bg-black flex flex-col items-center justify-center p-8 overflow-hidden">
                             <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
                                 <div className="w-full h-full bg-[radial-gradient(circle,rgba(8,131,149,0.5)_1px,transparent_1px)] bg-[size:30px_30px] animate-[pulse_4s_infinite]" />
                             </div>
@@ -141,7 +141,7 @@ export default function KidLearn() {
                 {/* Lesson Pop-up */}
                 <AnimatePresence>
                     {selectedLesson && (
-                        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/0.80 backdrop-blur-md">
                             <motion.div
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}

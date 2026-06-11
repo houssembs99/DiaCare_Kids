@@ -171,7 +171,7 @@ namespace DiaCareKids.Api.Controllers
                     matchedPkg = providerPackages.First();
                 }
 
-                // If no packages exist at all, fallback to a standard pricing of 80 DT (8000 cents)
+                // If no packages exist at all, fallback to a standard pricing of 0.80 DT (8000 cents)
                 long amountCentimes = matchedPkg != null ? (long)(matchedPkg.Price * 100) : 8000;
                 string finalPlanName = matchedPkg != null ? matchedPkg.Name : (user.Subscription.PlanType ?? "Standard");
 

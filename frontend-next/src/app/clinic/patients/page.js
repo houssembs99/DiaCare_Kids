@@ -238,13 +238,13 @@ export default function ClinicPatients() {
                                         <div className="flex gap-3 pt-4 border-t border-white/5 mt-4">
                                             <button
                                                 onClick={() => handleApproveParent(group.parent.id)}
-                                                className="flex-1 py-3 bg-success hover:bg-success/80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
+                                                className="flex-1 py-3 bg-success hover:bg-success/0.80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
                                             >
                                                 <CheckCircle2 size={14} /> Approuver
                                             </button>
                                             <button
                                                 onClick={() => handleRejectParent(group.parent.id)}
-                                                className="flex-1 py-3 bg-accent hover:bg-accent/80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
+                                                className="flex-1 py-3 bg-accent hover:bg-accent/0.80 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
                                             >
                                                 <X size={14} /> Refuser
                                             </button>
@@ -317,7 +317,7 @@ export default function ClinicPatients() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/0.80 backdrop-blur-sm"
                             onClick={() => !isAssigning && setIsAssignModalOpen(false)}
                         />
                         <motion.div
