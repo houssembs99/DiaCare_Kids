@@ -117,7 +117,7 @@ export default function KidGames() {
                                 </motion.div>
                                 <div className="text-center px-10">
                                     <p className="text-lg font-black italic uppercase tracking-tighter mb-4">Prêt pour l'aventure ?</p>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             alert("Bravo ! Tu as réussi la mission et gagné " + playingGame.xp + " XP ! 🎉");
                                             setPlayingGame(null);

@@ -104,7 +104,7 @@ const DiaPoteInteraction = ({ energy, onClose, userName }) => {
     const activeAnimation = isSpeaking ? talkingAnimData : stableAnimData;
 
     return (
-        <div className="fixed inset-0 z-[2.50] bg-[#0b1b2b] flex flex-col items-center overflow-y-auto custom-scrollbar pb-20">
+        <div className="fixed inset-0 z-[999] bg-[#0b1b2b] flex flex-col items-center overflow-y-auto custom-scrollbar pb-20">
             
             {/* Header */}
             <div className="w-full flex justify-between items-center p-6 border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
