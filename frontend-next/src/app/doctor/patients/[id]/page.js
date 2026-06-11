@@ -168,12 +168,12 @@ export default function PatientDetail() {
             let risksText = "";
             let alertText = "";
             let recs = [];
-            let predictedVal = Number(().toFixed(2));
+            let predictedVal = Number((avgGlucose).toFixed(2));
 
             // Scénario A : HYPOGLYCÉMIE
             if (avgGlucose < 0.70) {
-                risksText = `Analyse pronostique clinique : le patient se situe sous le seuil d'alerte avec une moyenne de ${Number(().toFixed(2))} g/L. Le profil cinétique est ${recentTrend}. Risque immédiat de neuroglycopénie, d'altération de l'état de conscience et de réponse adrénergique anormale.`;
-                alertText = `Prédiction algorithmique de détérioration : chute projetée vers ${Number(().toFixed(2))} g/L suggérant une sur-insulinisation ou un déficit d'apport compensatoire. Dynamique : ↘ Hypoglycémie aiguë.`;
+                risksText = `Analyse pronostique clinique : le patient se situe sous le seuil d'alerte avec une moyenne de ${Number((avgGlucose).toFixed(2))} g/L. Le profil cinétique est ${recentTrend}. Risque immédiat de neuroglycopénie, d'altération de l'état de conscience et de réponse adrénergique anormale.`;
+                alertText = `Prédiction algorithmique de détérioration : chute projetée vers ${Number((avgGlucose - 0.1).toFixed(2))} g/L suggérant une sur-insulinisation ou un déficit d'apport compensatoire. Dynamique : ↘ Hypoglycémie aiguë.`;
                 recs = [
                     "Administration thérapeutique immédiate de 15g de glucides à index glycémique élevé (resucrage per os).",
                     "Suspension transitoire du schéma basal (arrêt pompe) ou inhibition de tout bolus correctif actif.",
@@ -182,8 +182,8 @@ export default function PatientDetail() {
             } 
             // Scénario B : BON CONTRÔLE (Normaux)
             else if (avgGlucose >= 0.70 && avgGlucose <= 1.40) {
-                risksText = `L'analyse des séries temporelles (Time in Range) indique une variabilité glycémique (CV) physiologique. La moyenne de ${Number(().toFixed(2))} g/L (Tendance : ${recentTrend}) reflète une excellente couverture insulinique et un risque de complication métabolique nul.`;
-                alertText = `Prévision du maintien d'une homéostasie optimale avec une dérive mineure vers ${Number(().toFixed(2)))} g/L sur le court terme. Dynamique : → Euglycémie stable.`;
+                risksText = `L'analyse des séries temporelles (Time in Range) indique une variabilité glycémique (CV) physiologique. La moyenne de ${Number((avgGlucose).toFixed(2))} g/L (Tendance : ${recentTrend}) reflète une excellente couverture insulinique et un risque de complication métabolique nul.`;
+                alertText = `Prévision du maintien d'une homéostasie optimale avec une dérive mineure vers ${Number((avgGlucose).toFixed(2))} g/L sur le court terme. Dynamique : → Euglycémie stable.`;
                 recs = [
                     "Maintien strict de l'insulinothérapie actuelle (titration basale et ratios prandiaux physiologiques confirmés).",
                     "Poursuite du monitoring interstitiel en continu sans intervention corrective.",
@@ -192,8 +192,8 @@ export default function PatientDetail() {
             } 
             // Scénario C : HYPERGLYCÉMIE LÉGÈRE
             else if (avgGlucose > 1.40 && avgGlucose <= 1.80) {
-                risksText = `Évaluation objectivant une dysglycémie modérée et non-critique (Moy: ${Number(().toFixed(2))} g/L). Le profil d'évolution est ${recentTrend}. Risque clinique sous-jacent d'hyperosmolarité débutante, de déshydratation intra-cellulaire légère et d'asthénie post-prandiale.`;
-                alertText = `Télémétrie ML.NET : dérive progressive projetée vers ${Number(().toFixed(2))} g/L, indicative d'un éventuel sous-dosage prandial. Dynamique : ↑ Tendance haussière légère.`;
+                risksText = `Évaluation objectivant une dysglycémie modérée et non-critique (Moy: ${Number((avgGlucose).toFixed(2))} g/L). Le profil d'évolution est ${recentTrend}. Risque clinique sous-jacent d'hyperosmolarité débutante, de déshydratation intra-cellulaire légère et d'asthénie post-prandiale.`;
+                alertText = `Télémétrie ML.NET : dérive progressive projetée vers ${Number((avgGlucose + 0.1).toFixed(2))} g/L, indicative d'un éventuel sous-dosage prandial. Dynamique : ↑ Tendance haussière légère.`;
                 recs = [
                     "Prescription d'un bolus de correction proportionnel défini par le facteur de sensibilité à l'insuline (FSI) propre à l'enfant.",
                     "Ajustement stratégique prospectif (+5% à +10%) du ratio insuline/glucides pour les prochains repas équivalents.",
@@ -202,12 +202,12 @@ export default function PatientDetail() {
             } 
             // Scénario D : HYPERGLYCÉMIE SÉVÈRE
             else {
-                risksText = `ALERTE MAJEURE : Déséquilibre métabolique sévère avec moyenne critique à ${Number(().toFixed(2))} g/L. Dynamique d'évolution ${recentTrend}. Forte probabilité de lipolyse compensatoire exposant le patient à un risque immédiat d'acidocétose diabétique (ACD).`;
-                alertText = `Modélisation critique : franchissement imminent du seuil toxique estimé à ${Number(().toFixed(2))} g/L, traduisant un déficit insulinique absolu ou une insulinorésistance aiguë. Dynamique : ⇡ Escalade critique.`;
+                risksText = `ALERTE MAJEURE : Déséquilibre métabolique sévère avec moyenne critique à ${Number((avgGlucose).toFixed(2))} g/L. Dynamique d'évolution ${recentTrend}. Forte probabilité de lipolyse compensatoire exposant le patient à un risque immédiat d'acidocétose diabétique (ACD).`;
+                alertText = `Modélisation critique : franchissement imminent du seuil toxique estimé à ${Number((avgGlucose + 0.2).toFixed(2))} g/L, traduisant un déficit insulinique absolu ou une insulinorésistance aiguë. Dynamique : ⇡ Escalade critique.`;
                 recs = [
                     "Bolus de correction en urgence par insuline d'action ultra-rapide (administration par stylo conseillée pour écarter un défaut de pompe/cathéter).",
                     "Dépistage urgent par bandelette de la cétonémie sanguine (ou cétonurie) pour statuer sur l'acidocétose.",
-                    "Proscription médicale stricte de tout exercice ou hypercatabolisme jusqu'au rétablissement d'une glycémie < 1.0.80 g/L.",
+                    "Proscription médicale stricte de tout exercice ou hypercatabolisme jusqu'au rétablissement d'une glycémie < 1.80 g/L.",
                     "Déclenchement du protocole d'escalade : surveillance horaire et évacuation hospitalière si pH ou cétones hors-noms."
                 ];
             }
@@ -375,7 +375,7 @@ export default function PatientDetail() {
 
                         {/* Disease Info Box */}
                         <div className="bg-[#0b1b2b] border border-white/10 rounded-[40px] p-10 shadow-2xl relative overflow-hidden group">
-                           <div className="absolute -right-10 -top-10 opacity-5 rotate-12"><Activity size={1.80} /></div>
+                           <div className="absolute -right-10 -top-10 opacity-5 rotate-12"><Activity size={180} /></div>
                            <div className="relative z-10 space-y-6">
                                <SectionHeader icon={Activity} title="Pathologie" sub="Détails du diagnostic" />
                                <div className="space-y-4">

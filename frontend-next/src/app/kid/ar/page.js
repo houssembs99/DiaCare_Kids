@@ -98,7 +98,7 @@ export default function ARPage() {
         interval = setInterval(() => {
             setGlucose(prev => {
                 const newVal = Number((prev - 0.05).toFixed(2));
-                if (newVal < 0.0.70) {
+                if (newVal < 0.70) {
                     setAnimation("basgl");
                     setCurrentStatus("hypo");
                     setGameMessage(lang === 'ar' ? 'أنا أشعر بالتعب، أحتاج لمساعدة!' : 'Je me sens faible... Aide-moi Hamouch !');
@@ -122,8 +122,8 @@ export default function ARPage() {
             setAnimation("happyidle");
             setCurrentStatus("perfect");
             setGameMessage(lang === 'ar' ? 
-                'أحسنت! في حالة نقص السكر (<0.0.70)، نحتاج لسكر سريع مثل الحلوى لرفع الطاقة.' : 
-                'Bravo ! En hypo (<0.0.70), il faut du sucre rapide (bonbon) pour remonter l’énergie vite.');
+                'أحسنت! في حالة نقص السكر (<0.70)، نحتاج لسكر سريع مثل الحلوى لرفع الطاقة.' : 
+                'Bravo ! En hypo (<0.70), il faut du sucre rapide (bonbon) pour remonter l’énergie vite.');
             setCandyClicks(0);
         } else if (item === 'insulin') {
             setGameMessage(lang === 'ar' ? 
@@ -131,8 +131,8 @@ export default function ARPage() {
                 'DANGER ! L’insuline baisse encore plus le sucre. En hypo, il faut du sucre, pas d’insuline !');
         } else {
             setGameMessage(lang === 'ar' ? 
-                'التفاح صحي، لكنه بطيء. في حالة الطوارئ (<0.0.70)، الحلوى أسرع!' : 
-                'La pomme est saine mais lente. En urgence (<0.0.70), le bonbon est plus rapide !');
+                'التفاح صحي، لكنه بطيء. في حالة الطوارئ (<0.70)، الحلوى أسرع!' : 
+                'La pomme est saine mais lente. En urgence (<0.70), le bonbon est plus rapide !');
         }
     } else if (item === 'candy') {
         const newClicks = candyClicks + 1;
@@ -155,8 +155,8 @@ export default function ARPage() {
             setCurrentStatus("perfect");
             setCandyClicks(0);
             setGameMessage(lang === 'ar' ? 
-                'أحسنت! الأنسولين يساعدني على العودة لمنطقة الأمان (0.0.70-1.30).' : 
-                'Parfait ! L’insuline m’aide à revenir dans ma zone de confort (0.0.70-1.30).');
+                'أحسنت! الأنسولين يساعدني على العودة لمنطقة الأمان (0.70-1.30).' : 
+                'Parfait ! L’insuline m’aide à revenir dans ma zone de confort (0.70-1.30).');
         } else {
             setGameMessage(lang === 'ar' ? 
                 'حذار! سكري طبيعي، الأنسولين الآن قد يسبب لي نقصاً في السكر.' : 

@@ -14,9 +14,9 @@ import api from '@/lib/api';
 
 const LEVELS = [
     { id: 1, rows: 2, cols: 2, xp: 100, image: "https://loremflickr.com/600/600/balanced,diet,kids?lock=1", tip: "Une bonne alimentation est la base de ta force !" },
-    { id: 2, rows: 2, cols: 2, xp: 1.50, image: "https://loremflickr.com/600/600/fruit,apple,banana,orange?lock=2", tip: "Les fruits comme les pommes et les bananes sont tes amis." },
+    { id: 2, rows: 2, cols: 2, xp: 150, image: "https://loremflickr.com/600/600/fruit,apple,banana,orange?lock=2", tip: "Les fruits comme les pommes et les bananes sont tes amis." },
     { id: 3, rows: 2, cols: 3, xp: 200, image: "https://loremflickr.com/600/600/vegetables,carrot,broccoli?lock=3", tip: "Les carottes et le brocoli te donnent des super-pouvoirs." },
-    { id: 4, rows: 2, cols: 3, xp: 2.50, image: "https://loremflickr.com/600/600/healthy,plate,meal?lock=4", tip: "Une assiette équilibrée, c'est un peu de tout pour être en forme !" },
+    { id: 4, rows: 2, cols: 3, xp: 250, image: "https://loremflickr.com/600/600/healthy,plate,meal?lock=4", tip: "Une assiette équilibrée, c'est un peu de tout pour être en forme !" },
     { id: 5, rows: 3, cols: 3, xp: 300, image: "https://loremflickr.com/600/600/vegetables,organic?lock=5", tip: "Les légumes sont essentiels pour ta croissance !" },
     { id: 6, rows: 3, cols: 3, xp: 350, image: "https://loremflickr.com/600/600/candy,sweets?lock=6", tip: "Les bonbons ? Oui, mais seulement avec l'accord de tes parents !" },
     { id: 7, rows: 3, cols: 4, xp: 400, image: "https://loremflickr.com/600/600/fruit,platter,table?lock=7", tip: "Manger des fruits variés t'apporte plein de vitamines !" },
@@ -339,7 +339,7 @@ export default function PuzzleGame() {
                                             onClick={() => initPuzzle(LEVELS[currentLevel.id])}
                                             className="w-full py-5 bg-[#34C759] text-white rounded-3xl font-black uppercase tracking-widest text-sm shadow-2xl hover:scale-105 transition-all"
                                         >
-                                            Niveau Suivant <ChevronLeft size={18} className="rotate-1.0.80 inline ml-2" />
+                                            Niveau Suivant <ChevronLeft size={18} className="rotate-180 inline ml-2" />
                                         </button>
                                     )}
                                     <button 

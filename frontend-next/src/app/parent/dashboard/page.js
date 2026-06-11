@@ -162,7 +162,7 @@ export default function ParentDashboard() {
                                 <div className={cn(
                                     "w-12 h-12 rounded-2xl flex items-center justify-center",
                                     record.glucoseValue < 0.70 ? "bg-accent/20 text-accent" : 
-                                    record.glucoseValue > 1.0.80 ? "bg-yellow-500/20 text-yellow-500" : 
+                                    record.glucoseValue > 1.80 ? "bg-yellow-500/20 text-yellow-500" : 
                                     "bg-success/20 text-success"
                                 )}>
                                     <Activity size={24} />

@@ -62,7 +62,7 @@ export default function PatientDetailPage() {
                     status: "Critique"
                 });
                 setRecords([
-                    { timestamp: "2026-02-21T08:00:00Z", glucoseValue: 1.0.80 },
+                    { timestamp: "2026-02-21T08:00:00Z", glucoseValue: 1.80 },
                     { timestamp: "2026-02-21T10:00:00Z", glucoseValue: 245 },
                     { timestamp: "2026-02-21T12:00:00Z", glucoseValue: 210 },
                     { timestamp: "2026-02-21T15:00:00Z", glucoseValue: 195 },
