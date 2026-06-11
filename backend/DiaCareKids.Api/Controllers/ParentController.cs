@@ -139,6 +139,33 @@ namespace DiaCareKids.Api.Controllers
             });
         }
 
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory([FromQuery] int days = 30)
+        {
+            var parentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(parentId)) return Unauthorized();
+
+            var children = await _usersService.GetByParentIdAsync(parentId);
+            var kidIds = children.Select(c => c.Id!).ToList();
+            
+            // Get records up to an arbitrary limit, then filter by date locally
+            var records = await _recordsService.GetLatestForPatientsAsync(kidIds, 500);
+
+            var cutoffDate = DateTime.UtcNow.AddDays(-days);
+            var filteredRecords = records.Where(r => r.Timestamp >= cutoffDate).OrderByDescending(r => r.Timestamp).ToList();
+
+            return Ok(filteredRecords.Select(r => new {
+                r.Id,
+                r.Timestamp,
+                r.GlucoseValue,
+                r.InsulinDose,
+                r.CarbsEstimated,
+                r.Timing,
+                r.Notes,
+                ChildName = children.FirstOrDefault(c => c.Id == r.PatientId)?.FullName
+            }));
+        }
+
         [HttpGet("my-clinic-doctors")]
         public async Task<IActionResult> GetMyClinicDoctors()
         {
