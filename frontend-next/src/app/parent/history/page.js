@@ -33,7 +33,7 @@ export default function HistoryPage() {
     const [data, setData] = useState({
         chart: null,
         history: [],
-        average: 142
+        average: 1.42
     });
 
     useEffect(() => {
@@ -50,32 +50,32 @@ export default function HistoryPage() {
         
         if (p === '7d') {
             labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-            values = [110, 145, 185, 130, 95, 120, 1.40];
+            values = [1.10, 1.45, 1.85, 1.30, 0.95, 1.20, 1.40];
             history = [
-                { id: 1, time: '08:30', val: 110, status: 'stable', note: 'Petit déjeuner', insulin: '4u' },
-                { id: 2, time: '12:45', val: 145, status: 'stable', note: 'Déjeuner', insulin: '6u' },
-                { id: 3, time: '19:15', val: 185, status: 'hyper', note: 'Diner copieux', insulin: '8u' }
+                { id: 1, time: '08:30', val: 1.10, status: 'stable', note: 'Petit déjeuner', insulin: '4u' },
+                { id: 2, time: '12:45', val: 1.45, status: 'stable', note: 'Déjeuner', insulin: '6u' },
+                { id: 3, time: '19:15', val: 1.85, status: 'hyper', note: 'Diner copieux', insulin: '8u' }
             ];
         } else if (p === '30d') {
             labels = ['S1', 'S2', 'S3', 'S4'];
-            values = [135, 128, 142, 118];
+            values = [1.35, 1.28, 1.42, 1.18];
             history = [
-                { id: 10, time: 'Hier', val: 122, status: 'stable', note: 'Moyenne journée', insulin: '18u' },
-                { id: 11, time: '3 Jours', val: 158, status: 'hyper', note: 'Moyenne journée', insulin: '22u' },
-                { id: 12, time: '6 Jours', val: 105, status: 'stable', note: 'Moyenne journée', insulin: '15u' }
+                { id: 10, time: 'Hier', val: 1.22, status: 'stable', note: 'Moyenne journée', insulin: '18u' },
+                { id: 11, time: '3 Jours', val: 1.58, status: 'hyper', note: 'Moyenne journée', insulin: '22u' },
+                { id: 12, time: '6 Jours', val: 1.05, status: 'stable', note: 'Moyenne journée', insulin: '15u' }
             ];
         } else {
             labels = ['Jan', 'Fév', 'Mar'];
-            values = [145, 138, 115];
+            values = [1.45, 1.38, 1.15];
             history = [
-                { id: 20, time: 'Mars', val: 115, status: 'stable', note: 'Moyenne Mensuelle', insulin: '450u' },
-                { id: 21, time: 'Février', val: 138, status: 'stable', note: 'Moyenne Mensuelle', insulin: '480u' },
-                { id: 22, time: 'Janvier', val: 145, status: 'stable', note: 'Moyenne Mensuelle', insulin: '510u' }
+                { id: 20, time: 'Mars', val: 1.15, status: 'stable', note: 'Moyenne Mensuelle', insulin: '450u' },
+                { id: 21, time: 'Février', val: 1.38, status: 'stable', note: 'Moyenne Mensuelle', insulin: '480u' },
+                { id: 22, time: 'Janvier', val: 1.45, status: 'stable', note: 'Moyenne Mensuelle', insulin: '510u' }
             ];
         }
 
         setData({
-            average: Math.round(values.reduce((a, b) => a + b, 0) / values.length),
+            average: parseFloat((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)),
             chart: {
                 labels,
                 datasets: [{
@@ -148,7 +148,10 @@ export default function HistoryPage() {
                                         sub="Graphique des tendances" 
                                     />
                                     <div className="flex flex-col items-end">
-                                        <span className="text-3xl font-black italic">{data.average}</span>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-3xl font-black italic">{Number(data.average).toFixed(2)}</span>
+                                            <span className="text-sm font-bold opacity-40">g/L</span>
+                                        </div>
                                         <span className="text-[10px] font-bold opacity-20 uppercase">Moyenne</span>
                                     </div>
                                 </div>
@@ -195,7 +198,7 @@ export default function HistoryPage() {
                                                 </div>
                                                 <div className="h-10 w-[1px] bg-white/10" />
                                                 <div>
-                                                    <div className="text-2xl font-black italic leading-none mb-1">{item.val} <span className="text-[10px] opacity-20 not-italic">g/L</span></div>
+                                                    <div className="text-2xl font-black italic leading-none mb-1">{Number(item.val).toFixed(2)} <span className="text-[10px] opacity-20 not-italic">g/L</span></div>
                                                     <div className="text-[8px] font-bold text-white/20 uppercase tracking-[0.2em]">{item.note}</div>
                                                 </div>
                                             </div>
