@@ -120,6 +120,7 @@ namespace DiaCareKids.Api.Controllers
             user.OrderNumber = request.OrderNumber;
             user.Gender = request.Gender;
             user.DateOfBirth = request.DateOfBirth;
+            user.FileNumber = request.FileNumber;
 
             await _usersService.UpdateAsync(id, user);
             return NoContent();

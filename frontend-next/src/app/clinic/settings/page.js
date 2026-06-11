@@ -87,6 +87,26 @@ export default function ClinicSettings() {
         }
     };
 
+    const handleUserChange = (field, value) => {
+        setUser(prev => prev ? { ...prev, [field]: value } : null);
+    };
+
+    const handleProfileUpdate = async () => {
+        if (!user) return;
+        try {
+            setLoading(true);
+            const { fullName, email, contactNumber, fileNumber, address } = user;
+            await api.put(`/Users/${user.id}`, { fullName, email, contactNumber, fileNumber, address });
+            localStorage.setItem('user', JSON.stringify(user));
+            alert("Informations mises à jour avec succès !");
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la mise à jour.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleChangePassword = async () => {
         if (!currentPassword || !newPassword) {
             alert("Veuillez remplir tous les champs.");
@@ -125,8 +145,8 @@ export default function ClinicSettings() {
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Personnalisez votre espace et gérez la sécurité</p>
                     </div>
 
-                    <button className="flex items-center gap-3 px-10 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] shadow-[0_20px_40px_rgba(8,131,149,0.3)] hover:scale-105 active:scale-95 transition-all">
-                        <Save size={18} /> Sauvegarder
+                    <button onClick={handleProfileUpdate} disabled={loading} className="flex items-center gap-3 px-10 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] shadow-[0_20px_40px_rgba(8,131,149,0.3)] hover:scale-105 active:scale-95 transition-all disabled:opacity-50">
+                        <Save size={18} /> {loading ? "Sauvegarde..." : "Sauvegarder"}
                     </button>
                 </div>
 
@@ -152,12 +172,12 @@ export default function ClinicSettings() {
                                 </label>
                             </div>
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <InputField label="Nom de la Clinique" placeholder="EX: CLINIQUE EL AMEL" icon={Building2} value={user?.fullName || "Clinique Centrale Tunis"} />
-                                <InputField label="Email de Contact" placeholder="EX: CONTACT@CLINIC.TN" icon={Mail} value={user?.email || "admin@clinic-central.tn"} />
-                                <InputField label="Téléphone" placeholder="+216 -- --- ---" icon={Phone} value={user?.contactNumber || "+216 71 000 000"} />
-                                <InputField label="Site Web" placeholder="WWW.VOTRESITE.TN" icon={Globe} value={user?.fileNumber || "www.clinic-tunis.tn"} />
+                                <InputField label="Nom de la Clinique" placeholder="EX: CLINIQUE EL AMEL" icon={Building2} value={user?.fullName || ""} onChange={(val) => handleUserChange('fullName', val)} />
+                                <InputField label="Email de Contact" placeholder="EX: CONTACT@CLINIC.TN" icon={Mail} value={user?.email || ""} onChange={(val) => handleUserChange('email', val)} />
+                                <InputField label="Téléphone" placeholder="+216 -- --- ---" icon={Phone} value={user?.contactNumber || ""} onChange={(val) => handleUserChange('contactNumber', val)} />
+                                <InputField label="Site Web" placeholder="WWW.VOTRESITE.TN" icon={Globe} value={user?.fileNumber || ""} onChange={(val) => handleUserChange('fileNumber', val)} />
                                 <div className="md:col-span-2">
-                                    <InputField label="Adresse Physique" placeholder="RUE DE LA MÉDECINE, TUNIS" icon={MapPin} value="12 Avenue Habib Bourguiba, 1000 Tunis" />
+                                    <InputField label="Adresse Physique" placeholder="RUE DE LA MÉDECINE, TUNIS" icon={MapPin} value={user?.address || ""} onChange={(val) => handleUserChange('address', val)} />
                                 </div>
                             </div>
                         </div>
@@ -192,28 +212,7 @@ export default function ClinicSettings() {
                                 </button>
                             </div>
 
-                            <div className="space-y-8 p-8 bg-white/2 rounded-[32px] border border-white/5">
-                                <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3">
-                                    <Smartphone size={18} className="text-[#088395]" /> 2FA Authentication
-                                </h3>
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Double Authentification</span>
-                                        <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Renforce la sécurité lors de la connexion</span>
-                                    </div>
-                                    <div className="w-14 h-8 bg-[#088395] rounded-full p-1 flex justify-end cursor-pointer">
-                                        <div className="w-6 h-6 bg-white rounded-full shadow-lg" />
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-4 text-white/40 text-[9px] font-bold uppercase tracking-widest cursor-pointer hover:text-white transition-colors">
-                                        <Key size={14} /> Gérer les clés de sécurité physique
-                                    </div>
-                                    <div className="flex items-center gap-4 text-white/40 text-[9px] font-bold uppercase tracking-widest cursor-pointer hover:text-white transition-colors">
-                                        <HistoryIcon size={14} /> Voir l'historique des connexions
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </SettingsSection>
 
@@ -226,21 +225,7 @@ export default function ClinicSettings() {
                         </div>
                     </SettingsSection>
 
-                    {/* Dangerous Zone */}
-                    <div className="p-10 bg-accent/5 border border-accent/20 rounded-[40px] flex flex-col items-center text-center space-y-6">
-                        <div className="w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center text-accent">
-                            <Trash2 size={32} />
-                        </div>
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-black uppercase tracking-tighter text-white italic">Zone de Danger</h2>
-                            <p className="text-sm font-medium text-white/30 max-w-lg mx-auto leading-relaxed">
-                                La suppression de votre compte clinique est irréversible. Toutes les données des médecins et des patients seront définitivement effacées conformément au RGPD.
-                            </p>
-                        </div>
-                        <button className="px-10 py-5 bg-accent/20 hover:bg-accent text-accent hover:text-white border border-accent/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all">
-                            Désactiver le Compte Clinique
-                        </button>
-                    </div>
+
 
                 </div>
 
