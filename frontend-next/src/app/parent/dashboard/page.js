@@ -145,7 +145,7 @@ export default function ParentDashboard() {
                                 Enfants enregistrés
                             </div>
                         </div>
-                        <Link href="/parent/children" className="p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all">
+                        <Link href="/parent/heroes" className="p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all">
                             <ChevronRight size={20} className="text-white/40" />
                         </Link>
                     </div>
@@ -188,15 +188,25 @@ export default function ParentDashboard() {
                     </div>
                 </div>
 
-                {/* Bottom CTA for adding measure */}
+                {/* Bottom CTA for adding measure or hero */}
                 <div className="pt-4">
-                    <Link
-                        href="/parent/add"
-                        className="w-full py-6 bg-white text-[#088395] rounded-[28px] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all group"
-                    >
-                        <PlusCircle size={20} className="group-hover:rotate-90 transition-transform" />
-                        {t('parent.addMeasure')}
-                    </Link>
+                    {kidsUsed > 0 ? (
+                        <Link
+                            href="/parent/add"
+                            className="w-full py-6 bg-white text-[#088395] rounded-[28px] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all group"
+                        >
+                            <PlusCircle size={20} className="group-hover:rotate-90 transition-transform" />
+                            {t('parent.addMeasure')}
+                        </Link>
+                    ) : (
+                        <Link
+                            href="/parent/heroes"
+                            className="w-full py-6 bg-white text-[#088395] rounded-[28px] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all group"
+                        >
+                            <PlusCircle size={20} className="group-hover:rotate-90 transition-transform" />
+                            {t('parent.addHero')}
+                        </Link>
+                    )}
                 </div>
 
             </div>
