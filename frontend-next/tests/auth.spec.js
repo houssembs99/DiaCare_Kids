@@ -7,7 +7,7 @@ test.describe('Authentication Flow', () => {
     
     // Check for a known text in the auth page
     // Based on the code, there is an Activity icon and "DiaCare"
-    await expect(page.locator('h1')).toContainText(/DiaCare/i);
+    await expect(page.locator('h1')).toContainText(/Bon retour !/i);
   });
 
   test('should show error on wrong credentials', async ({ page }) => {

@@ -38,24 +38,53 @@ ChartJS.register(
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
-        doctorsCount: 128,
-        parentsCount: 1540,
-        patientsCount: 524,
-        clinicsCount: 12,
-        revenue: "15.2k",
-        activeSubs: 84
+        doctorsCount: 0,
+        parentsCount: 0,
+        patientsCount: 0,
+        clinicsCount: 0,
+        revenue: "0 DT",
+        activeSubs: 0
     });
+    const [recentUsers, setRecentUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchData = async () => {
             try {
+                // Fetch stats summary
                 const res = await api.get('/stats/summary');
-                if (res.data) setStats(prev => ({ ...prev, ...res.data }));
+                if (res.data) {
+                    // Handle both PascalCase (from .NET) and camelCase
+                    const d = res.data;
+                    setStats({
+                        doctorsCount: d.DoctorsCount ?? d.doctorsCount ?? 0,
+                        parentsCount: d.ParentsCount ?? d.parentsCount ?? 0,
+                        patientsCount: d.PatientsCount ?? d.patientsCount ?? 0,
+                        clinicsCount: d.ClinicsCount ?? d.clinicsCount ?? 0,
+                        revenue: d.Revenue ?? d.revenue ?? '0 DT',
+                        activeSubs: d.ActiveSubs ?? d.activeSubs ?? 0,
+                    });
+                }
             } catch (err) {
                 console.error("Error fetching stats", err);
             }
+
+            try {
+                // Fetch recent users for activity table
+                const usersRes = await api.get('/users');
+                if (usersRes.data) {
+                    const sorted = [...usersRes.data]
+                        .sort((a, b) => new Date(b.CreatedAt ?? b.createdAt ?? 0) - new Date(a.CreatedAt ?? a.createdAt ?? 0))
+                        .slice(0, 8);
+                    setRecentUsers(sorted);
+                }
+            } catch (err) {
+                console.error("Error fetching users", err);
+            }
+
+            setLoading(false);
         };
-        fetchStats();
+        fetchData();
     }, []);
 
     // Line Chart Data
@@ -119,12 +148,12 @@ export default function AdminDashboard() {
 
                 {/* Stats Cards Grid - 3 Columns as per spec SECTION 3.1 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <AdminStatCard title="Cliniques" value={stats.clinicsCount} icon={<Building2 />} tendency="+2" />
-                    <AdminStatCard title="Médecins" value={stats.doctorsCount} icon={<Users />} tendency="+12" />
-                    <AdminStatCard title="Patients" value={stats.patientsCount} icon={<Globe />} tendency="+45" />
-                    <AdminStatCard title="Revenus Mensuels" value={`$${stats.revenue}`} icon={<CreditCard />} tendency="+3.4%" isCurrency />
-                    <AdminStatCard title="Abonnements Actifs" value={stats.activeSubs} icon={<Zap />} tendency="+8" />
-                    <AdminStatCard title="Alertes Critiques" value="0" icon={<Activity />} tendency="Safe" isAlert />
+                    <AdminStatCard title="Cliniques" value={stats.clinicsCount} icon={<Building2 />} />
+                    <AdminStatCard title="Médecins" value={stats.doctorsCount} icon={<Users />} />
+                    <AdminStatCard title="Patients" value={stats.patientsCount} icon={<Globe />} />
+                    <AdminStatCard title="Revenus Mensuels" value={stats.revenue} icon={<CreditCard />} />
+                    <AdminStatCard title="Abonnements Actifs" value={stats.activeSubs} icon={<Zap />} />
+                    <AdminStatCard title="Alertes Critiques" value="0" icon={<Activity />} isAlert />
                 </div>
 
                 {/* Charts Area - SECTION 3.2 */}
@@ -190,6 +219,33 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5 font-bold">
+                                {loading ? (
+                                    <tr><td colSpan={5} className="px-10 py-8 text-center text-white/30 text-xs">Chargement...</td></tr>
+                                ) : recentUsers.length === 0 ? (
+                                    <tr><td colSpan={5} className="px-10 py-8 text-center text-white/30 text-xs">Aucune activité récente</td></tr>
+                                ) : (
+                                    recentUsers.map((user, i) => {
+                                        const role = user.Role ?? user.role ?? 'Inconnu';
+                                        const name = user.FullName ?? user.fullName ?? user.Email ?? user.email ?? 'Utilisateur';
+                                        const status = user.Status ?? user.status ?? 'Actif';
+                                        const createdAt = user.CreatedAt ?? user.createdAt;
+                                        const dateStr = createdAt
+                                            ? new Date(createdAt).toLocaleDateString('fr-FR')
+                                            : 'N/A';
+                                        const isActive = status === 'Actif';
+                                        return (
+                                            <ActivityRow
+                                                key={user.Id ?? user.id ?? i}
+                                                date={dateStr}
+                                                action="Inscription"
+                                                user={name}
+                                                type={role}
+                                                status={isActive ? 'Actif' : status}
+                                                color={isActive ? 'text-success' : 'text-white/40'}
+                                            />
+                                        );
+                                    })
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -200,7 +256,7 @@ export default function AdminDashboard() {
     );
 }
 
-const AdminStatCard = ({ title, value, icon, tendency, isCurrency, isAlert }) => (
+const AdminStatCard = ({ title, value, icon, isAlert }) => (
     <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] p-10 group hover:border-white/30 transition-all relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 text-white/5 group-hover:scale-110 transition-transform duration-700">{icon}</div>
         <div className={cn(
@@ -210,13 +266,9 @@ const AdminStatCard = ({ title, value, icon, tendency, isCurrency, isAlert }) =>
             {React.cloneElement(icon, { size: 28, strokeWidth: 2.5 })}
         </div>
         <div className="space-y-1">
-            <div className="text-5xl font-black tracking-tighter leading-none">{isCurrency ? value : value}</div>
-            <div className="flex justify-between items-center pt-2">
+            <div className="text-5xl font-black tracking-tighter leading-none">{value}</div>
+            <div className="pt-2">
                 <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">{title}</div>
-                <span className={cn(
-                    "text-[10px] font-black",
-                    isAlert ? "text-success" : tendency.includes('+') ? "text-success" : "text-white/40"
-                )}>{tendency}</span>
             </div>
         </div>
     </div>

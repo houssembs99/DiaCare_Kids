@@ -30,7 +30,7 @@ namespace DiaCareKids.Tests
                 new User { Id = "4", Status = "Actif", Role = "Clinique", Subscription = null }
             };
 
-            _mockUsersService.Setup(s => s.GetByRoleAsync("Clinique")).ReturnsAsync(clinics);
+            _mockUsersService.Setup(s => s.GetAsync()).ReturnsAsync(clinics);
 
             // Act
             var result = await _controller.Get();

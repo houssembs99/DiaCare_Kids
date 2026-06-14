@@ -10,9 +10,9 @@ namespace DiaCareKids.Api.Controllers
     [Authorize]
     public class ClinicsController : ControllerBase
     {
-        private readonly UsersService _usersService;
+        private readonly IUsersService _usersService;
 
-        public ClinicsController(UsersService usersService)
+        public ClinicsController(IUsersService usersService)
         {
             _usersService = usersService;
         }
