@@ -67,5 +67,42 @@ namespace DiaCareKids.Api.Controllers
                 ActiveSubs = activeSubs
             });
         }
+
+        [HttpGet("charts")]
+        public async Task<ActionResult> GetCharts()
+        {
+            var transactions = await _transactionsService.GetAsync();
+            var allUsers = await _usersService.GetAsync();
+
+            // Build last 6 months labels
+            var months = Enumerable.Range(0, 6)
+                .Select(i => DateTime.UtcNow.AddMonths(-5 + i))
+                .ToList();
+
+            // Monthly revenue (sum of transaction amounts per month)
+            var monthlyRevenue = months.Select(m =>
+                transactions
+                    .Where(t => t.Date.Year == m.Year && t.Date.Month == m.Month)
+                    .Sum(t => t.Amount)
+            ).ToList();
+
+            // Monthly active subscriptions count (users with active sub created up to that month)
+            var monthlySubs = months.Select(m =>
+                allUsers.Count(u =>
+                    u.Subscription != null &&
+                    u.Subscription.IsActive == true &&
+                    (u.Role == "Clinique" || u.Role == "Parent" || u.Role == "Agent Clinique")
+                )
+            ).ToList();
+
+            var labels = months.Select(m => m.ToString("MMM", new System.Globalization.CultureInfo("fr-FR"))).ToList();
+
+            return Ok(new
+            {
+                Labels = labels,
+                MonthlyRevenue = monthlyRevenue,
+                MonthlySubs = monthlySubs
+            });
+        }
     }
 }

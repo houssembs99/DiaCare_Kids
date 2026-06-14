@@ -46,6 +46,11 @@ export default function AdminDashboard() {
         activeSubs: 0
     });
     const [recentUsers, setRecentUsers] = useState([]);
+    const [chartData, setChartData] = useState({
+        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+        monthlySubs: [0, 0, 0, 0, 0, 0],
+        monthlyRevenue: [0, 0, 0, 0, 0, 0],
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -82,17 +87,32 @@ export default function AdminDashboard() {
                 console.error("Error fetching users", err);
             }
 
+            try {
+                // Fetch chart data
+                const chartRes = await api.get('/stats/charts');
+                if (chartRes.data) {
+                    const c = chartRes.data;
+                    setChartData({
+                        labels: c.Labels ?? c.labels ?? [],
+                        monthlySubs: c.MonthlySubs ?? c.monthlySubs ?? [],
+                        monthlyRevenue: c.MonthlyRevenue ?? c.monthlyRevenue ?? [],
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching chart data", err);
+            }
+
             setLoading(false);
         };
         fetchData();
     }, []);
 
-    // Line Chart Data
+    // Line Chart Data — Abonnements actifs (real data)
     const lineData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: chartData.labels,
         datasets: [{
             label: 'Abonnements',
-            data: [30, 45, 57, 75, 84, 95],
+            data: chartData.monthlySubs,
             fill: false,
             borderColor: '#1E88E5',
             tension: 0.4,
@@ -100,12 +120,12 @@ export default function AdminDashboard() {
         }]
     };
 
-    // Bar Chart Data
+    // Bar Chart Data — Revenus mensuels (real data)
     const barData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: chartData.labels,
         datasets: [{
-            label: 'Revenus ($)',
-            data: [12000, 19000, 15000, 22000, 24000, 28000],
+            label: 'Revenus (DT)',
+            data: chartData.monthlyRevenue,
             backgroundColor: '#FF7043',
             borderRadius: 8,
         }]
@@ -189,15 +209,6 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-[#1E88E5] to-[#1565C0] rounded-[32px] p-10 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 text-white/10 group-hover:scale-110 transition-transform duration-1000"><Database size={100} /></div>
-                            <div className="relative z-10 space-y-6">
-                                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center border border-white/30"><ShieldCheck size={28} /></div>
-                                <h4 className="text-xl font-black uppercase tracking-tighter italic leading-none">Sécurité Système</h4>
-                                <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest leading-relaxed">Dernière sauvegarde effectuée il y a 2 heures.</p>
-                                <button className="w-full py-4 bg-white text-[#1E88E5] font-extrabold rounded-2xl text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-transform">Audit Complet</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
