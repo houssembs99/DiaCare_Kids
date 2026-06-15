@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useLanguage } from '@/lib/LanguageContext';
 import { createXRStore } from '@react-three/xr';
@@ -22,6 +23,7 @@ const ARScene = dynamic(() => import('@/components/AR/ARScene'), {
 
 export default function ARPage() {
   const { t, lang } = useLanguage();
+  const router = useRouter();
   
   // États Partagés
   const [viewMode, setViewMode] = useState('selection'); // 'selection', 'magie', 'ar'
@@ -235,7 +237,7 @@ export default function ARPage() {
         <div className="pointer-events-auto">
           <ModeSelection 
             onSelect={(mode) => mode === 'ar' ? handleLaunchAR() : setViewMode('magie')} 
-            onBack={() => window.history.back()} 
+            onBack={() => router.back()} 
           />
         </div>
       )}
