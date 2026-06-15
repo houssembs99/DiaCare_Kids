@@ -54,22 +54,16 @@ export default function ARPage() {
 
   useEffect(() => {
     if (isMounted && !store) {
-      // frameBufferScaleFactor : force le rendu WebXR à la résolution native du device.
-      // Par défaut WebXR utilise ~0.5x ce qui cause le rendu pixelisé.
-      // On utilise devicePixelRatio (ex: 3 sur un Galaxy S) pour une qualité maximale.
-      // Clamped à 2.5 pour éviter de planter les devices low-end.
-      const dprScale = typeof window !== 'undefined'
-        ? Math.min(window.devicePixelRatio || 1, 2.5)
-        : 1;
-
       setStore(createXRStore({
         domOverlay: document.getElementById('ar-game-container'),
         referenceSpace: 'local',
-        foveation: 0,              // Désactive le flou périphérique WebXR
-        frameBufferScaleFactor: dprScale, // ← Fix rendu pixelisé AR
+        foveation: 0, // Désactive le flou périphérique WebXR
+        // Note: la qualité du framebuffer est gérée via gl.xr.setFramebufferScaleFactor()
+        // dans le composant XRQualitySetup (ARScene.jsx) — c'est l'API officielle Three.js.
       }));
     }
   }, [isMounted, store]);
+
 
   const handleLaunchAR = async () => {
     if (!store) return;
