@@ -15,18 +15,34 @@ export function Model({ animationName = "greeting", ...props }) {
     if (!scene) return null;
     const clonedScene = SkeletonUtils.clone(scene);
     
-    // WebXR Fix: Désactiver le frustum culling car les SkinnedMeshes ont souvent
-    // des bounding boxes incorrectes et disparaissent quand on bouge la caméra en AR.
     clonedScene.traverse((node) => {
       if (node.isMesh) {
+        // Fix frustum culling : les SkinnedMeshes ont des bounding boxes incorrectes
+        // qui les font disparaître quand on bouge la caméra en AR.
         node.frustumCulled = false;
         node.castShadow = true;
         node.receiveShadow = true;
+
+        // Fix color space : les textures d'un GLB sont en sRGB.
+        // Sans ça, Three.js les traite comme linéaires → visage/peau faux en WebXR.
+        const mats = Array.isArray(node.material) ? node.material : [node.material];
+        mats.forEach((mat) => {
+          if (!mat) return;
+          if (mat.map) {
+            mat.map.colorSpace = THREE.SRGBColorSpace;
+            mat.map.needsUpdate = true;
+          }
+          if (mat.emissiveMap) {
+            mat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+            mat.emissiveMap.needsUpdate = true;
+          }
+        });
       }
     });
     
     return clonedScene;
   }, [scene])
+
 
   const { nodes, materials } = useGraph(clone || new THREE.Group())
   const { actions } = useAnimations(animations, group)
