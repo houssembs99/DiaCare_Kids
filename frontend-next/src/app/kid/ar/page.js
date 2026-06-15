@@ -237,7 +237,7 @@ export default function ARPage() {
         <div className="pointer-events-auto">
           <ModeSelection 
             onSelect={(mode) => mode === 'ar' ? handleLaunchAR() : setViewMode('magie')} 
-            onBack={() => router.back()} 
+            onBack={() => router.push('/kid/dashboard')} 
           />
         </div>
       )}
