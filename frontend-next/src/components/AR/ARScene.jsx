@@ -11,7 +11,19 @@ const ARScene = ({ store, animationName = "Idle", modelScale = 1.3, modelRotatio
 
   return (
     <div className="w-full h-full relative">
-      <Canvas dpr={[1, 2]} gl={{ antialias: true }} shadows camera={{ position: [0, 1.5, 3], fov: 45 }} className="bg-transparent">
+      <Canvas
+        dpr={[1, typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 3) : 2]}
+        gl={{
+          antialias: true,
+          powerPreference: "high-performance", // Demande le GPU dédié (pas l'intégré)
+          precision: "highp",                  // Précision maximale des shaders
+          alpha: true,                         // Fond transparent pour le mode AR
+          preserveDrawingBuffer: false,        // Perf : désactive la sauvegarde du buffer
+        }}
+        shadows
+        camera={{ position: [0, 1.5, 3], fov: 45 }}
+        className="bg-transparent"
+      >
         <XR store={store}>
           <Suspense fallback={null}>
             <ambientLight intensity={3.5} />
