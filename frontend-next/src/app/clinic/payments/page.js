@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
-    Wallet, Download, Search, Filter,
-    FileText, CheckCircle2, Clock,
-    ArrowUpRight, CreditCard, ExternalLink,
-    ChevronLeft, ChevronRight, User as UserIcon
+    Wallet, Download, Search, FileText, CheckCircle2,
+    ChevronLeft, ChevronRight, User as UserIcon,
+    Users, CreditCard, Clock, CheckCircle, XCircle,
+    ArrowUpRight, Receipt, Printer, Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -14,15 +14,20 @@ import api from '@/lib/api';
 import InvoiceGenerator from '@/components/InvoiceGenerator';
 
 export default function ClinicPayments() {
-    const [payments, setPayments] = useState([]);
+    const [activeTab, setActiveTab] = useState('revenue'); // 'my_bills' or 'revenue'
+    const [myTransactions, setMyTransactions] = useState([]); // Factures DiaCare
+    const [patientSubscribers, setPatientSubscribers] = useState([]); // Revenus Patients
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [clinicInfo, setClinicInfo] = useState(null);
+    const [packages, setPackages] = useState([]);
+    const [parents, setParents] = useState([]);
+
+    // Invoice Generator State
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [showInvoice, setShowInvoice] = useState(false);
-    const [clinicInfo, setClinicInfo] = useState(null);
-
-    const [parents, setParents] = useState([]);
-    const [packages, setPackages] = useState([]);
+    
+    // New Manual Invoice Modal state
     const [isNewInvoiceModalOpen, setIsNewInvoiceModalOpen] = useState(false);
     const [selectedParentId, setSelectedParentId] = useState("");
     const [newInvoiceData, setNewInvoiceData] = useState({ description: "Abonnement", amount: 0, currency: "eur", planId: "" });
@@ -32,14 +37,21 @@ export default function ClinicPayments() {
         if (storedUser) {
             const parsed = JSON.parse(storedUser);
             setClinicInfo(parsed);
-            // Pour la clinique, on récupère ses propres transactions ET ses patients et ses packs
+            
             Promise.all([
                 api.get(`/Transactions/clinic/${parsed.id}`),
                 api.get('/ClinicManagement/patients'),
                 api.get('/ClinicPackages')
             ]).then(([txRes, parentsRes, pkgRes]) => {
-                setPayments(txRes.data);
-                // API '/ClinicManagement/patients' returns { parent, children }. Extraire uniquement les parents:
+                const allTrans = txRes.data;
+                
+                // Separer: Factures payés à DiaCare vs Revenus générés par la clinique
+                const myBills = allTrans.filter(t => t.userId === parsed.id && !t.paymentIntentId?.startsWith('manual_'));
+                const myRevenue = allTrans.filter(t => t.userId !== parsed.id || t.paymentIntentId?.startsWith('manual_'));
+                
+                setMyTransactions(myBills);
+                setPatientSubscribers(myRevenue);
+                
                 setParents(parentsRes.data.map(p => p.parent));
                 setPackages(pkgRes.data);
                 setIsLoading(false);
@@ -50,165 +62,242 @@ export default function ClinicPayments() {
         }
     }, []);
 
-    const filteredPayments = payments.filter(p => 
+    const handleOpenInvoice = (user) => {
+        setSelectedInvoice(user);
+        setShowInvoice(true);
+    };
+
+    const filteredMyBills = myTransactions.filter(p => 
         p.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.userFullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.planName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.role?.toLowerCase().includes(searchQuery.toLowerCase())
+        p.planName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const totalAmount = payments.reduce((acc, curr) => acc + curr.amount, 0);
+    const filteredRevenue = patientSubscribers.filter(t => 
+        (t.userFullName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (t.planName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (t.role || '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <DashboardLayout role="Clinique">
             <div className="space-y-12 pb-10 text-white">
 
-                {/* Header SECTION 8.1 */}
+                {/* Header SECTION */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                            <Wallet size={24} className="text-[#088395]" />
-                            <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none uppercase italic">
-                                Historique <span className="text-white/40">Paiements</span>
-                            </h1>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-[#088395] rounded-2xl flex items-center justify-center shadow-xl">
+                                <Wallet size={24} className="text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-none uppercase italic">
+                                    Historique <span className="text-white/40">Paiements</span>
+                                </h1>
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] mt-2">Suivi de vos revenus et de vos factures DiaCare</p>
+                            </div>
                         </div>
-                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Consultez les paiements de la clinique, de vos médecins et de vos patients</p>
                     </div>
 
-                    <div className="flex gap-4">
-                        <button 
-                            onClick={() => setIsNewInvoiceModalOpen(true)}
-                            className="flex items-center gap-3 px-8 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-[0_10px_30px_rgba(8,131,149,0.3)]"
-                        >
-                            <FileText size={18} />
-                            Nouvelle Facture
-                        </button>
-                        <button className="flex items-center gap-3 px-8 py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all">
-                            <Download size={18} />
-                            Exporter
-                        </button>
+                    <div className="flex p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
+                        {[
+                            { id: 'revenue', label: 'Revenus Patients', icon: <Users size={16} /> },
+                            { id: 'my_bills', label: 'Mes Factures DiaCare', icon: <Receipt size={16} /> }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => { setActiveTab(tab.id); setSearchQuery(''); }}
+                                className={cn(
+                                    "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-all",
+                                    activeTab === tab.id ? "bg-[#088395] text-white shadow-lg" : "text-white/40 hover:text-white"
+                                )}
+                            >
+                                {tab.icon} {tab.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
                 {/* Filters Row */}
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-hover:text-[#088395] transition-colors" size={20} />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#088395] transition-colors" size={20} />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="RECHERCHER PAR NOM, ROLE, FORFAIT OU ID..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] transition-all placeholder:text-white/20"
+                            placeholder={activeTab === 'revenue' ? "RECHERCHER UN PATIENT PAR NOM OU ROLE..." : "RECHERCHER PAR ID TRANSACTION..."}
+                            className="w-full bg-white/5 border border-white/10 rounded-3xl py-5 pl-16 pr-6 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-[#088395] transition-all placeholder:text-white/20"
                         />
                     </div>
+                    {activeTab === 'revenue' && (
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={() => setIsNewInvoiceModalOpen(true)}
+                                className="flex items-center gap-3 px-8 py-5 bg-[#088395] hover:bg-[#066a7a] text-white rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-[0_10px_30px_rgba(8,131,149,0.3)]"
+                            >
+                                <FileText size={18} />
+                                Nouvelle Facture
+                            </button>
+                        </div>
+                    )}
                 </div>
 
-                {/* Payments Table SECTION 8.1 */}
-                <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] overflow-hidden shadow-2xl">
+                <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] overflow-hidden shadow-2xl relative">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-white/5">
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Utilisateur</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Rôle</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Forfait</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Date</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Montant</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Statut</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/20 text-right">Facture</th>
+                                <tr className="border-b border-white/5 bg-white/2">
+                                    {activeTab === 'revenue' ? (
+                                        <>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Client</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Pack Souscrit</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Date Paiement</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Montant</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Statut</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-right">Facture</th>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Forfait</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Date</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Montant</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Statut</th>
+                                            <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-right">Détails</th>
+                                        </>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {isLoading ? (
-                                    <tr>
-                                        <td colSpan="7" className="px-10 py-16 text-center text-white/40 font-bold uppercase tracking-widest text-xs">
-                                            Chargement des transactions...
-                                        </td>
-                                    </tr>
-                                ) : filteredPayments.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="7" className="px-10 py-16 text-center text-white/40 font-bold uppercase tracking-widest text-xs">
-                                            Aucune transaction trouvée.
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan="6" className="px-10 py-20 text-center text-white/20 font-black uppercase tracking-widest text-xs italic">Chargement des données sécurisées...</td></tr>
+                                ) : (activeTab === 'revenue' ? filteredRevenue : filteredMyBills).length === 0 ? (
+                                    <tr><td colSpan="6" className="px-10 py-20 text-center text-white/20 font-black uppercase tracking-widest text-xs italic">Aucune donnée correspondante.</td></tr>
                                 ) : (
-                                    filteredPayments.map((pay, idx) => (
+                                    (activeTab === 'revenue' ? filteredRevenue : filteredMyBills).map((item, idx) => (
                                         <motion.tr
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
+                                            key={item.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: idx * 0.05 }}
-                                            key={pay.id}
-                                            className="group hover:bg-white/5 transition-colors"
+                                            className="group hover:bg-white/[0.02] transition-all"
                                         >
-                                            <td className="px-10 py-8">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-white/10 text-white/60 flex items-center justify-center font-bold text-xs">
-                                                        <UserIcon size={14} />
-                                                    </div>
-                                                    <span className="text-sm font-black uppercase tracking-tighter leading-none text-white">{pay.userFullName || "Anonyme"}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <span className={cn(
-                                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                                                    pay.role === 'Clinique' ? "bg-accent/10 border-accent/20 text-accent" :
-                                                    pay.role === 'Medecin' ? "bg-[#1E88E5]/10 border-[#1E88E5]/20 text-[#1E88E5]" :
-                                                    "bg-success/10 border-success/20 text-success"
-                                                )}>
-                                                    {pay.role || "Utilisateur"}
-                                                </span>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <span className="text-xs font-bold text-white/80">{pay.planName}</span>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <span className="text-xs font-bold text-white/40">{new Date(pay.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <div className="text-lg font-black italic tracking-tighter text-[#088395]">
-                                                    {(pay.amount / 100).toFixed(2)} €
-                                                </div>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <div className="flex items-center gap-2 px-4 py-2 bg-success/10 border border-success/20 rounded-xl text-success text-[9px] font-black uppercase tracking-widest w-fit">
-                                                    <CheckCircle2 size={12} />
-                                                    {pay.status}
-                                                </div>
-                                            </td>
-                                            <td className="px-10 py-8 text-right">
-                                                <button 
-                                                    onClick={() => { setSelectedInvoice(pay); setShowInvoice(true); }}
-                                                    className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-2xl text-white/40 transition-all group/btn shadow-xl border border-white/5"
-                                                    title="Voir et Télécharger la Facture"
-                                                >
-                                                    <FileText size={18} className="group-hover/btn:scale-110 transition-transform" />
-                                                </button>
-                                            </td>
+                                            {activeTab === 'revenue' ? (
+                                                <>
+                                                    <td className="px-10 py-8">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 bg-[#088395]/10 rounded-xl flex items-center justify-center font-black text-[#088395]">
+                                                                {(item.userFullName?.charAt(0) || '?')}
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-sm font-black uppercase italic tracking-tight">{item.userFullName || 'Patient'}</div>
+                                                                <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">
+                                                                    {item.role || 'Patient'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-10 py-8">
+                                                        <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 rounded-lg border border-white/5">
+                                                            {item.planName || 'Standard'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-10 py-8 text-center text-xs font-bold text-white/40">
+                                                        {item.date ? new Date(item.date).toLocaleDateString('fr-FR') : '—'}
+                                                    </td>
+                                                    <td className="px-10 py-8 text-center">
+                                                        <div className="text-lg font-black italic tracking-tighter text-[#088395]">
+                                                            {((item.amount || 0) / 100).toFixed(2)} DT
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-10 py-8">
+                                                        <div className="flex justify-center">
+                                                            <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-[9px] font-black uppercase tracking-widest">
+                                                                <CheckCircle size={12} /> {item.status || 'Payé'}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-10 py-8 text-right">
+                                                        <button 
+                                                            onClick={() => handleOpenInvoice({ id: item.userId, fullName: item.userFullName || 'Patient', email: item.userEmail || '', role: item.role, subscription: { planType: item.planName || 'Standard', isActive: true, startDate: item.date }, amount: item.amount })}
+                                                            className="p-4 bg-white/5 hover:bg-white hover:text-[#0b1b2b] rounded-2xl text-[#088395] transition-all border border-white/10 group-hover:scale-105" 
+                                                            title="Générer et envoyer la facture"
+                                                        >
+                                                            <Receipt size={18} />
+                                                        </button>
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <td className="px-10 py-8">
+                                                        <span className="text-sm font-black uppercase italic text-white">{item.planName}</span>
+                                                    </td>
+                                                    <td className="px-10 py-8">
+                                                        <span className="text-xs font-bold text-white/40">{new Date(item.date).toLocaleDateString('fr-FR')}</span>
+                                                    </td>
+                                                    <td className="px-10 py-8">
+                                                        <div className="text-lg font-black italic tracking-tighter text-[#1E88E5]">
+                                                            {(item.amount / 100).toFixed(2)} €
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-10 py-8">
+                                                        <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-[9px] font-black uppercase tracking-widest w-fit">
+                                                            <CheckCircle2 size={12} /> Payée
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-10 py-8 text-right">
+                                                        <button 
+                                                            onClick={() => handleOpenInvoice({ id: clinicInfo?.id, fullName: clinicInfo?.fullName, role: 'Clinique', subscription: { planType: item.planName || 'Standard', isActive: true, startDate: item.date }, amount: item.amount, isSelfBill: true })}
+                                                            className="p-4 bg-white/5 hover:bg-white hover:text-[#0b1b2b] rounded-2xl text-white/20 transition-all border border-white/10 group-hover:scale-105"
+                                                            title="Télécharger ma facture DiaCare"
+                                                        >
+                                                            <Download size={18} />
+                                                        </button>
+                                                    </td>
+                                                </>
+                                            )}
                                         </motion.tr>
                                     ))
                                 )}
                             </tbody>
                         </table>
                     </div>
-
-                    {/* Footer */}
-                    <div className="p-10 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6">
-                        <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">
-                            Total Facturé: <span className="text-white">{(totalAmount / 100).toFixed(2)} €</span>
-                        </div>
-                        <div className="flex gap-2">
-                            <button className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-xl text-white/40 transition-all border border-white/10 group">
-                                <ChevronLeft size={20} className="group-active:-translate-x-1 transition-transform" />
-                            </button>
-                            <button className="w-12 h-12 rounded-xl text-[10px] font-black bg-[#088395] text-white border border-transparent shadow-[0_10px_30px_rgba(8,131,149,0.3)]">1</button>
-                            <button className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-xl text-white/40 transition-all border border-white/10 group">
-                                <ChevronRight size={20} className="group-active:translate-x-1 transition-transform" />
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
+                {/* Footer Stats */}
+                {!isLoading && (
+                    <div className={cn(
+                        "grid gap-6",
+                        activeTab === 'revenue' ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"
+                    )}>
+                        <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Total {activeTab === 'revenue' ? 'Transactions' : 'Dépenses'}</p>
+                            <div className="text-3xl font-black italic tracking-tight">
+                                {activeTab === 'revenue' ? patientSubscribers.length : `${(myTransactions.reduce((acc, c) => acc + c.amount, 0) / 100).toFixed(2)} €`}
+                            </div>
+                        </div>
+
+                        {activeTab === 'revenue' && (
+                            <>
+                                <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl border-l-[#088395] border-l-4">
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Revenu Total Encaissé</p>
+                                    <div className="text-3xl font-black italic tracking-tight text-[#088395]">
+                                        {(patientSubscribers.reduce((acc, t) => acc + (t.amount || 0), 0) / 100).toFixed(2)} DT
+                                    </div>
+                                </div>
+                                <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Ce Mois-ci</p>
+                                    <div className="text-3xl font-black italic tracking-tight text-green-400">
+                                        {(patientSubscribers.filter(t => {
+                                            const d = new Date(t.date);
+                                            const now = new Date();
+                                            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                                        }).reduce((acc, t) => acc + (t.amount || 0), 0) / 100).toFixed(2)} DT
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Modal Créer Facture Libre */}
@@ -235,7 +324,7 @@ export default function ClinicPayments() {
                                     email: targetParent?.email,
                                     role: 'Parent',
                                     planName: newInvoiceData.description,
-                                    amount: newInvoiceData.amount * 100, // as cents
+                                    amount: newInvoiceData.amount * 100,
                                     date: new Date().toISOString()
                                 });
                                 setIsNewInvoiceModalOpen(false);
@@ -315,7 +404,6 @@ export default function ClinicPayments() {
                                         >
                                             <option value="eur" className="bg-[#0b1b2b]">EUR (€)</option>
                                             <option value="usd" className="bg-[#0b1b2b]">USD ($)</option>
-                                            <option value="cad" className="bg-[#0b1b2b]">CAD ($)</option>
                                             <option value="tnd" className="bg-[#0b1b2b]">TND (DT)</option>
                                         </select>
                                     </div>
@@ -341,15 +429,15 @@ export default function ClinicPayments() {
                     </div>
                 )}
             </AnimatePresence>
-            
+
             {/* Modal Aperçu & Envoi (InvoiceGenerator) */}
             {selectedInvoice && (
                 <InvoiceGenerator
                     isOpen={showInvoice}
                     onClose={() => setShowInvoice(false)}
                     user={{ fullName: selectedInvoice.userFullName, role: selectedInvoice.role, email: selectedInvoice.email || selectedInvoice.userEmail || '', subscription: { isActive: true, planType: selectedInvoice.planName, startDate: selectedInvoice.date } }}
-                    plan={{ name: selectedInvoice.planName, description: `Abonnement ${selectedInvoice.planName}`, price: selectedInvoice.amount / 100, currency: 'eur' }}
-                    issuerInfo={clinicInfo ? { name: clinicInfo.fullName, address: clinicInfo.address || "Adresse de la clinique", phone: clinicInfo.contactNumber, email: clinicInfo.email, website: clinicInfo.fileNumber } : undefined}
+                    plan={{ name: selectedInvoice.planName, description: selectedInvoice.isSelfBill ? `Abonnement Plateforme DiaCare Kids` : `Prestation Clinique - ${selectedInvoice.planName}`, price: selectedInvoice.amount / 100, currency: selectedInvoice.isSelfBill ? '€' : 'DT' }}
+                    issuerInfo={selectedInvoice.isSelfBill ? undefined : (clinicInfo ? { name: clinicInfo.fullName, address: clinicInfo.address || "Adresse de la clinique", phone: clinicInfo.contactNumber, email: clinicInfo.email, website: clinicInfo.fileNumber } : undefined)}
                 />
             )}
         </DashboardLayout>
