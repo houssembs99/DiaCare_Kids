@@ -14,6 +14,17 @@ import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 
+const getRolePath = (roleName) => {
+    const mapping = {
+        'Medecin': 'doctor',
+        'Clinique': 'clinic',
+        'Admin': 'admin',
+        'Parent': 'parent',
+        'Enfant': 'kid'
+    };
+    return mapping[roleName] || (roleName ? roleName.toLowerCase() : 'auth');
+};
+
 const DashboardLayout = ({ children, role = "Utilisateur" }) => {
     const { t, lang } = useLanguage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,6 +41,15 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const parsed = JSON.parse(storedUser);
+
+            // SECURITY FIX: User role based access control validation
+            if (role !== "Utilisateur" && parsed.role !== role && parsed.role !== "Admin") {
+                // Not authorized for this route, redirect to their proper dashboard
+                const correctPath = getRolePath(parsed.role);
+                router.push(`/${correctPath}/dashboard`);
+                return;
+            }
+
             setUser(parsed);
 
             // Fetch full user profile
@@ -50,23 +70,12 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         const handleToggleSidebar = () => setSidebarOpen(true);
         window.addEventListener('toggle-sidebar', handleToggleSidebar);
         return () => window.removeEventListener('toggle-sidebar', handleToggleSidebar);
-    }, [router]);
+    }, [router, role]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         router.push('/auth');
-    };
-
-    const getRolePath = (roleName) => {
-        const mapping = {
-            'Medecin': 'doctor',
-            'Clinique': 'clinic',
-            'Admin': 'admin',
-            'Parent': 'parent',
-            'Enfant': 'kid'
-        };
-        return mapping[roleName] || roleName.toLowerCase();
     };
 
     const rolePath = getRolePath(role);
