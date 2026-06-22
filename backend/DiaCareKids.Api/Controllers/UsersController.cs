@@ -183,6 +183,7 @@ namespace DiaCareKids.Api.Controllers
                 {
                     UserId = callerId, // Revenue belongs to the provider
                     UserFullName = user.FullName, // Patient/Parent name for reference
+                    UserEmail = user.Email, // Patient/Parent email for invoice sending
                     Role = callerRole,
                     AssociatedClinicId = callerId,
                     Amount = amountCentimes,

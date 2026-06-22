@@ -347,7 +347,7 @@ export default function ClinicPayments() {
                 <InvoiceGenerator
                     isOpen={showInvoice}
                     onClose={() => setShowInvoice(false)}
-                    user={{ fullName: selectedInvoice.userFullName, role: selectedInvoice.role, email: selectedInvoice.email || "email_non_fourni@client.com", subscription: { isActive: true, planType: selectedInvoice.planName, startDate: selectedInvoice.date } }}
+                    user={{ fullName: selectedInvoice.userFullName, role: selectedInvoice.role, email: selectedInvoice.email || selectedInvoice.userEmail || '', subscription: { isActive: true, planType: selectedInvoice.planName, startDate: selectedInvoice.date } }}
                     plan={{ name: selectedInvoice.planName, description: `Abonnement ${selectedInvoice.planName}`, price: selectedInvoice.amount / 100, currency: 'eur' }}
                     issuerInfo={clinicInfo ? { name: clinicInfo.fullName, address: clinicInfo.address || "Adresse de la clinique", phone: clinicInfo.contactNumber, email: clinicInfo.email, website: clinicInfo.fileNumber } : undefined}
                 />

@@ -12,6 +12,7 @@ namespace DiaCareKids.Api.Models
 
         public string UserId { get; set; } = string.Empty;
         public string UserFullName { get; set; } = string.Empty;
+        public string UserEmail { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         
         public string AssociatedClinicId { get; set; } = string.Empty; // To allow clinic to see it

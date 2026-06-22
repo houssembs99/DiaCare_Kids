@@ -268,6 +268,10 @@ export default function InvoiceGenerator({ isOpen, onClose, user, plan, issuerIn
     };
 
     const handleSendEmail = async () => {
+        if (!user.email || !user.email.includes('@')) {
+            alert("L'adresse email du destinataire est manquante ou invalide. Veuillez vérifier les informations du client.");
+            return;
+        }
         setIsSending(true);
         setSent(false);
         try {

@@ -219,7 +219,7 @@ export default function DoctorPayments() {
                                                     </td>
                                                     <td className="px-10 py-8 text-right">
                                                         <button 
-                                                            onClick={() => handleOpenInvoice({ id: item.userId, fullName: item.userFullName || 'Patient', subscription: { planType: item.planName || 'Standard', isActive: true }, amount: item.amount })}
+                                                            onClick={() => handleOpenInvoice({ id: item.userId, fullName: item.userFullName || 'Patient', email: item.userEmail || '', subscription: { planType: item.planName || 'Standard', isActive: true }, amount: item.amount })}
                                                             className="p-4 bg-white/5 hover:bg-white hover:text-[#0b1b2b] rounded-2xl text-[#088395] transition-all border border-white/10 group" 
                                                             title="Générer et envoyer la facture"
                                                         >
