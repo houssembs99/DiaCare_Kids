@@ -604,7 +604,7 @@ export default function PatientDetail() {
             <AnimatePresence>
                 {showEditModal && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/0.80 backdrop-blur-2xl px-6">
-                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-xl bg-[#0b1b2b] border border-white/10 rounded-[50px] p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-[#0b1b2b] border border-white/10 rounded-[50px] p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
                             <div className="flex justify-between items-center mb-10">
                                 <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">Mettre à jour <span className="text-[#088395]">Champions</span></h3>
                                 <button onClick={() => setShowEditModal(false)} className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all text-white/20">X</button>
@@ -641,7 +641,7 @@ export default function PatientDetail() {
             <AnimatePresence>
                 {showIAModal && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/0.80 backdrop-blur-2xl px-6">
-                        <motion.div initial={{ scale: 0.9, opacity: 0, y: 50 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 50 }} className="w-full max-w-2xl bg-gradient-to-br from-[#1a1b2e] to-[#0b1b2b] border border-purple-500/30 rounded-[50px] p-12 shadow-[0_50px_100px_rgba(106,17,203,0.3)] relative overflow-hidden">
+                        <motion.div initial={{ scale: 0.9, opacity: 0, y: 50 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 50 }} className="w-full max-w-2xl max-h-[90vh] bg-gradient-to-br from-[#1a1b2e] to-[#0b1b2b] border border-purple-500/30 rounded-[50px] p-12 shadow-[0_50px_100px_rgba(106,17,203,0.3)] relative overflow-x-hidden overflow-y-auto custom-scrollbar">
                             {/* Decorative Background Elements */}
                             <div className="absolute -top-20 -right-20 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full"></div>
                             <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full"></div>
