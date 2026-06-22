@@ -20,6 +20,7 @@ builder.Services.AddScoped(s =>
 });
 
 builder.Services.AddScoped<UsersService>();
+builder.Services.AddScoped<IUsersService>(sp => sp.GetRequiredService<UsersService>());
 builder.Services.AddScoped<DiaCareKids.Api.Services.PlansService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.PatientsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.MedicalRecordsService>();

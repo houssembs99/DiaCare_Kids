@@ -21,7 +21,6 @@ namespace DiaCareKids.Api.Controllers
         public async Task<IActionResult> GetAllRecords()
         {
             var users = await _usersService.GetAsync();
-            var totalRecords = 0;
             // Since we don't have GetLatestForPatients without limit, we'll try to find any for all users
             var records = await _recordsService.GetLatestForPatientsAsync(users.Select(u => u.Id!).ToList(), 1000);
             

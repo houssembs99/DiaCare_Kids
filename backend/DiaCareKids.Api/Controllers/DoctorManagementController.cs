@@ -193,6 +193,70 @@ namespace DiaCareKids.Api.Controllers
             return Ok(new { message = "Patient supprimé avec succès." });
         }
 
+        [HttpPost("register-family")]
+        public async Task<IActionResult> RegisterFamily([FromBody] RegisterFamilyRequest request)
+        {
+            var doctorId = GetCurrentUserId();
+
+            // --- 1. Validate email uniqueness ---
+            var existing = await _usersService.GetByEmailAsync(request.ParentEmail.ToLower());
+            if (existing != null)
+                return BadRequest(new { error = "Un compte avec cet email existe déjà." });
+
+            // --- 2. Create Parent account ---
+            var parent = new User
+            {
+                Email = request.ParentEmail.ToLower(),
+                FullName = request.ParentFullName,
+                Role = "Parent",
+                Status = "Actif",
+                ContactNumber = request.ParentPhone,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(string.IsNullOrEmpty(request.ParentPassword) ? "DiaCare123!" : request.ParentPassword),
+                AssociatedDoctorId = doctorId,
+                CreatedAt = DateTime.UtcNow,
+                Subscription = new SubscriptionDetails
+                {
+                    PlanType = "Standard",
+                    MaxKids = 3,
+                    IsActive = false,
+                    ExpiryDate = DateTime.UtcNow.AddMonths(1)
+                }
+            };
+            await _usersService.CreateAsync(parent);
+
+            // --- 3. Optionally create Child account ---
+            User? child = null;
+            if (!string.IsNullOrWhiteSpace(request.ChildFullName))
+            {
+                var fileNumber = $"DC-{DateTime.UtcNow.Year}-{Guid.NewGuid().ToString()[..6].ToUpper()}";
+                child = new User
+                {
+                    Email = $"enfant.{Guid.NewGuid().ToString()[..8]}@diacare.local",
+                    FullName = request.ChildFullName,
+                    Role = "Enfant",
+                    Status = "Actif",
+                    FileNumber = fileNumber,
+                    DateOfBirth = request.ChildDateOfBirth,
+                    Gender = request.ChildGender,
+                    DiabetesType = request.DiabetesType ?? "Type 1",
+                    AssociatedParentId = parent.Id,
+                    AssociatedDoctorId = doctorId,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("DiaCare123!"),
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _usersService.CreateAsync(child);
+            }
+
+            return Ok(new
+            {
+                message = "Famille inscrite avec succès.",
+                parentId = parent.Id,
+                parentEmail = parent.Email,
+                childId = child?.Id,
+                childFileNumber = child?.FileNumber
+            });
+        }
+
         [HttpGet("stats")]
         public async Task<ActionResult> GetStats()
         {
@@ -210,5 +274,28 @@ namespace DiaCareKids.Api.Controllers
     public class UpdateNotesRequest
     {
         public string? Notes { get; set; }
+    }
+
+    public class UpdateChildProfileRequest
+    {
+        public double? Height { get; set; }
+        public double? Weight { get; set; }
+        public string? Allergies { get; set; }
+        public DateTime? DiagnosisDate { get; set; }
+        public string? DiabetesType { get; set; }
+    }
+
+    public class RegisterFamilyRequest
+    {
+        public string ParentFullName { get; set; } = string.Empty;
+        public string ParentEmail { get; set; } = string.Empty;
+        public string? ParentPhone { get; set; }
+        public string? ParentPassword { get; set; }
+
+        // Optional child
+        public string? ChildFullName { get; set; }
+        public DateTime? ChildDateOfBirth { get; set; }
+        public string? ChildGender { get; set; }
+        public string? DiabetesType { get; set; }
     }
 }

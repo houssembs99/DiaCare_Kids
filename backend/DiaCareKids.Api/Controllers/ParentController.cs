@@ -303,7 +303,7 @@ namespace DiaCareKids.Api.Controllers
             return Ok(new { message = $"{count} dossiers patients mis à jour avec le nouveau format (5 chiffres / 4 lettres)." });
         }
         [HttpPut("update-child-profile/{childId}")]
-        public async Task<IActionResult> UpdateChildProfile(string childId, [FromBody] UpdateChildProfileRequest request)
+        public async Task<IActionResult> UpdateChildProfile(string childId, [FromBody] ParentUpdateChildProfileRequest request)
         {
             var parentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var child = await _usersService.GetAsync(childId);
@@ -353,7 +353,7 @@ namespace DiaCareKids.Api.Controllers
     }
 
 
-    public class UpdateChildProfileRequest
+    public class ParentUpdateChildProfileRequest
     {
         public double? Height { get; set; }
         public double? Weight { get; set; }

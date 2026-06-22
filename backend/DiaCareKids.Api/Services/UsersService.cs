@@ -3,7 +3,7 @@ using MongoDB.Driver;
 
 namespace DiaCareKids.Api.Services
 {
-    public class UsersService
+    public class UsersService : IUsersService
     {
         private readonly IMongoCollection<User> _usersCollection;
 

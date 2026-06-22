@@ -32,12 +32,8 @@ namespace DiaCareKids.Api.Controllers
         {
             try 
             {
-                if (string.IsNullOrEmpty(record.PatientId))
-                    return BadRequest(new { message = "L'Id de l'enfant est requis." });
-
-                // IMPORTANT: Sanitize to avoid BsonSerializationException if it was non-hex
-                record.PatientId = string.IsNullOrWhiteSpace(record.PatientId) ? null : record.PatientId;
-                if (record.PatientId == null) return BadRequest(new { message = "Id de l'enfant invalide." });
+                if (string.IsNullOrWhiteSpace(record.PatientId))
+                    return BadRequest(new { message = "Id de l'enfant invalide ou requis." });
 
                 await _recordsService.CreateAsync(record);
 

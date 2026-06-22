@@ -7,25 +7,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { Model } from './AvatarModel';
 
-/**
- * RendererConfig — Doit être INSIDE le Canvas pour accéder au contexte gl.
- *
- * Problèmes résolus ici :
- *
- * 1. COLOR SPACE : Les textures d'un GLB sont toujours en sRGB.
- *    Sans outputColorSpace = SRGBColorSpace, Three.js applique une double
- *    conversion qui rend les couleurs fausses/trop sombres/trop claires en XR.
- *
- * 2. TONE MAPPING : ACESFilmic donne un rendu cinématique identique en 3D et AR.
- *    Sans ça, le rendu AR utilise LinearToneMapping (très plat, couleurs fausses).
- *
- * 3. FRAMEBUFFER SCALE : Doit être appelé via gl.xr.setFramebufferScaleFactor()
- *    AVANT store.enterAR(). C'est l'API officielle Three.js WebXRManager.
- *    Le canvas DPR n'affecte PAS le framebuffer WebXR.
- *
- * 4. TEXTURE ANISOTROPY + COLOR SPACE : On traverse la scène et on force
- *    SRGBColorSpace + anisotropy max sur chaque texture de chaque material.
- */
+
 function RendererConfig({ isARMode }) {
   const { gl, scene } = useThree();
 
