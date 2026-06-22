@@ -18,6 +18,7 @@ const initialUsers = [];
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
+    const [clinics, setClinics] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [roleFilter, setRoleFilter] = useState("Tous");
     const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,9 @@ export default function AdminUsers() {
                 role: u.role,
                 status: u.status || 'Actif',
                 subscription: u.subscription, // Full subscription data
+                associatedClinicId: u.associatedClinicId || '',
+                associatedDoctorId: u.associatedDoctorId || '',
+                associatedParentId: u.associatedParentId || '',
                 lastLogin: u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('fr-FR', {
                     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 }) : 'Jamais'
@@ -47,8 +51,18 @@ export default function AdminUsers() {
         }
     };
 
+    const fetchClinics = async () => {
+        try {
+            const res = await api.get('/Users/role/Clinique');
+            setClinics(res.data.map(c => ({ id: c.id, name: c.fullName || c.email })));
+        } catch (err) {
+            console.error('Erreur chargement cliniques', err);
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
+        fetchClinics();
     }, []);
 
     // Modal state
@@ -450,7 +464,7 @@ export default function AdminUsers() {
                             onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }}
                         />
                         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-lg w-full relative z-10 shadow-2xl"
+                            className="bg-[#0b1b2b] border border-white/10 rounded-[32px] p-8 max-w-xl w-full max-h-[92vh] overflow-y-auto custom-scrollbar relative z-10 shadow-2xl"
                         >
                             <button onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
                                 <X size={24} />
@@ -499,6 +513,39 @@ export default function AdminUsers() {
                                         <option value="Bloqué">Bloqué</option>
                                     </select>
                                 </div>
+
+                                {/* Clinique associée — visible pour Médecin, Agent Clinique, Parent */}
+                                {(formData.role === 'Medecin' || formData.role === 'Agent Clinique' || formData.role === 'Parent' || formData.role === 'Enfant') && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        className="pt-4 border-t border-white/5"
+                                    >
+                                        <div className="text-[11px] font-black uppercase tracking-widest text-[#088395] mb-3 flex items-center gap-2">
+                                            <Shield size={14} /> Association Clinique / Cabinet
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-4 mb-2 block">Clinique / Cabinet rattaché(e)</label>
+                                            <select
+                                                value={formData.associatedClinicId}
+                                                onChange={e => setFormData({ ...formData, associatedClinicId: e.target.value })}
+                                                className="w-full bg-[#0b1b2b] border border-[#088395]/30 rounded-2xl p-4 text-white focus:border-[#088395] outline-none cursor-pointer text-sm font-bold"
+                                            >
+                                                <option value="">— Aucune clinique associée —</option>
+                                                {clinics.map(c => (
+                                                    <option key={c.id} value={c.id} className="bg-[#0b1b2b] font-bold">
+                                                        {c.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {formData.associatedClinicId && (
+                                                <p className="text-[9px] font-bold text-[#088395] uppercase tracking-widest px-4 mt-2 italic flex items-center gap-1">
+                                                    ✓ Rattaché à : {clinics.find(c => c.id === formData.associatedClinicId)?.name || '...'}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
 
                                 {(formData.role === 'Clinique' || formData.role === 'Agent Clinique' || formData.role === 'Parent') && isEditModalOpen && (
                                     <motion.div
