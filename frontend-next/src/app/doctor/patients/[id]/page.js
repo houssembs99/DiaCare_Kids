@@ -21,7 +21,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 ChartJS.register(
     CategoryScale, LinearScale, PointElement, LineElement,
@@ -258,16 +258,29 @@ export default function PatientDetail() {
     };
 
     const exportPDF = () => {
-        const doc = new jsPDF();
-        doc.text(`Fiche Patient - ${data?.patient?.fullName || 'Inconnu'}`, 20, 10);
-        const tableColumn = ["Date/Heure", "Valeur (g/L)", "Type"];
-        const tableRows = (data?.records || []).map(r => [
-            new Date(r.timestamp).toLocaleString('fr-FR'),
-            r.glucoseValue,
-            "Glycémie"
-        ]);
-        doc.autoTable(tableColumn, tableRows, { startY: 20 });
-        doc.save(`Fiche_${data?.patient?.fullName || 'Patient'}_${new Date().toLocaleDateString('fr-FR').replace(/\//g,'-')}.pdf`);
+        try {
+            const doc = new jsPDF();
+            doc.text(`Fiche Patient - ${data?.patient?.fullName || 'Inconnu'}`, 20, 10);
+            const tableColumn = ["Date/Heure", "Valeur (g/L)", "Type"];
+            const tableRows = (data?.records || []).map(r => [
+                new Date(r.timestamp).toLocaleString('fr-FR'),
+                r.glucoseValue,
+                "Glycémie"
+            ]);
+            
+            autoTable(doc, { 
+                head: [tableColumn],
+                body: tableRows,
+                startY: 20 
+            });
+            
+            const sanitizedName = (data?.patient?.fullName || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
+            const dateStr = new Date().toLocaleDateString('fr-FR').replace(/\//g,'-');
+            doc.save(`Fiche_${sanitizedName}_${dateStr}.pdf`);
+        } catch (error) {
+            console.error("Erreur lors de la génération du PDF:", error);
+            alert("Une erreur est survenue lors de la création du PDF.");
+        }
     };
 
 
