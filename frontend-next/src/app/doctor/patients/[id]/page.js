@@ -20,6 +20,8 @@ import {
     LineElement, Title, Tooltip, Legend, Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 ChartJS.register(
     CategoryScale, LinearScale, PointElement, LineElement,
@@ -255,6 +257,19 @@ export default function PatientDetail() {
         }, 2000);
     };
 
+    const exportPDF = () => {
+        const doc = new jsPDF();
+        doc.text(`Fiche Patient - ${data?.patient?.fullName || 'Inconnu'}`, 20, 10);
+        const tableColumn = ["Date/Heure", "Valeur (g/L)", "Type"];
+        const tableRows = (data?.records || []).map(r => [
+            new Date(r.timestamp).toLocaleString('fr-FR'),
+            r.glucoseValue,
+            "Glycémie"
+        ]);
+        doc.autoTable(tableColumn, tableRows, { startY: 20 });
+        doc.save(`Fiche_${data?.patient?.fullName || 'Patient'}_${new Date().toLocaleDateString('fr-FR').replace(/\//g,'-')}.pdf`);
+    };
+
 
     useEffect(() => {
         const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -337,6 +352,9 @@ export default function PatientDetail() {
                         </div>
                     </div>
                     <div className="flex gap-4">
+                        <button onClick={exportPDF} className="flex items-center gap-3 px-8 py-5 bg-white/10 hover:bg-white/20 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] text-white shadow-xl hover:scale-105 active:scale-95 transition-all">
+                            <FileText size={18} /> Générer Rapport
+                        </button>
                         <button onClick={handleIAAnalysis} className="flex items-center gap-3 px-8 py-5 bg-gradient-to-r from-[#9b51e0] to-[#6a11cb] rounded-2xl font-black uppercase tracking-[0.1em] text-[10px] shadow-[0_10px_30px_rgba(155,81,224,0.4)] hover:scale-105 active:scale-95 transition-all outline-none border border-white/20 text-white relative overflow-hidden group">
                             <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
                             <Brain size={18} className="animate-pulse" /> Analyse IA DiaPote
