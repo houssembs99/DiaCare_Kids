@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace DiaCareKids.Api.Models
 {
+    [BsonIgnoreExtraElements]
     public class User
     {
         [BsonId]

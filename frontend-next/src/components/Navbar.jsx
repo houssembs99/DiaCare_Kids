@@ -21,6 +21,35 @@ const Navbar = () => {
     const logoUrl = branding.logoUrl;
     const pathname = usePathname();
 
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('token');
+            const userStr = localStorage.getItem('user');
+            if (token && userStr) {
+                setIsLoggedIn(true);
+                try {
+                    const user = JSON.parse(userStr);
+                    setUserRole(user.role);
+                } catch (e) {}
+            } else {
+                setIsLoggedIn(false);
+                setUserRole(null);
+            }
+        }
+    }, [pathname]);
+
+    const getDashboardLink = () => {
+        if (!isLoggedIn) return '/auth';
+        if (userRole === 'Medecin') return '/doctor/dashboard';
+        if (userRole === 'Parent') return '/parent/dashboard';
+        if (userRole === 'Admin') return '/admin/dashboard';
+        if (userRole === 'Enfant') return '/kid/dashboard';
+        return '/clinic/dashboard';
+    };
+
     const isDashboard = pathname !== '/' && (
         pathname.includes('/dashboard') ||
         pathname.includes('/kid/') ||
@@ -321,13 +350,17 @@ const Navbar = () => {
                         <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full border-2 border-[#0b1b2b]" />
                     </button>
 
-                    <Link href="/auth" className="flex items-center gap-3 pl-4 border-l border-white/10 group">
+                    <Link href={getDashboardLink()} className="flex items-center gap-3 pl-4 border-l border-white/10 group">
                         <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white/40 border border-white/10 group-hover:border-white/30 transition-colors">
                             <User size={20} />
                         </div>
                         <div className="hidden xl:block">
-                            <div className="text-[10px] font-bold text-premium uppercase tracking-widest leading-none">{t('nav.login')}</div>
-                            <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest mt-1">{t('nav.mySpace')}</div>
+                            <div className="text-[10px] font-bold text-premium uppercase tracking-widest leading-none">
+                                {isLoggedIn ? 'Mon Espace' : t('nav.login')}
+                            </div>
+                            <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest mt-1">
+                                {isLoggedIn ? 'Tableau de bord' : t('nav.mySpace')}
+                            </div>
                         </div>
                     </Link>
                 </div>
@@ -389,11 +422,11 @@ const Navbar = () => {
                             </div>
 
                             <Link
-                                href="/auth"
+                                href={getDashboardLink()}
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="btn-apple !py-6 text-xl text-center mt-4"
                             >
-                                {t('nav.mySpace')}
+                                {isLoggedIn ? 'Mon Espace' : t('nav.login')}
                             </Link>
                         </div>
                     </motion.div>

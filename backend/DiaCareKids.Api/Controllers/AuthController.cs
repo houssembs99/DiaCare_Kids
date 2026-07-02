@@ -29,6 +29,9 @@ namespace DiaCareKids.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+            // Normalize empty strings to null for ObjectId fields (MongoDB cannot serialize "" as ObjectId)
+            if (string.IsNullOrWhiteSpace(request.AssociatedClinicId)) request.AssociatedClinicId = null;
+            if (string.IsNullOrWhiteSpace(request.ClinicPackageId)) request.ClinicPackageId = null;
             try
             {
                 if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password) || 
@@ -191,6 +194,13 @@ namespace DiaCareKids.Api.Controllers
                 {
                     if (!string.IsNullOrEmpty(request.AssociatedClinicId))
                     {
+                        // Validate that the clinic actually exists before linking
+                        var clinicEntity = await _usersService.GetAsync(request.AssociatedClinicId);
+                        if (clinicEntity == null)
+                        {
+                            Console.WriteLine($"[AUTH BAD_REQUEST] L'établissement sélectionné est introuvable: {request.AssociatedClinicId}");
+                            return BadRequest(new { message = "L'établissement sélectionné est introuvable." });
+                        }
                         user.AssociatedClinicId = request.AssociatedClinicId;
                         user.Status = "En Attente"; // Must be accepted by clinic
                     }

@@ -130,6 +130,34 @@ using (var scope = app.Services.CreateScope())
             CreatedAt = DateTime.UtcNow
         });
     }
+
+    // Seed agentclinique test user (used in auth page test panel)
+    var clinicAgentEmail = "agentclinique@gmail.com";
+    var existingAgent = await usersService.GetByEmailAsync(clinicAgentEmail);
+    if (existingAgent == null)
+    {
+        Console.WriteLine($"[SEED] Creating test clinic agent: {clinicAgentEmail}");
+        await usersService.CreateAsync(new DiaCareKids.Api.Models.User
+        {
+            Email = clinicAgentEmail,
+            FullName = "Agent Clinique Test",
+            Role = "Clinique",
+            Status = "Actif",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("agentclinique10"),
+            ClinicType = "Clinique",
+            Address = "1 Rue de la Santé, Tunis",
+            ContactNumber = "+216 71 000 000",
+            CreatedAt = DateTime.UtcNow,
+            Subscription = new DiaCareKids.Api.Models.SubscriptionDetails
+            {
+                PlanType = "Pro",
+                MaxDoctors = 10,
+                MaxPatients = 500,
+                ExpiryDate = DateTime.UtcNow.AddYears(1),
+                IsActive = true
+            }
+        });
+    }
 }
 
 app.Run();
