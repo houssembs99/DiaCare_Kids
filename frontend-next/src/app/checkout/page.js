@@ -73,7 +73,7 @@ const CheckoutForm = ({ amount, planName, onSuccess }) => {
                 disabled={isProcessing || !stripe || !elements}
                 className="w-full py-5 bg-[#1E88E5] text-white rounded-2xl font-black uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-[#1E88E5]/0.80 transition-all shadow-xl disabled:opacity-50"
             >
-                {isProcessing ? "Traitement..." : `Payer ${(amount / 100).toFixed(2)} €`}
+                {isProcessing ? "Traitement..." : `Payer ${(amount / 100).toFixed(2)} DT`}
             </button>
         </form>
     );
@@ -143,7 +143,7 @@ export default function CustomCheckoutPage({ searchParams }) {
                         <Shield size={14} /> Paiement Sécurisé Intégré
                     </div>
                     <h1 className="text-3xl font-black uppercase tracking-tighter italic mb-2">Abonnement DiaCare</h1>
-                    <p className="text-white/60 font-bold">Forfait {planName} • {(amount / 100).toFixed(2)} €</p>
+                    <p className="text-white/60 font-bold">Forfait {planName} • {(amount / 100).toFixed(2)} DT</p>
                 </div>
 
                 {isClinicManagedPlan ? (

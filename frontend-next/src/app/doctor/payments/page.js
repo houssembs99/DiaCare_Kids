@@ -237,7 +237,7 @@ export default function DoctorPayments() {
                                                     </td>
                                                     <td className="px-10 py-8">
                                                         <div className="text-lg font-black italic tracking-tighter text-[#1E88E5]">
-                                                            {(item.amount / 100).toFixed(2)} €
+                                                            {(item.amount / 100).toFixed(2)} DT
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-8">
@@ -332,7 +332,7 @@ export default function DoctorPayments() {
                     plan={{
                         name: selectedUserForInvoice.subscription?.planType || 'Consultation',
                         price: selectedUserForInvoice.amount ? (selectedUserForInvoice.amount / 100) : (packages.find(p => p.name === selectedUserForInvoice.subscription?.planType)?.price || 80), 
-                        currency: selectedUserForInvoice.isSelfBill ? '€' : 'DT',
+                        currency: selectedUserForInvoice.isSelfBill ? 'DT' : 'DT',
                         description: selectedUserForInvoice.isSelfBill ? `Abonnement Plateforme DiaCare Kids - ${selectedUserForInvoice.subscription?.planType}` : `Honoraires de suivi médical (Cabinet) pour ${selectedUserForInvoice.fullName}`
                     }}
                 />

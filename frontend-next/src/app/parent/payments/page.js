@@ -106,7 +106,7 @@ export default function ParentPayments() {
                                             </td>
                                             <td className="px-10 py-8">
                                                 <div className="text-lg font-black italic tracking-tighter text-[#088395]">
-                                                    {(pay.amount / 100).toFixed(2)} €
+                                                    {(pay.amount / 100).toFixed(2)} DT
                                                 </div>
                                             </td>
                                             <td className="px-10 py-8">
@@ -117,7 +117,7 @@ export default function ParentPayments() {
                                             </td>
                                             <td className="px-10 py-8 text-right">
                                                 <button 
-                                                    onClick={() => alert(`Reçu ID: ${pay.id}\nMontant: ${(pay.amount/100).toFixed(2)}€`)}
+                                                    onClick={() => alert(`Reçu ID: ${pay.id}\nMontant: ${(pay.amount/100).toFixed(2)} DT`)}
                                                     className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-2xl text-white/40 transition-all shadow-xl border border-white/5"
                                                 >
                                                     <FileText size={18} />
@@ -132,7 +132,7 @@ export default function ParentPayments() {
 
                     <div className="p-10 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6">
                         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">
-                            Total Payé: <span className="text-white">{(totalAmount / 100).toFixed(2)} €</span>
+                            Total Payé: <span className="text-white">{(totalAmount / 100).toFixed(2)} DT</span>
                         </div>
                     </div>
                 </div>

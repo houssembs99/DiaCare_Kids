@@ -236,7 +236,7 @@ export default function ClinicPayments() {
                                                     </td>
                                                     <td className="px-10 py-8">
                                                         <div className="text-lg font-black italic tracking-tighter text-[#1E88E5]">
-                                                            {(item.amount / 100).toFixed(2)} €
+                                                            {(item.amount / 100).toFixed(2)} DT
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-8">
@@ -272,7 +272,7 @@ export default function ClinicPayments() {
                         <div className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
                             <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Total {activeTab === 'revenue' ? 'Transactions' : 'Dépenses'}</p>
                             <div className="text-3xl font-black italic tracking-tight">
-                                {activeTab === 'revenue' ? patientSubscribers.length : `${(myTransactions.reduce((acc, c) => acc + c.amount, 0) / 100).toFixed(2)} €`}
+                                {activeTab === 'revenue' ? patientSubscribers.length : `${(myTransactions.reduce((acc, c) => acc + c.amount, 0) / 100).toFixed(2)} DT`}
                             </div>
                         </div>
 
@@ -436,7 +436,7 @@ export default function ClinicPayments() {
                     isOpen={showInvoice}
                     onClose={() => setShowInvoice(false)}
                     user={{ fullName: selectedInvoice.userFullName, role: selectedInvoice.role, email: selectedInvoice.email || selectedInvoice.userEmail || '', subscription: { isActive: true, planType: selectedInvoice.planName, startDate: selectedInvoice.date } }}
-                    plan={{ name: selectedInvoice.planName, description: selectedInvoice.isSelfBill ? `Abonnement Plateforme DiaCare Kids` : `Prestation Clinique - ${selectedInvoice.planName}`, price: selectedInvoice.amount / 100, currency: selectedInvoice.isSelfBill ? '€' : 'DT' }}
+                    plan={{ name: selectedInvoice.planName, description: selectedInvoice.isSelfBill ? `Abonnement Plateforme DiaCare Kids` : `Prestation Clinique - ${selectedInvoice.planName}`, price: selectedInvoice.amount / 100, currency: selectedInvoice.isSelfBill ? 'DT' : 'DT' }}
                     issuerInfo={selectedInvoice.isSelfBill ? undefined : (clinicInfo ? { name: clinicInfo.fullName, address: clinicInfo.address || "Adresse de la clinique", phone: clinicInfo.contactNumber, email: clinicInfo.email, website: clinicInfo.fileNumber } : undefined)}
                 />
             )}
