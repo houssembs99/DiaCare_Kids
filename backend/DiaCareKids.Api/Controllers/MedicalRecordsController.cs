@@ -48,15 +48,20 @@ namespace DiaCareKids.Api.Controllers
                     string? predictionMsg = null;
                     try 
                     {
-                        var val = _predictionService.Predict(
-                            (float)record.GlucoseValue.Value,
+                        float inputValue = (float)record.GlucoseValue.Value;
+                        if (inputValue < 10) inputValue *= 100; // g/L -> mg/dL
+
+                        var valMgdl = _predictionService.Predict(
+                            inputValue,
                             (float)(record.CarbsEstimated ?? 0),
                             (float)(record.InsulinDose ?? 0),
                             record.Timing ?? "before",
                             record.ActivityLevel ?? "Faible");
                         
-                        prediction = val;
-                        predictionMsg = $"L'IA DiaPote prévoit une glycémie de {val:0} g/L à la prochaine mesure.";
+                        float valGl = valMgdl / 100f; // mg/dL -> g/L
+                        
+                        prediction = valGl;
+                        predictionMsg = $"L'IA DiaPote prévoit une glycémie de {valGl:0.00} g/L à la prochaine mesure.";
                     }
                     catch (Exception ex)
                     { 

@@ -303,7 +303,7 @@ export default function AddMeasure() {
                                     <div className="bg-white/10 rounded-3xl p-6 border border-white/10">
                                         <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Glycémie Prédictive</div>
                                         <div className="text-5xl font-black italic flex items-baseline justify-center gap-2">
-                                            {Math.round(aiData?.aiPrediction)}
+                                            {Number(aiData?.aiPrediction).toFixed(2)}
                                             <span className="text-sm opacity-40">g/L</span>
                                         </div>
                                         <div className={cn(
