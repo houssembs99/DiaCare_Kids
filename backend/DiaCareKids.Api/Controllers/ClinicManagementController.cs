@@ -319,6 +319,58 @@ namespace DiaCareKids.Api.Controllers
             });
         }
 
+        [HttpGet("alerts")]
+        public async Task<ActionResult> GetAlerts()
+        {
+            var clinicId = GetCurrentUserId();
+            var allClinicUsers = await _usersService.GetByClinicIdAsync(clinicId);
+            
+            var doctors = allClinicUsers.Where(u => u.Role == "Medecin" && u.Status == "Actif").ToList();
+            var children = allClinicUsers.Where(u => u.Role == "Enfant").ToList();
+            var childrenIds = children.Select(c => c.Id!).ToList();
+
+            var alertsList = new List<object>();
+
+            if (childrenIds.Any())
+            {
+                var recentRecords = await _recordsService.GetLatestForPatientsAsync(childrenIds, 500);
+                
+                foreach (var record in recentRecords.OrderByDescending(r => r.Timestamp))
+                {
+                    if (record.GlucoseValue.HasValue)
+                    {
+                        bool isCritical = record.GlucoseValue < 0.70 || record.GlucoseValue > 2.50;
+                        bool isMedium = (record.GlucoseValue >= 0.70 && record.GlucoseValue < 0.80) || (record.GlucoseValue > 1.80 && record.GlucoseValue <= 2.50);
+                        
+                        if (isCritical || isMedium)
+                        {
+                            var child = children.FirstOrDefault(c => c.Id == record.PatientId);
+                            var doc = child?.AssociatedDoctorId != null ? doctors.FirstOrDefault(d => d.Id == child.AssociatedDoctorId) : null;
+                            
+                            string type = record.GlucoseValue < 0.80 ? (isCritical ? "Hypoglycémie Sévère" : "Hypoglycémie") : (isCritical ? "Hyperglycémie Critique" : "Hyperglycémie");
+                            string level = isCritical ? "Critique" : "Moyenne";
+                            
+                            var dateStr = record.Timestamp.Date == DateTime.UtcNow.Date ? $"Aujourd'hui, {record.Timestamp:HH:mm}" : record.Timestamp.ToString("dd/MM/yyyy HH:mm");
+
+                            alertsList.Add(new {
+                                id = record.Id,
+                                patient = child?.FullName ?? "Inconnu",
+                                doctor = doc?.FullName ?? "Non assigné",
+                                type = type,
+                                value = $"{record.GlucoseValue:F2} g/L".Replace(',', '.'),
+                                level = level,
+                                date = dateStr,
+                                status = "En attente",
+                                timestamp = record.Timestamp
+                            });
+                        }
+                    }
+                }
+            }
+
+            return Ok(alertsList);
+        }
+
         [HttpPost("approve-doctor/{id}")]
         public async Task<IActionResult> ApproveDoctor(string id)
         {

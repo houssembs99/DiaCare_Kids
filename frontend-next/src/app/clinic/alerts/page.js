@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     AlertTriangle, Search, Filter, Clock,
@@ -11,12 +12,23 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-const alertsMock = [];
-
 export default function ClinicAlerts() {
     const [filterLevel, setFilterLevel] = useState("All");
+    const [alerts, setAlerts] = useState([]);
 
-    const filteredAlerts = alertsMock.filter(alert => {
+    useEffect(() => {
+        const fetchAlerts = async () => {
+            try {
+                const response = await api.get('/ClinicManagement/alerts');
+                setAlerts(response.data || []);
+            } catch (err) {
+                console.error("Failed to fetch alerts:", err);
+            }
+        };
+        fetchAlerts();
+    }, []);
+
+    const filteredAlerts = alerts.filter(alert => {
         return filterLevel === "All" || alert.level === filterLevel;
     });
 
