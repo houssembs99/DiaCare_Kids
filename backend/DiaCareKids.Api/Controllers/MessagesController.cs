@@ -11,10 +11,53 @@ namespace DiaCareKids.Api.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly MessagesService _messagesService;
+        private readonly IUsersService _usersService;
 
-        public MessagesController(MessagesService messagesService)
+        public MessagesController(MessagesService messagesService, IUsersService usersService)
         {
             _messagesService = messagesService;
+            _usersService = usersService;
+        }
+
+        // === PUBLIC CONTACT FORM ===
+        [HttpPost("contact")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendContactMessage([FromBody] ContactMessageRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Content))
+                return BadRequest("Tous les champs sont obligatoires.");
+
+            // Find admin account
+            var allUsers = await _usersService.GetAsync();
+            var admin = allUsers.FirstOrDefault(u => u.Role == "Admin");
+            if (admin == null) return StatusCode(500, "Aucun administrateur trouvé.");
+
+            // Use a zero ObjectId as conventional placeholder for anonymous/public senders
+            const string publicSenderId = "000000000000000000000000";
+
+            var message = new Message
+            {
+                SenderId = publicSenderId,
+                SenderName = $"{request.Name} <{request.Email}>",
+                ReceiverId = admin.Id!,
+                ReceiverName = admin.FullName,
+                Content = request.Content,
+                IsRead = false,
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _messagesService.CreateAsync(message);
+            return Ok(new { success = true, message = "Message envoyé avec succès." });
+        }
+
+        // === ADMIN: view all contact messages ===
+        [HttpGet("contact")]
+        [Authorize(Roles = "Admin")]
+        public async Task<List<Message>> GetContactMessages()
+        {
+            const string publicSenderId = "000000000000000000000000";
+            var allMessages = await _messagesService.GetAllAsync();
+            return allMessages.Where(m => m.SenderId == publicSenderId).OrderByDescending(m => m.Timestamp).ToList();
         }
 
         [HttpGet("conversation/{userId1}/{userId2}")]
@@ -68,4 +111,6 @@ namespace DiaCareKids.Api.Controllers
             return Ok(new { url, type, fileName = file.FileName });
         }
     }
+
+    public record ContactMessageRequest(string Name, string Email, string Content);
 }

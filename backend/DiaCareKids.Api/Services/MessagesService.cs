@@ -53,5 +53,12 @@ namespace DiaCareKids.Api.Services
             var update = Builders<Message>.Update.Set(m => m.IsRead, true);
             await _messagesCollection.UpdateOneAsync(m => m.Id == messageId, update);
         }
+
+        public async Task<List<Message>> GetAllAsync()
+        {
+            return await _messagesCollection.Find(_ => true)
+                                            .SortByDescending(m => m.Timestamp)
+                                            .ToListAsync();
+        }
     }
 }

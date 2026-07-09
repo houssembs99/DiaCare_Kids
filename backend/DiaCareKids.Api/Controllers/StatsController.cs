@@ -68,6 +68,23 @@ namespace DiaCareKids.Api.Controllers
             });
         }
 
+        [HttpGet("public-summary")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPublicSummary()
+        {
+            var doctors = await _usersService.GetByRoleAsync("Medecin");
+            var clinics = await _usersService.GetByRoleAsync("Clinique");
+            // Patients in DiaCare are users with role "Enfant" 
+            var children = await _usersService.GetByRoleAsync("Enfant");
+            
+            return Ok(new
+            {
+                DoctorsCount = doctors.Count,
+                ClinicsCount = clinics.Count,
+                PatientsCount = children.Count
+            });
+        }
+
         [HttpGet("charts")]
         public async Task<ActionResult> GetCharts()
         {

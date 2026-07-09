@@ -95,8 +95,11 @@ export default function AdminClinics() {
     const handleToggleStatus = async (clinic) => {
         const newStatus = clinic.status === 'Active' ? 'Suspendue' : 'Active';
         try {
-            const payload = { ...clinic, status: newStatus };
-            await api.put(`/Clinics/${clinic.id}`, payload);
+            // Fetch the full User record from the backend before updating
+            const res = await api.get(`/Clinics/${clinic.id}`);
+            const fullClinic = res.data;
+            fullClinic.status = newStatus;
+            await api.put(`/Clinics/${clinic.id}`, fullClinic);
             setClinics(clinics.map(c =>
                 c.id === clinic.id ? { ...c, status: newStatus } : c
             ));
@@ -109,13 +112,17 @@ export default function AdminClinics() {
         e.preventDefault();
         try {
             const payload = {
-                name: formData.name,
-                manager: formData.manager,
+                fullName: formData.name,
                 email: formData.email,
-                subscription: formData.subscription,
-                doctors: 0,
-                patients: 0,
-                status: "Active"
+                role: "Clinique",
+                status: "Actif",
+                subscription: {
+                    planType: formData.subscription,
+                    isActive: true,
+                    maxDoctors: formData.subscription === 'Premium' ? -1 : formData.subscription === 'Pro' ? 7 : 3,
+                    maxPatients: formData.subscription === 'Premium' ? -1 : formData.subscription === 'Pro' ? 10 : 3,
+                    expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+                }
             };
             await api.post('/Clinics', payload);
             fetchClinics(); // Refresh with DB ID
@@ -128,14 +135,20 @@ export default function AdminClinics() {
     const saveEdit = async (e) => {
         e.preventDefault();
         try {
-            const payload = {
-                ...selectedClinic,
-                name: formData.name,
-                manager: formData.manager,
-                email: formData.email,
-                subscription: formData.subscription
-            };
-            await api.put(`/Clinics/${selectedClinic.id}`, payload);
+            // Fetch the full User record so we send a complete object
+            const res = await api.get(`/Clinics/${selectedClinic.id}`);
+            const fullClinic = res.data;
+            
+            // Update only the editable fields
+            fullClinic.fullName = formData.name;
+            fullClinic.email = formData.email;
+            if (fullClinic.subscription) {
+                fullClinic.subscription.planType = formData.subscription;
+            } else {
+                fullClinic.subscription = { planType: formData.subscription, isActive: true };
+            }
+            
+            await api.put(`/Clinics/${selectedClinic.id}`, fullClinic);
             setClinics(clinics.map(c =>
                 c.id === selectedClinic.id ? { ...c, ...formData } : c
             ));

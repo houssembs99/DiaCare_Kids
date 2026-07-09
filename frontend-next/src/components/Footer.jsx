@@ -60,7 +60,7 @@ const Footer = () => {
                 {/* Bottom */}
                 <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
-                        © 2026 DIACARE KIDS. TOUS DROITS RÉSERVÉS. PROJET PFE GÉNIE LOGICIEL.
+                        © 2026 DIACARE KIDS. TOUS DROITS RÉSERVÉS.
                     </p>
                     <div className="flex items-center gap-2">
                         <Heart size={14} className="text-accent fill-accent" />

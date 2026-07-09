@@ -25,7 +25,7 @@ describe('Footer Component', () => {
 
     it('contains contact info', () => {
         render(<Footer />)
-        expect(screen.getByText(/hello@diacarekids.tn/i)).toBeInTheDocument()
+        expect(screen.getByText(/diacarekids@gmail.com/i)).toBeInTheDocument()
     })
 
     it('contains copyright info', () => {

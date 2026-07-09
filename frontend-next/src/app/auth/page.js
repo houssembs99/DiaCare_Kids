@@ -161,7 +161,6 @@ export default function AuthPage() {
 
     return (
         <div className="min-h-screen pt-32 pb-20 px-6 flex flex-col lg:flex-row items-center justify-center bg-[#0b1b2b] relative overflow-x-hidden">
-            <TestCredentials />
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
             <motion.div
@@ -439,52 +438,3 @@ const RoleButton = ({ icon, label, onClick }) => (
     </button>
 );
 
-const TestCredentials = () => {
-    const [copied, setCopied] = useState('');
-
-    const handleCopy = (text) => {
-        navigator.clipboard.writeText(text);
-        setCopied(text);
-        setTimeout(() => setCopied(''), 2000);
-    };
-
-    const CopyButton = ({ text }) => (
-        <button 
-            type="button"
-            onClick={() => handleCopy(text)}
-            className="p-1 hover:bg-white/20 rounded-md transition-colors"
-        >
-            {copied === text ? <Check size={14} className="text-green-500" /> : <Copy size={14} className="text-white/60" />}
-        </button>
-    );
-
-    const creds = [
-        { role: 'Agent Clinique', email: 'agentclinique@gmail.com', pass: 'agentclinique10' },
-        { role: 'Médecin', email: 'medmed@gmail.com', pass: 'med12345' },
-        { role: 'Parent', email: 'ahmed@gmail.com', pass: 'ahmed2020' },
-        { role: 'Enfant', email: 'anas@gmail.com', pass: 'anas30' }
-    ];
-
-    return (
-        <div className="relative lg:absolute lg:top-24 lg:left-6 w-full lg:w-auto mb-8 lg:mb-0 bg-[#088395]/10 backdrop-blur-xl border border-[#088395]/30 p-4 rounded-2xl z-50 shadow-2xl">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#088395] mb-4 flex items-center gap-2">
-                <Activity size={14} /> Panel de Test
-            </h3>
-            <div className="space-y-4 text-white">
-                {creds.map(c => (
-                    <div key={c.role} className="space-y-1">
-                        <div className="font-bold text-[#088395] text-[9px] uppercase tracking-widest">{c.role}</div>
-                        <div className="flex items-center justify-between gap-6 bg-black/40 p-2 rounded-lg border border-white/5">
-                            <span className="font-mono text-[10px] opacity-80">{c.email}</span>
-                            <CopyButton text={c.email} />
-                        </div>
-                        <div className="flex items-center justify-between gap-6 bg-black/40 p-2 rounded-lg border border-white/5">
-                            <span className="font-mono text-[10px] opacity-80">{c.pass}</span>
-                            <CopyButton text={c.pass} />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};

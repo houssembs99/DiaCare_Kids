@@ -7,22 +7,22 @@ const BrandingContext = createContext({
         logoUrl: null,
         description: "Redonner le sourire aux petits champions à travers l'innovation et l'éducation intelligente.",
         phone: "+216 71 000 000",
-        email: "hello@diacarekids.tn",
-        address: "Hôpital des Enfants, Tunis",
-        website: "www.diacarekids.com"
+        email: "diacarekids@gmail.com",
+        address: "Hôpital des Enfants",
+        website: "www.diacarekids.org"
     },
-    updateBranding: () => {},
+    updateBranding: () => { },
     isLoading: true,
 });
 
-const BRANDING_STORAGE_KEY = 'diacare_platform_branding_v2'; // Forced refresh with v2
+const BRANDING_STORAGE_KEY = 'diacare_platform_branding_v3'; // Forced refresh with v3
 
 export function BrandingProvider({ children }) {
     const [branding, setBrandingState] = useState({
         logoUrl: null,
         description: "Redonner le sourire aux petits champions à travers l'innovation et l'éducation intelligente.",
         phone: "+216 71 000 000",
-        email: "hello@diacarekids.tn",
+        email: "diacarekids@gmail.com",
         address: "Hôpital des Enfants, Tunis",
         website: "www.diacarekids.com"
     });

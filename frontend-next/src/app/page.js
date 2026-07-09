@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,12 +11,70 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { cn } from '@/lib/utils';
+import api from '@/lib/api';
 
-const clinicsMock = [];
+// Infinite marquee component for clinics
+function ClinicsMarquee({ clinics }) {
+  const trackRef = useRef(null);
+  // Duplicate the list for seamless loop
+  const items = [...clinics, ...clinics];
+
+  return (
+    <div className="overflow-hidden w-full relative" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
+      <div
+        ref={trackRef}
+        className="flex gap-6 w-max"
+        style={{
+          animation: `marquee ${Math.max(clinics.length * 4, 20)}s linear infinite`,
+        }}
+      >
+        {items.map((clinic, idx) => (
+          <div
+            key={`${clinic.id ?? idx}-${idx}`}
+            className="flex-shrink-0 w-56 bg-white/5 border border-white/10 rounded-[28px] p-6 flex flex-col items-center gap-4 hover:border-[#088395]/40 hover:bg-white/10 transition-all"
+          >
+            {clinic.avatarUrl ? (
+              <img
+                src={clinic.avatarUrl}
+                alt={clinic.fullName}
+                className="w-20 h-20 rounded-2xl object-cover border border-white/10"
+                onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+              />
+            ) : null}
+            <div
+              className={`w-20 h-20 rounded-2xl bg-[#088395]/10 border border-[#088395]/20 flex items-center justify-center text-[#088395] ${clinic.avatarUrl ? 'hidden' : 'flex'}`}
+            >
+              <Building2 size={36} />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-black text-white uppercase tracking-tight leading-tight line-clamp-2">{clinic.fullName}</p>
+              {clinic.clinicType && (
+                <p className="text-[10px] text-[#088395] font-bold uppercase tracking-widest mt-1">{clinic.clinicType}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <style jsx>{`
+        @keyframes marquee {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const { t, lang } = useLanguage();
   const [selectedClinic, setSelectedClinic] = useState(null);
+  const [clinics, setClinics] = useState([]);
+
+  useEffect(() => {
+    api.get('/Clinics')
+      .then(res => setClinics(res.data || []))
+      .catch(() => setClinics([]));
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -188,53 +246,25 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. TRUST SECTION */}
-      <section className="py-20 px-6 border-b border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-center gap-10 md:gap-24 opacity-40 hover:opacity-100 transition-opacity">
-          <div className="flex items-center gap-4">
-            <ShieldCheck className="text-success" size={24} />
-            <span className="text-sm font-black uppercase tracking-[0.2em]">{t('landing.secure')}</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <CheckCircle2 className="text-[#1E88E5]" size={24} />
-            <span className="text-sm font-black uppercase tracking-[0.2em]">{t('landing.standard')}</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Building2 size={24} />
-            <span className="text-sm font-black uppercase tracking-[0.2em]">GDPR Compliance</span>
-          </div>
-        </div>
-      </section>
 
-      {/* 6. CLINICS SECTION (Kept for continuity) */}
-      <section className="py-32 px-6 bg-[#0b1b2b]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20 space-y-4">
-            <h2 className="text-3xl lg:text-5xl font-black tracking-tight leading-none uppercase italic text-white/40">
-              Nos <span className="text-white underline decoration-[#088395]">Cliniques</span> Partenaires
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {clinicsMock.map(clinic => (
-              <div
-                key={clinic.id}
-                onClick={() => setSelectedClinic(clinic)}
-                className="bg-white/5 border border-white/10 rounded-[40px] overflow-hidden cursor-pointer group shadow-2xl flex flex-col sm:flex-row h-full"
-              >
-                <div className="sm:w-1/2 h-64 sm:h-auto overflow-hidden">
-                  <img src={clinic.photo} alt={clinic.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                </div>
-                <div className="p-10 sm:w-1/2 flex flex-col justify-center">
-                  <h3 className="text-2xl font-black uppercase tracking-tighter italic text-white group-hover:text-[#088395] transition-colors mb-2">{clinic.name}</h3>
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-white/40 uppercase tracking-widest mt-4">
-                    <span>Voir les détails</span>
-                    <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* 6. CLINICS SECTION — Dynamic Marquee */}
+      <section className="py-32 px-0 bg-[#0b1b2b] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl lg:text-5xl font-black tracking-tight leading-none uppercase italic text-white/40"
+          >
+            Nos <span className="text-white underline decoration-[#088395]">Cliniques</span> Partenaires
+          </motion.h2>
+          {clinics.length === 0 && (
+            <p className="text-white/20 text-sm font-bold uppercase tracking-widest mt-6">Aucune clinique partenaire pour le moment.</p>
+          )}
         </div>
+        {clinics.length > 0 && (
+          <ClinicsMarquee clinics={clinics} />
+        )}
       </section>
 
       {/* 7. FINAL CTA SECTION */}

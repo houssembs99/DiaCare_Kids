@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Home, Users, BarChart3, Bell, FileText, Settings, LogOut, Activity, Menu, X,
+    Home, Users, BarChart3, Bell, FileText, Settings, LogOut, Activity, Menu, X, Mail,
     ShieldCheck, ChevronRight, Building2, CreditCard, Stethoscope, Baby, Wallet, AlertTriangle,
     Syringe, MessageSquare, History as HistoryIcon, PlusCircle, BookOpen, MessageCircle,
     Gamepad2, Brain, Trophy, Star, Package
@@ -89,6 +89,7 @@ const DashboardLayout = ({ children, role = "Utilisateur" }) => {
         { name: 'Paiements', href: '/admin/payments', icon: <Activity size={20} /> },
         { name: 'Statistiques', href: '/admin/stats', icon: <BarChart3 size={20} /> },
         { name: 'Notifications', href: '/admin/notifications', icon: <Bell size={20} /> },
+        { name: 'Messages Contact', href: '/admin/contact', icon: <Mail size={20} /> },
         { name: 'Paramètres', href: '/admin/settings', icon: <Settings size={20} /> },
         { name: 'Sécurité & Logs', href: '/admin/security', icon: <ShieldCheck size={20} /> },
     ];

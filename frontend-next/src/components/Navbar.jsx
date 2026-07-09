@@ -50,6 +50,15 @@ const Navbar = () => {
         return '/clinic/dashboard';
     };
 
+    const getAlertsLink = () => {
+        if (!isLoggedIn) return '/auth';
+        if (userRole === 'Medecin') return '/doctor/alerts';
+        if (userRole === 'Parent') return '/parent/messaging';
+        if (userRole === 'Admin') return '/admin/notifications';
+        if (userRole === 'Enfant') return '/kid/dashboard';
+        return '/clinic/alerts';
+    };
+
     const isDashboard = pathname !== '/' && (
         pathname.includes('/dashboard') ||
         pathname.includes('/kid/') ||
@@ -345,10 +354,10 @@ const Navbar = () => {
                         </AnimatePresence>
                     </div>
 
-                    <button className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-all shadow-sm relative border border-white/10">
+                    <Link href={getAlertsLink()} className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-all shadow-sm relative border border-white/10 block">
                         <Bell size={18} className="text-white/60" />
                         <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full border-2 border-[#0b1b2b]" />
-                    </button>
+                    </Link>
 
                     <Link href={getDashboardLink()} className="flex items-center gap-3 pl-4 border-l border-white/10 group">
                         <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white/40 border border-white/10 group-hover:border-white/30 transition-colors">

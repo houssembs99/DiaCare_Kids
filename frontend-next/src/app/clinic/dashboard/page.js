@@ -63,26 +63,22 @@ export default function ClinicDashboard() {
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await api.get('/ClinicManagement/stats');
+                const res = await api.get(`/ClinicManagement/stats?timeframe=${timeFilter}`);
                 setStats(res.data);
             } catch (err) {
                 console.error("Erreur lors de la récupération des statistiques de la clinique", err);
             }
         };
         fetchStats();
-    }, []);
+    }, [timeFilter]);
 
-    const last7DaysLabels = [...Array(7)].map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        return ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'][d.getDay()];
-    });
+    const chartLabels = stats.charts?.labels || [];
 
     const lineData = {
-        labels: last7DaysLabels,
+        labels: chartLabels,
         datasets: [{
             label: 'Patients Actifs',
-            data: stats.charts?.evolution || [0, 0, 0, 0, 0, 0, 0],
+            data: stats.charts?.evolution || [],
             borderColor: '#088395',
             backgroundColor: 'rgba(8, 131, 149, 0.1)',
             fill: true,
@@ -96,10 +92,10 @@ export default function ClinicDashboard() {
     };
 
     const barData = {
-        labels: last7DaysLabels,
+        labels: chartLabels,
         datasets: [{
             label: 'Alertes Critiques',
-            data: stats.charts?.alerts || [0, 0, 0, 0, 0, 0, 0],
+            data: stats.charts?.alerts || [],
             backgroundColor: 'rgba(255, 112, 67, 0.8)',
             borderRadius: 12,
             hoverBackgroundColor: '#FF7043'

@@ -67,7 +67,7 @@ export default function AdminSettings() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    
+
     // Branding Logic
     const { branding, updateBranding, isLoading } = useBranding();
     const [footerDescription, setFooterDescription] = useState('');
@@ -191,7 +191,7 @@ export default function AdminSettings() {
                     </div>
 
                     <div className="flex gap-4">
-                        <button 
+                        <button
                             onClick={handleSaveBranding}
                             className="flex items-center gap-3 px-10 py-5 bg-[#1E88E5] hover:bg-[#1565C0] text-white rounded-[22px] font-black uppercase tracking-[0.2em] text-[10px] shadow-[0_20px_40px_rgba(30,136,229,0.3)] hover:scale-105 active:scale-95 transition-all"
                         >
@@ -203,15 +203,15 @@ export default function AdminSettings() {
                 <div className="grid grid-cols-1 gap-12 px-4 lg:px-0">
 
                     {/* ═══ Identité Visuelle (Logo) ═══ */}
-                    <SettingsSection 
-                        title="Identité Visuelle" 
-                        sub="Logo s'affichant en haut et au pied de page" 
+                    <SettingsSection
+                        title="Identité Visuelle"
+                        sub="Logo s'affichant en haut et au pied de page"
                         icon={<Image size={24} />}
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-6">
                                 <div
-                                    onDrop={(e) => { e.preventDefault(); setDragActive(false); const f = e.dataTransfer.files?.[0]; if(f) handleLogoUpload(f); }}
+                                    onDrop={(e) => { e.preventDefault(); setDragActive(false); const f = e.dataTransfer.files?.[0]; if (f) handleLogoUpload(f); }}
                                     onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                                     onDragLeave={() => setDragActive(false)}
                                     onClick={() => fileInputRef.current?.click()}
@@ -220,14 +220,14 @@ export default function AdminSettings() {
                                         dragActive ? "border-[#1E88E5] bg-[#1E88E5]/10 scale-[1.02]" : "border-white/15 bg-white/3 hover:border-[#1E88E5]/50 hover:bg-white/5"
                                     )}
                                 >
-                                    {logoUploading ? <Loader2 size={36} className="text-[#1E88E5] animate-spin" /> : 
-                                     logoSaved ? <CheckCircle size={36} className="text-green-400" /> : 
-                                     <>
-                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#1E88E5]/40 group-hover:bg-[#1E88E5]/10 transition-all">
-                                            <Upload size={28} className="text-white/30 group-hover:text-[#1E88E5] transition-colors" />
-                                        </div>
-                                        <p className="text-xs font-bold text-white/60">Glissez-déposez votre logo ici</p>
-                                     </>}
+                                    {logoUploading ? <Loader2 size={36} className="text-[#1E88E5] animate-spin" /> :
+                                        logoSaved ? <CheckCircle size={36} className="text-green-400" /> :
+                                            <>
+                                                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#1E88E5]/40 group-hover:bg-[#1E88E5]/10 transition-all">
+                                                    <Upload size={28} className="text-white/30 group-hover:text-[#1E88E5] transition-colors" />
+                                                </div>
+                                                <p className="text-xs font-bold text-white/60">Glissez-déposez votre logo ici</p>
+                                            </>}
                                     <input ref={fileInputRef} type="file" className="hidden" onChange={(e) => handleLogoUpload(e.target.files?.[0])} />
                                 </div>
                             </div>
@@ -247,27 +247,27 @@ export default function AdminSettings() {
                     </SettingsSection>
 
                     {/* ═══ Configuration du Footer ═══ */}
-                    <SettingsSection 
-                        title="Configuration du Footer" 
-                        sub="Description et coordonnées affichées en bas de page" 
+                    <SettingsSection
+                        title="Configuration du Footer"
+                        sub="Description et coordonnées affichées en bas de page"
                         icon={<Layout size={24} />}
                     >
                         <div className="space-y-10">
-                            <InputField 
-                                label="Slogan / Description (Footer)" 
-                                placeholder="Redonner le sourire aux petits champions..." 
-                                icon={Quote} 
+                            <InputField
+                                label="Slogan / Description (Footer)"
+                                placeholder="Redonner le sourire aux petits champions..."
+                                icon={Quote}
                                 value={footerDescription}
                                 onChange={setFooterDescription}
                                 textarea
                             />
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <InputField label="Téléphone de Contact" placeholder="+216 71 000 000" icon={Phone} value={contactPhone} onChange={setContactPhone} />
-                                <InputField label="Email de Contact" placeholder="hello@diacarekids.tn" icon={Mail} value={contactEmail} onChange={setContactEmail} />
-                                <InputField label="Site Web" placeholder="www.diacarekids.com" icon={Globe} value={contactWebsite} onChange={setContactWebsite} />
+                                <InputField label="Email de Contact" placeholder="diacarekids@gmail.com" icon={Mail} value={contactEmail} onChange={setContactEmail} />
+                                <InputField label="Site Web" placeholder="www.diacarekids.org" icon={Globe} value={contactWebsite} onChange={setContactWebsite} />
                             </div>
-                            <InputField label="Adresse Physique" placeholder="Hôpital des Enfants, Tunis" icon={MapPin} value={contactAddress} onChange={setContactAddress} />
+                            <InputField label="Adresse Physique" placeholder="Hôpital des Enfants" icon={MapPin} value={contactAddress} onChange={setContactAddress} />
                         </div>
                     </SettingsSection>
 

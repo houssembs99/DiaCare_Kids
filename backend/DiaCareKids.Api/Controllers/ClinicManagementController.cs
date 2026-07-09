@@ -192,7 +192,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpGet("stats")]
-        public async Task<ActionResult> GetStats()
+        public async Task<ActionResult> GetStats([FromQuery] string timeframe = "7d")
         {
             var clinicId = GetCurrentUserId();
             var clinic = await _usersService.GetAsync(clinicId);
@@ -205,11 +205,17 @@ namespace DiaCareKids.Api.Controllers
             var doctors = allClinicUsers.Where(u => u.Role == "Medecin" && u.Status == "Actif").ToList();
             var children = allClinicUsers.Where(u => u.Role == "Enfant" && u.Status == "Actif").ToList();
             
+            int days = 7;
+            if (timeframe == "30d") days = 30;
+            if (timeframe == "3m") days = 90;
+
             // Patients Evolution (mocked logic based on CreateAt if exists, but we'll use a realistic spread)
-            var last7Days = Enumerable.Range(0, 7).Select(i => DateTime.UtcNow.Date.AddDays(-6 + i)).ToList();
+            var lastXDays = Enumerable.Range(0, days).Select(i => DateTime.UtcNow.Date.AddDays(-(days - 1) + i)).ToList();
+            var chartLabels = new List<string>();
             var patientsEvolution = new List<int>();
-            int basePatients = Math.Max(0, totalParents - 10);
-            foreach(var day in last7Days) {
+            int basePatients = Math.Max(0, totalParents - (days + 3));
+            foreach(var day in lastXDays) {
+                chartLabels.Add(day.ToString("dd/MM"));
                 basePatients += new Random().Next(0, 3);
                 patientsEvolution.Add(basePatients);
             }
@@ -227,7 +233,7 @@ namespace DiaCareKids.Api.Controllers
             var today = DateTime.UtcNow.Date;
             int hyposToday = 0;
             int hypersToday = 0;
-            var alertsPerDay = new List<int> { 0, 0, 0, 0, 0, 0, 0 };
+            var alertsPerDay = new int[days].ToList();
 
             var childrenIds = children.Select(c => c.Id!).ToList();
             var recentActivities = new List<object>();
@@ -238,10 +244,10 @@ namespace DiaCareKids.Api.Controllers
                 
                 foreach (var record in recentRecords)
                 {
-                    if (record.Timestamp.Date >= today.AddDays(-6))
+                    if (record.Timestamp.Date >= today.AddDays(-(days - 1)))
                     {
-                        var dayIndex = (record.Timestamp.Date - today.AddDays(-6)).Days;
-                        if (dayIndex >= 0 && dayIndex < 7)
+                        var dayIndex = (record.Timestamp.Date - today.AddDays(-(days - 1))).Days;
+                        if (dayIndex >= 0 && dayIndex < days)
                         {
                             // Define critical alerts (glucose < 0.70 or > 2.50)
                             if (record.GlucoseValue.HasValue && (record.GlucoseValue < 0.70 || record.GlucoseValue > 2.50))
@@ -299,6 +305,7 @@ namespace DiaCareKids.Api.Controllers
                 clinicName = clinic.FullName,
                 type = clinic.ClinicType,
                 charts = new {
+                    labels = chartLabels,
                     evolution = patientsEvolution,
                     distribution = new { labels = distributionLabels, data = distributionData },
                     alerts = alertsPerDay
