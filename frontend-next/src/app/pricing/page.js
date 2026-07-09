@@ -21,33 +21,61 @@ export default function PricingPage() {
     const [activeTab, setActiveTab] = useState('Parent'); // Default view for guests
 
     useEffect(() => {
-        // Fetch plans from backend
-        api.get('/Plans')
-            .then(res => {
-                setPlansList(res.data);
-                setIsLoading(false);
-            })
-            .catch(err => {
-                console.error("Error fetching pricing plans:", err);
-                setIsLoading(false);
-            });
+        const fetchPlans = async () => {
+            let useClinicPackages = false;
+            let clinicId = null;
 
-        // Determine user role if logged in
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            try {
-                const parsed = JSON.parse(storedUser);
-                setUserRole(parsed.role);
-                // Pre-set tab based on role
-                if (parsed.role === 'Clinique' || parsed.role === 'Medecin') {
-                    setActiveTab('Clinique');
-                } else {
-                    setActiveTab('Parent');
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                try {
+                    const parsed = JSON.parse(storedUser);
+                    setUserRole(parsed.role);
+                    if (parsed.role === 'Clinique' || parsed.role === 'Medecin') {
+                        setActiveTab('Clinique');
+                    } else {
+                        setActiveTab('Parent');
+                    }
+
+                    if (parsed.role === 'Parent' && parsed.associatedClinicId) {
+                        useClinicPackages = true;
+                        clinicId = parsed.associatedClinicId;
+                    }
+                } catch (e) {
+                    console.error("Error parsing user role:", e);
                 }
-            } catch (e) {
-                console.error("Error parsing user role:", e);
             }
-        }
+
+            try {
+                let res;
+                if (useClinicPackages) {
+                    res = await api.get(`/ClinicPackages/clinic/${clinicId}`);
+                    // Map clinic packages to unified format expected by the frontend
+                    const mappedPlans = res.data.map(pkg => ({
+                        id: pkg.id,
+                        name: pkg.name,
+                        price: pkg.price,
+                        currency: pkg.currency || 'TND',
+                        duration: pkg.paymentFrequency,
+                        role: 'Parent',
+                        maxKids: pkg.maxKidsPerParent,
+                        features: pkg.services || [],
+                        color: 'from-[#088395] to-[#0b1b2b]',
+                        iconName: 'Star',
+                        isPopular: pkg.price > 0 // Just an arbitrary UI logic
+                    }));
+                    setPlansList(mappedPlans);
+                } else {
+                    res = await api.get('/Plans');
+                    setPlansList(res.data);
+                }
+            } catch (err) {
+                console.error("Error fetching pricing plans:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPlans();
     }, []);
 
     const handleSubscribe = async (plan) => {

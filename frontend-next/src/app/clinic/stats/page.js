@@ -46,7 +46,7 @@ export default function ClinicStats() {
     React.useEffect(() => {
         const fetchInternalStats = async () => {
             try {
-                const res = await api.get('/ClinicManagement/internal-stats');
+                const res = await api.get(`/ClinicManagement/internal-stats?timeframe=${filterPeriod}`);
                 setStatsData(res.data);
             } catch (err) {
                 console.error("Erreur de récupération des statistiques internes", err);

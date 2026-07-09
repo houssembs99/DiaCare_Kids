@@ -109,14 +109,6 @@ export default function ClinicAlerts() {
                                 </div>
                                 <div className="text-5xl font-black italic tracking-tighter text-accent group-hover:scale-110 transition-transform">{alert.value}</div>
                             </div>
-                            <div className="mt-10 flex gap-4">
-                                <button className="flex-1 py-5 bg-accent text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-105 active:scale-95 transition-all shadow-xl">
-                                    Prendre en charge
-                                </button>
-                                <button className="p-5 bg-white/5 border border-white/10 rounded-2xl text-white hover:bg-white/10 transition-all">
-                                    <MessageSquare size={20} />
-                                </button>
-                            </div>
                         </motion.div>
                     ))}
                 </div>

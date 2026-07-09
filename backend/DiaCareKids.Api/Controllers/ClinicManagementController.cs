@@ -209,15 +209,17 @@ namespace DiaCareKids.Api.Controllers
             if (timeframe == "30d") days = 30;
             if (timeframe == "3m") days = 90;
 
-            // Patients Evolution (mocked logic based on CreateAt if exists, but we'll use a realistic spread)
+            // Patients Evolution (Real data based on CreatedAt)
             var lastXDays = Enumerable.Range(0, days).Select(i => DateTime.UtcNow.Date.AddDays(-(days - 1) + i)).ToList();
             var chartLabels = new List<string>();
             var patientsEvolution = new List<int>();
-            int basePatients = Math.Max(0, totalParents - (days + 3));
+            
+            var parentsForChart = allClinicUsers.Where(u => u.Role == "Parent" && u.Status == "Actif").ToList();
+            
             foreach(var day in lastXDays) {
                 chartLabels.Add(day.ToString("dd/MM"));
-                basePatients += new Random().Next(0, 3);
-                patientsEvolution.Add(basePatients);
+                int currentPatients = parentsForChart.Count(p => p.CreatedAt.Date <= day);
+                patientsEvolution.Add(currentPatients);
             }
 
             // Repartition per doctor
@@ -418,7 +420,7 @@ namespace DiaCareKids.Api.Controllers
         }
 
         [HttpGet("internal-stats")]
-        public async Task<ActionResult> GetInternalStats()
+        public async Task<ActionResult> GetInternalStats([FromQuery] string timeframe = "30d")
         {
             var clinicId = GetCurrentUserId();
             var allClinicUsers = await _usersService.GetByClinicIdAsync(clinicId);
@@ -444,39 +446,98 @@ namespace DiaCareKids.Api.Controllers
                 docData.Add(children.Count);
             }
 
+            int days = 30;
+            if (timeframe == "7d") days = 7;
+            if (timeframe == "90d") days = 90;
+            var cutoffDate = DateTime.UtcNow.AddDays(-days);
+
             int totalRecords = 0;
             int hypos = 0;
             int hypers = 0;
             double meanGlucose = 1.15;
+            
+            var allRecordsForPeriod = new List<MedicalRecord>();
+            var allRecords = new List<MedicalRecord>();
+            string peakAlertsStr = "Aucune alerte";
 
             if (childrenIds.Any())
             {
-                var records = await _recordsService.GetLatestForPatientsAsync(childrenIds, 1000);
-                totalRecords = records.Count;
+                allRecords = await _recordsService.GetLatestForPatientsAsync(childrenIds, 5000);
+                allRecordsForPeriod = allRecords.Where(r => r.Timestamp >= cutoffDate).ToList();
+                totalRecords = allRecordsForPeriod.Count;
 
-                var glucoseRecords = records.Where(r => r.GlucoseValue.HasValue).ToList();
+                var glucoseRecords = allRecordsForPeriod.Where(r => r.GlucoseValue.HasValue).ToList();
                 if (glucoseRecords.Any())
                 {
                     hypos = glucoseRecords.Count(r => r.GlucoseValue < 0.70);
                     hypers = glucoseRecords.Count(r => r.GlucoseValue > 1.80);
-                    meanGlucose = Math.Round(glucoseRecords.Average(r => r.GlucoseValue!.Value), 0);
+                    meanGlucose = Math.Round(glucoseRecords.Average(r => r.GlucoseValue!.Value), 2);
+                    
+                    var alertRecords = glucoseRecords.Where(r => r.GlucoseValue < 0.70 || r.GlucoseValue > 2.50).ToList();
+                    if (alertRecords.Any())
+                    {
+                        var peakHour = alertRecords.GroupBy(r => r.Timestamp.Hour)
+                                                   .OrderByDescending(g => g.Count())
+                                                   .First().Key;
+                        int endHour = (peakHour + 2) % 24;
+                        peakAlertsStr = $"{peakHour:D2}h - {endHour:D2}h";
+                    }
                 }
             }
 
+            // Rates
             double hypoRate = totalRecords > 0 ? Math.Round((double)hypos / totalRecords * 100, 1) : 4.2;
             double hyperRate = totalRecords > 0 ? Math.Round((double)hypers / totalRecords * 100, 1) : 18.5;
             double normalRate = Math.Max(0, 100.0 - hypoRate - hyperRate);
 
-            // Indice de contrôle global sur 6 mois (calcul simulé ou basé sur l'historique)
-            var months = new List<string> { "Déc", "Jan", "Fév", "Mar", "Avr", "Mai" };
-            var controlScores = new List<double> { 76.5, 78.0, 81.2, 83.0, 84.5, Math.Round(normalRate, 1) };
+            // Chart Generation
+            var finalMonths = new List<string>();
+            var finalScores = new List<double>();
+            
+            double CalcScore(DateTime start, DateTime end)
+            {
+                var sub = allRecords.Where(r => r.Timestamp >= start && r.Timestamp < end && r.GlucoseValue.HasValue).ToList();
+                if (!sub.Any()) return 0;
+                int h1 = sub.Count(r => r.GlucoseValue < 0.70);
+                int h2 = sub.Count(r => r.GlucoseValue > 1.80);
+                return Math.Round(Math.Max(0, 100.0 - ((double)h1 / sub.Count * 100) - ((double)h2 / sub.Count * 100)), 1);
+            }
+
+            if (!childrenIds.Any()) 
+            {
+                // Fallback
+                finalMonths = new List<string> { "Déc", "Jan", "Fév", "Mar", "Avr", "Mai" };
+                finalScores = new List<double> { 76.5, 78.0, 81.2, 83.0, 84.5, Math.Round(normalRate, 1) };
+            }
+            else if (timeframe == "7d") {
+                for (int i = 6; i >= 0; i--) {
+                    var d = DateTime.UtcNow.Date.AddDays(-i);
+                    finalMonths.Add(d.ToString("dd/MM"));
+                    finalScores.Add(CalcScore(d, d.AddDays(1)));
+                }
+            } else if (timeframe == "30d") {
+                for (int i = 4; i >= 0; i--) {
+                    var start = DateTime.UtcNow.Date.AddDays(-(i*6 + 6));
+                    var end = DateTime.UtcNow.Date.AddDays(-(i*6));
+                    finalMonths.Add(start.ToString("dd/MM"));
+                    finalScores.Add(CalcScore(start, end));
+                }
+            } else {
+                for (int i = 2; i >= 0; i--) {
+                    var d = DateTime.UtcNow.Date.AddMonths(-i);
+                    finalMonths.Add(d.ToString("MMM"));
+                    var start = new DateTime(d.Year, d.Month, 1);
+                    var end = start.AddMonths(1);
+                    finalScores.Add(CalcScore(start, end));
+                }
+            }
 
             // Radar scores
             double stability = Math.Round(normalRate * 0.95, 0);
             double reactivity = 88.0;
             double adherence = 85.0;
             double doses = 90.0;
-            double meanScore = meanGlucose >= 0.80 && meanGlucose <= 130 ? 95.0 : 75.0;
+            double meanScore = meanGlucose >= 0.80 && meanGlucose <= 1.30 ? 95.0 : 75.0;
 
             return Ok(new
             {
@@ -489,8 +550,8 @@ namespace DiaCareKids.Api.Controllers
                 engagement = "94%",
                 subEngagement = "Taux de réponse aux crises",
                 performanceChart = new {
-                    labels = months,
-                    data = controlScores
+                    labels = finalMonths,
+                    data = finalScores
                 },
                 radarChart = new {
                     labels = new List<string> { "Stabilité", "Réactivité", "Suivi", "Doses", "Glycémie Moy." },
@@ -502,7 +563,7 @@ namespace DiaCareKids.Api.Controllers
                 },
                 insights = new {
                     stableGroup = children.Count > 0 ? $"{children.Count} patients suivis" : "Tranche 8-12 ans",
-                    peakAlerts = "18h - 20h"
+                    peakAlerts = peakAlertsStr
                 }
             });
         }
