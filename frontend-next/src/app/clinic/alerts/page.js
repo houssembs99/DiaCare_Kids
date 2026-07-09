@@ -7,7 +7,7 @@ import {
     AlertTriangle, Search, Filter, Clock,
     Baby, Stethoscope, ShieldAlert, CheckCircle2,
     ChevronLeft, ChevronRight, MessageSquare,
-    ArrowUpRight, AlertCircle, Activity
+    ArrowUpRight, AlertCircle, Activity, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,17 @@ export default function ClinicAlerts() {
         };
         fetchAlerts();
     }, []);
+
+    const handleDeleteAlert = async (id) => {
+        if (!confirm("Voulez-vous vraiment supprimer cet enregistrement ?")) return;
+        try {
+            await api.delete(`/MedicalRecords/${id}`);
+            setAlerts(prev => prev.filter(a => a.id !== id));
+        } catch (error) {
+            console.error("Erreur lors de la suppression:", error);
+            alert("Erreur lors de la suppression de l'alerte.");
+        }
+    };
 
     const filteredAlerts = alerts.filter(alert => {
         return filterLevel === "All" || alert.level === filterLevel;
@@ -179,8 +190,12 @@ export default function ClinicAlerts() {
                                             </div>
                                         </td>
                                         <td className="px-10 py-8 text-right">
-                                            <button className="p-4 bg-white/5 hover:bg-white hover:text-[#088395] rounded-2xl text-white transition-all group/btn shadow-[0_10px_30px_rgba(0,0,0,0.3)] border border-white/5">
-                                                <ArrowUpRight size={18} className="group-hover/btn:scale-125 transition-transform" />
+                                            <button 
+                                                onClick={() => handleDeleteAlert(alert.id)}
+                                                title="Supprimer l'alerte"
+                                                className="p-4 bg-white/5 hover:bg-white hover:text-accent rounded-2xl text-white transition-all group/btn shadow-[0_10px_30px_rgba(0,0,0,0.3)] border border-white/5"
+                                            >
+                                                <Trash2 size={18} className="group-hover/btn:scale-125 transition-transform" />
                                             </button>
                                         </td>
                                     </motion.tr>
