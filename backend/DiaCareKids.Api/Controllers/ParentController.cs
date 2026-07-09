@@ -134,6 +134,7 @@ namespace DiaCareKids.Api.Controllers
                     r.GlucoseValue,
                     r.InsulinDose,
                     r.CarbsEstimated,
+                    r.MealDescription,
                     ChildName = children.FirstOrDefault(c => c.Id == r.PatientId)?.FullName
                 })
             });

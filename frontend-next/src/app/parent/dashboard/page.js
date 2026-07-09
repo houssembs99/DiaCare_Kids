@@ -173,7 +173,7 @@ export default function ParentDashboard() {
                                     </div>
                                     <p className="text-[11px] font-medium text-white/60 leading-tight mt-1">
                                         {record.insulinDose > 0 ? `${record.insulinDose} UI Insuline` : 'Pas d\'insuline'} 
-                                        {record.carbsEstimated > 0 ? ` • Repas consommé` : ''}
+                                        {record.carbsEstimated > 0 ? ` • ${record.mealDescription || 'Repas consommé'}` : ''}
                                     </p>
                                 </div>
                                 <div className="text-[8px] font-black text-white/20 uppercase">

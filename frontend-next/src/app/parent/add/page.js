@@ -67,6 +67,7 @@ export default function AddMeasure() {
                 timing: moment,
                 insulinDose: insulin ? parseFloat(dose) : 0,
                 carbsEstimated: meal !== 'none' ? 40 : 0, // Mock carb estimation based on meal
+                mealDescription: meal !== 'none' ? meal : null,
                 activityLevel: activity ? "Modérée" : "Faible",
                 notes: comment
             };
