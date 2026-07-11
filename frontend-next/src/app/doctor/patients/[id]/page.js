@@ -532,7 +532,21 @@ export default function PatientDetail() {
                                                             </div>
                                                         </td>
                                                         <td className="py-6 text-right">
-                                                            <span className="text-sm font-black italic text-orange-400">{r.carbsEstimated || '--'} <span className="text-[10px] not-italic opacity-30">g</span></span>
+                                                            {r.mealDescription ? (
+                                                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-500/15 border border-orange-500/30 rounded-xl">
+                                                                    <span className="text-base">🍽️</span>
+                                                                    <span className="text-xs font-black italic text-orange-300 uppercase tracking-tight max-w-[120px] truncate">{r.mealDescription}</span>
+                                                                </span>
+                                                            ) : r.carbsEstimated ? (
+                                                                <span className="text-sm font-black italic text-orange-400">{r.carbsEstimated} <span className="text-[10px] not-italic opacity-30">g</span></span>
+                                                            ) : r.timing ? (
+                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl">
+                                                                    <Clock size={10} className="text-white/30" />
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{r.timing === 'before' ? 'Avant repas' : r.timing === 'after' ? 'Après repas' : r.timing === 'bedtime' ? 'Au coucher' : r.timing}</span>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-white/20 font-black text-sm">--</span>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 ))}
