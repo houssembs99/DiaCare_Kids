@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import {
     Users, Baby, AlertTriangle, Activity,
     TrendingUp, ArrowRight, ShieldAlert,
     Clock, CheckCircle2, Droplets, Zap,
-    Stethoscope
+    Stethoscope, AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -48,65 +48,228 @@ const DoctorStatCard = ({ title, value, icon, color, tendency }) => (
     </motion.div>
 );
 
+// Helper: get date threshold based on filter
+function getDateThreshold(filter) {
+    const now = new Date();
+    if (filter === '7d') {
+        now.setDate(now.getDate() - 7);
+    } else if (filter === '30d') {
+        now.setDate(now.getDate() - 30);
+    } else if (filter === '3m') {
+        now.setMonth(now.getMonth() - 3);
+    }
+    return now;
+}
+
+// Helper: format timestamp to readable relative time
+function formatRelativeTime(dateStr) {
+    if (!dateStr) return 'Récemment';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 'Récemment';
+    const now = new Date();
+    const diffMs = now - date;
+    const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffD = Math.floor(diffH / 24);
+    if (diffH < 1) return 'Il y a < 1h';
+    if (diffH < 24) return `Il y a ${diffH}h`;
+    if (diffD === 1) return 'Hier';
+    return `Il y a ${diffD}j`;
+}
+
+// Helper: get date from a record (field is 'timestamp' in MedicalRecord model)
+function getRecordDate(r) {
+    // C# model uses 'Timestamp' → serialized as 'timestamp' in camelCase JSON
+    return r.timestamp || r.recordedAt || r.createdAt || null;
+}
+
+// Helper: build chart labels & data from filter
+function buildChartData(allRecords, filter) {
+    const now = new Date();
+    let labels = [];
+    let buckets = [];
+
+    if (filter === '7d') {
+        const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            labels.push(days[d.getDay() === 0 ? 6 : d.getDay() - 1]);
+            buckets.push(d.toDateString());
+        }
+        const grouped = {};
+        buckets.forEach(b => (grouped[b] = []));
+        allRecords.forEach(r => {
+            const dateStr = getRecordDate(r);
+            if (!dateStr) return;
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return;
+            const key = d.toDateString();
+            if (grouped[key] !== undefined && r.glucoseValue != null) {
+                grouped[key].push(r.glucoseValue);
+            }
+        });
+        const data = buckets.map(b => {
+            const vals = grouped[b];
+            if (!vals || vals.length === 0) return null;
+            const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+            return Math.round(avg * 100) / 100;
+        });
+        return { labels, data };
+    }
+
+    if (filter === '30d') {
+        for (let i = 3; i >= 0; i--) {
+            labels.push(`S-${i === 0 ? 'Act' : i}`);
+        }
+        const data = labels.map((_, idx) => {
+            const weeksBack = labels.length - 1 - idx;
+            const start = new Date(now);
+            start.setDate(start.getDate() - weeksBack * 7 - 7);
+            const end = new Date(now);
+            end.setDate(end.getDate() - weeksBack * 7);
+            const vals = allRecords
+                .filter(r => {
+                    const dateStr = getRecordDate(r);
+                    if (!dateStr) return false;
+                    const d = new Date(dateStr);
+                    return !isNaN(d.getTime()) && d >= start && d <= end && r.glucoseValue != null;
+                })
+                .map(r => r.glucoseValue);
+            if (!vals.length) return null;
+            const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+            return Math.round(avg * 100) / 100;
+        });
+        return { labels, data };
+    }
+
+    // 3m: group by month
+    for (let i = 2; i >= 0; i--) {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() - i);
+        labels.push(d.toLocaleString('fr-FR', { month: 'short' }));
+    }
+    const data = labels.map((_, idx) => {
+        const weeksBack = labels.length - 1 - idx;
+        const targetDate = new Date(now);
+        targetDate.setMonth(targetDate.getMonth() - weeksBack);
+        const targetMonth = targetDate.getMonth();
+        const targetYear = targetDate.getFullYear();
+        const vals = allRecords.filter(r => {
+            const dateStr = getRecordDate(r);
+            if (!dateStr) return false;
+            const d = new Date(dateStr);
+            return !isNaN(d.getTime()) && d.getMonth() === targetMonth && d.getFullYear() === targetYear && r.glucoseValue != null;
+        }).map(r => r.glucoseValue);
+        if (!vals.length) return null;
+        const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+        return Math.round(avg * 100) / 100;
+    });
+    return { labels, data };
+}
+
 export default function DoctorDashboard() {
     const [filter, setFilter] = useState('7d');
     const [stats, setStats] = useState({ totalPatients: 0, stables: 0, alerts: 0, hypo: 0, hyper: 0, list: [] });
+    const [chartInfo, setChartInfo] = useState({ labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'], data: [null, null, null, null, null, null, null] });
     const [loading, setLoading] = useState(true);
 
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         setLoading(true);
         try {
             const res = await api.get('/doctor-management/patients');
             const patients = res.data;
-            
+            const threshold = getDateThreshold(filter);
+
             let total = patients.length;
             let hypo = 0;
             let hyper = 0;
             let stables = 0;
             let alertsList = [];
-            
-            patients.forEach(p => {
-                if (p.lastGlucose) {
-                    if (p.lastGlucose < 0.70) {
+            let allRecordsForChart = [];
+
+            for (const p of patients) {
+                // Fetch records for this patient to filter by date
+                let records = [];
+                try {
+                    const recRes = await api.get(`/medicalrecords/patient/${p.id}`);
+                    records = recRes.data || [];
+                } catch (_) {
+                    // No records
+                }
+
+                // Collect for chart (all records, buildChartData will filter by date)
+                allRecordsForChart.push(...records);
+
+                // Filter records in the selected time window using correct 'timestamp' field
+                const periodRecords = records.filter(r => {
+                    const dateStr = getRecordDate(r);
+                    if (!dateStr) return false;
+                    const d = new Date(dateStr);
+                    return !isNaN(d.getTime()) && d >= threshold;
+                });
+
+                // Determine patient status from latest record within period (or overall lastGlucose)
+                const lastRecord = periodRecords.length > 0 ? periodRecords[0] : null;
+                const glucose = lastRecord?.glucoseValue ?? p.lastGlucose ?? null;
+
+                if (glucose != null) {
+                    // Values in g/L (< 10 means g/L scale, > 10 means mg/dL → convert)
+                    const glucoseGL = glucose < 10 ? glucose : glucose / 100;
+
+                    if (glucoseGL < 0.70) {
                         hypo++;
-                        alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' g/L' });
-                    } else if (p.lastGlucose > 1.40) {
+                        alertsList.push({
+                            id: p.id,
+                            name: p.fullName || 'Inconnu',
+                            time: formatRelativeTime(getRecordDate(lastRecord)),
+                            value: glucoseGL.toFixed(2) + ' g/L',
+                            type: 'hypo'
+                        });
+                    } else if (glucoseGL > 1.40) {
                         hyper++;
-                        if (p.lastGlucose > 200) {
-                             alertsList.push({ name: p.fullName || 'Inconnu', time: 'Récemment', value: p.lastGlucose + ' g/L' });
-                        }
+                        alertsList.push({
+                            id: p.id,
+                            name: p.fullName || 'Inconnu',
+                            time: formatRelativeTime(getRecordDate(lastRecord)),
+                            value: glucoseGL.toFixed(2) + ' g/L',
+                            type: 'hyper'
+                        });
                     } else {
                         stables++;
                     }
                 } else {
-                    stables++; // default si pas de mesure
+                    stables++;
                 }
-            });
+            }
+
+            // Build chart with actual records
+            const { labels, data } = buildChartData(allRecordsForChart, filter);
+            setChartInfo({ labels, data });
 
             setStats({
                 totalPatients: total,
-                stables: stables,
+                stables,
                 alerts: alertsList.length,
-                hypo: hypo,
-                hyper: hyper,
-                list: alertsList.slice(0, 4) // top 4 max
+                hypo,
+                hyper,
+                list: alertsList.slice(0, 4)
             });
         } catch (err) {
             console.error("Error fetching stats:", err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetchStats();
-    }, []);
+    }, [fetchStats]);
 
     const chartData = {
-        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        labels: chartInfo.labels,
         datasets: [{
             label: 'Moyenne Glycémique (g/L)',
-            data: [145, 138, 152, 148, 142, 135, 1.40],
+            data: chartInfo.data,
             borderColor: '#088395',
             backgroundColor: 'rgba(8, 131, 149, 0.1)',
             fill: true,
@@ -115,7 +278,8 @@ export default function DoctorDashboard() {
             pointRadius: 6,
             pointBackgroundColor: '#fff',
             pointBorderColor: '#088395',
-            pointBorderWidth: 2
+            pointBorderWidth: 2,
+            spanGaps: true
         }]
     };
 
@@ -128,13 +292,22 @@ export default function DoctorDashboard() {
                 backgroundColor: 'rgba(0,0,0,0.8)',
                 padding: 12,
                 cornerRadius: 12,
-                titleFont: { size: 12, weight: 'bold' }
+                titleFont: { size: 12, weight: 'bold' },
+                callbacks: {
+                    label: (ctx) => ctx.raw != null ? `${ctx.raw.toFixed(2)} g/L` : 'Aucune donnée'
+                }
             }
         },
         scales: {
             y: {
                 grid: { color: 'rgba(255,255,255,0.05)' },
-                ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10, weight: 'bold' } }
+                ticks: {
+                    color: 'rgba(255,255,255,0.3)',
+                    font: { size: 10, weight: 'bold' },
+                    callback: (v) => `${v.toFixed(2)} g/L`
+                },
+                min: 0,
+                suggestedMax: 2.5
             },
             x: {
                 grid: { display: false },
@@ -147,7 +320,7 @@ export default function DoctorDashboard() {
         <DashboardLayout role="Medecin">
             <div className="space-y-12 pb-10 text-white">
 
-                {/* Header SECTION 3.2 */}
+                {/* Header */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
@@ -159,23 +332,31 @@ export default function DoctorDashboard() {
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Surveillance et optimisation des soins pédiatriques</p>
                     </div>
 
+                    {/* Filter buttons – now trigger data reload */}
                     <div className="flex items-center gap-4 bg-white/5 p-2 rounded-3xl border border-white/10 backdrop-blur-xl">
-                        {['7d', '30d', '3m'].map(f => (
+                        {[
+                            { key: '7d', label: '7 Jours' },
+                            { key: '30d', label: '30 Jours' },
+                            { key: '3m', label: '3 Mois' }
+                        ].map(({ key, label }) => (
                             <button
-                                key={f}
-                                onClick={() => setFilter(f)}
+                                key={key}
+                                onClick={() => setFilter(key)}
+                                disabled={loading}
                                 className={cn(
                                     "px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                    filter === f ? "bg-white text-[#088395] shadow-xl" : "text-white/40 hover:text-white"
+                                    filter === key
+                                        ? "bg-white text-[#088395] shadow-xl"
+                                        : "text-white/40 hover:text-white disabled:opacity-50"
                                 )}
                             >
-                                {f === '7d' ? '7 Jours' : f === '30d' ? '30 Jours' : '3 Mois'}
+                                {loading && filter === key ? '...' : label}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                {/* Stat Cards SECTION 3.2 */}
+                {/* Stat Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     <DoctorStatCard title="Total Patients" value={loading ? "..." : stats.totalPatients.toString().padStart(2, '0')} icon={<Baby size={24} />} color="bg-[#1E88E5]" tendency={stats.totalPatients > 0 ? `+${stats.totalPatients}` : "0"} />
                     <DoctorStatCard title="Héros Stables" value={loading ? "..." : stats.stables.toString().padStart(2, '0')} icon={<CheckCircle2 size={24} />} color="bg-success" tendency={stats.stables > 0 ? "Optimal" : "-"} />
@@ -184,10 +365,10 @@ export default function DoctorDashboard() {
                     <DoctorStatCard title="En Hyperglycémie" value={loading ? "..." : stats.hyper.toString().padStart(2, '0')} icon={<Zap size={24} />} color="bg-yellow-500" />
                 </div>
 
-                {/* Priority List & Chart SECTION 3.2 */}
+                {/* Priority List & Chart */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* Urgencies List */}
+                    {/* Priority List */}
                     <div className="bg-accent/10 border-2 border-accent/20 rounded-[40px] p-10 flex flex-col shadow-[0_20px_50px_rgba(255,112,67,0.1)] relative overflow-hidden">
                         <div className="absolute -right-20 -top-20 opacity-5 rotate-12">
                             <AlertTriangle size={300} />
@@ -199,25 +380,51 @@ export default function DoctorDashboard() {
                             </div>
 
                             <div className="flex-1 space-y-4">
-                                {stats.list.map((alert, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-3xl hover:bg-white/10 transition-all group">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 bg-accent text-white rounded-xl flex items-center justify-center font-black">
-                                                {alert.name.charAt(0)}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-black uppercase tracking-tighter">{alert.name}</span>
-                                                <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{alert.time}</span>
-                                            </div>
+                                {loading ? (
+                                    <div className="flex flex-col gap-3">
+                                        {[1, 2, 3].map(i => (
+                                            <div key={i} className="h-16 bg-white/5 rounded-3xl animate-pulse" />
+                                        ))}
+                                    </div>
+                                ) : stats.list.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full py-10 gap-4 text-center">
+                                        <div className="w-16 h-16 bg-success/10 border border-success/20 rounded-2xl flex items-center justify-center">
+                                            <CheckCircle2 size={28} className="text-success" />
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-sm font-black italic text-accent">{alert.value}</div>
-                                            <Link href="/doctor/alerts" className="p-3 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <ArrowRight size={14} />
-                                            </Link>
+                                        <div>
+                                            <p className="text-sm font-black text-white/60 uppercase tracking-tight">Aucune alerte</p>
+                                            <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">Tous les patients sont stables</p>
                                         </div>
                                     </div>
-                                ))}
+                                ) : (
+                                    stats.list.map((alert, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-3xl hover:bg-white/10 transition-all group">
+                                            <div className="flex items-center gap-4">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-xl flex items-center justify-center font-black text-white",
+                                                    alert.type === 'hypo' ? 'bg-orange-500' : 'bg-accent'
+                                                )}>
+                                                    {alert.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-black uppercase tracking-tighter">{alert.name}</span>
+                                                    <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{alert.time}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className={cn(
+                                                    "text-sm font-black italic",
+                                                    alert.type === 'hypo' ? 'text-orange-400' : 'text-accent'
+                                                )}>
+                                                    {alert.value}
+                                                </div>
+                                                <Link href={`/doctor/patients/${alert.id}`} className="p-3 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <ArrowRight size={14} />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
 
                             <Link href="/doctor/alerts" className="w-full mt-8 py-5 border border-accent/30 rounded-2xl text-accent text-[10px] font-black uppercase tracking-[0.3em] hover:bg-accent hover:text-white transition-all text-center inline-block">
@@ -238,7 +445,13 @@ export default function DoctorDashboard() {
                             </div>
                         </div>
                         <div className="h-[350px]">
-                            <Line data={chartData} options={chartOptions} />
+                            {loading ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <div className="w-10 h-10 border-4 border-[#088395]/30 border-t-[#088395] rounded-full animate-spin" />
+                                </div>
+                            ) : (
+                                <Line data={chartData} options={chartOptions} />
+                            )}
                         </div>
                     </div>
 
