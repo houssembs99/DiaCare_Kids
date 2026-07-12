@@ -83,27 +83,63 @@ export default function DoctorMessaging() {
             if (!storedUser) return;
             const docId = JSON.parse(storedUser).id;
 
-            // 1. Get patients for this doctor to find parents of existing patients
-            const patientsRes = await api.get(`/Patients/doctor/${docId}`);
-            const doctorPatients = patientsRes.data;
-            const myParentIds = new Set(doctorPatients.map(p => p.parentId).filter(id => id));
-
-            // 2. Get all users and filter by those who are either parents of my patients 
-            // OR parents rattachés directly to my cabinet (for independent doctors)
+            // Use the same logic as DoctorManagementController:
+            // 1. Find parents directly associated to this doctor (independent cabinet)
+            // 2. Find children assigned to this doctor, then trace back to their parents
             const usersRes = await api.get('/Users');
-            const myParents = usersRes.data.filter(u => 
-                u.role === 'Parent' && (myParentIds.has(u.id) || u.associatedDoctorId === docId || u.associatedClinicId === docId)
+            const allUsers = usersRes.data;
+
+            // Parents directly linked to this doctor
+            const directParents = allUsers.filter(u =>
+                u.role === 'Parent' && (u.associatedDoctorId === docId || u.associatedClinicId === docId)
             );
 
-            setContacts(myParents.map(p => ({
-                id: p.id,
-                name: p.fullName || p.email || "Parent Inconnu",
-                parentOf: "un enfant",
-                lastMsg: "Taper pour commencer...",
-                time: "",
-                online: false,
-                unread: 0
-            })));
+            // Children assigned to this doctor -> find their parents
+            const myChildren = allUsers.filter(u =>
+                u.role === 'Enfant' && (u.associatedDoctorId === docId || u.associatedClinicId === docId)
+            );
+            const childParentIds = new Set(myChildren.map(c => c.associatedParentId).filter(Boolean));
+            const indirectParents = allUsers.filter(u =>
+                u.role === 'Parent' && childParentIds.has(u.id)
+            );
+
+            // Merge and deduplicate
+            const parentMap = new Map();
+            [...directParents, ...indirectParents].forEach(p => parentMap.set(p.id, p));
+            const uniqueParents = Array.from(parentMap.values());
+
+            // Enrich with last message and unread count
+            const enrichedContacts = await Promise.all(uniqueParents.map(async (p) => {
+                let lastMsg = "Cliquer pour discuter...";
+                let time = "";
+                let unread = 0;
+                try {
+                    const msgRes = await api.get(`/Messages/conversation/${docId}/${p.id}`);
+                    const msgs = msgRes.data;
+                    if (msgs.length > 0) {
+                        const last = msgs[msgs.length - 1];
+                        lastMsg = last.content || "📎 Pièce jointe";
+                        time = new Date(last.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        unread = msgs.filter(m => !m.isRead && m.receiverId === docId).length;
+                    }
+                } catch (_) { /* ignore */ }
+
+                // Find the child names for this parent
+                const parentChildren = myChildren.filter(c => c.associatedParentId === p.id);
+                const childNames = parentChildren.map(c => c.fullName).join(', ');
+
+                return {
+                    id: p.id,
+                    name: p.fullName || p.email || "Parent Inconnu",
+                    parentOf: childNames || "un enfant",
+                    lastMsg,
+                    time,
+                    online: false,
+                    unread
+                };
+            }));
+
+            setContacts(enrichedContacts);
         } catch (e) {
             console.error("fetchContacts error:", e);
         }
@@ -239,9 +275,18 @@ export default function DoctorMessaging() {
                                         {contact.name.charAt(0)}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-sm font-black uppercase tracking-tighter truncate">{contact.name}</div>
-                                        <div className="text-[10px] font-bold text-white/40 mt-1 truncate">Parent — cliquer pour discuter</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-sm font-black uppercase tracking-tighter truncate">{contact.name}</div>
+                                            {contact.time && <span className="text-[8px] font-bold text-white/30 shrink-0 ml-2">{contact.time}</span>}
+                                        </div>
+                                        <div className="text-[10px] font-bold text-white/40 mt-1 truncate">{contact.lastMsg}</div>
+                                        {contact.parentOf && <div className="text-[8px] font-bold text-[#088395]/60 mt-1 truncate">👶 {contact.parentOf}</div>}
                                     </div>
+                                    {contact.unread > 0 && (
+                                        <div className="w-6 h-6 bg-[#088395] rounded-full flex items-center justify-center text-[10px] font-black shrink-0">
+                                            {contact.unread}
+                                        </div>
+                                    )}
                                 </motion.div>
                             ))}
                         </div>
@@ -284,7 +329,7 @@ export default function DoctorMessaging() {
                                     ) : messages.map((m, idx) => {
                                         const isMe = m.senderId === currentUser?.id;
                                         return (
-                                            <div key={idx} className={cn("max-w-[0.70%] group", isMe ? "ml-auto" : "")}>
+                                            <div key={idx} className={cn("max-w-[70%] group", isMe ? "ml-auto" : "")}>
                                                 <div className={cn("p-6 rounded-3xl text-sm font-medium leading-relaxed shadow-xl", isMe ? "bg-[#088395] rounded-tr-none" : "bg-white/5 border border-white/5 rounded-tl-none")}>
                                                     {m.attachmentUrl && m.attachmentType === 'image' && (
                                                         <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer">
