@@ -283,7 +283,7 @@ export default function AdminSettings() {
                         <div className="space-y-8 p-10 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] flex flex-col justify-center italic">
                             <p className="text-[10px] font-bold text-[#1E88E5] uppercase tracking-widest">Informations Administrateur</p>
                             <div>
-                                <h4 className="text-xl font-black uppercase tracking-tighter">Houssem Bennaceur</h4>
+                                <h4 className="text-xl font-black uppercase tracking-tighter">Houssem Bensalah</h4>
                                 <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Super-Administrateur Système</p>
                             </div>
                             <div className="flex items-center gap-3 text-white/30 text-[10px] font-bold uppercase tracking-widest">

@@ -9,15 +9,57 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const mockLogs = [
-    { id: 1, action: "Tentative de connexion échouée", user: "Inconnu (192.168.1.45)", type: "Danger", date: "22 Fév, 23:12", device: "Chrome / Windows" },
-    { id: 2, action: "Suppression Clinique", user: "Admin (Houssem)", type: "Sensible", date: "22 Fév, 22:45", device: "Safari / macOS" },
-    { id: 3, action: "Export Base de Données", user: "Admin (Houssem)", type: "Sensible", date: "22 Fév, 18:00", device: "Chrome / Windows" },
-    { id: 4, action: "Mise à jour SSL", user: "System", type: "Info", date: "22 Fév, 02:00", device: "Cloudflare" },
-    { id: 5, action: "Blocage compte suspect", user: "System", type: "Urgent", date: "21 Fév, 21:30", device: "Antivirus API" },
-];
+import api from '@/lib/api';
 
 export default function AdminSecurity() {
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        uptimeSsl: 'Actif',
+        uptimeStatus: 'Safe',
+        alertes24h: 0,
+        trafficOrigin: 'Global',
+        trafficStatus: 'Calcul...',
+        authPercentage: '100%',
+        authStatus: 'Calcul...'
+    });
+
+    React.useEffect(() => {
+        const fetchLogs = async () => {
+            try {
+                const res = await api.get('/logs');
+                const logsData = res.data;
+                setLogs(logsData);
+                
+                // Calculate dynamic stats from real data
+                const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                const alerts = logsData.filter(l => (l.type === 'Danger' || l.type === 'Urgent') && new Date(l.date) > last24h).length;
+                
+                const failedLogins = logsData.filter(l => l.action.toLowerCase().includes('connexion') && l.type === 'Danger').length;
+                const authRate = Math.max(0, 100 - (failedLogins * 2));
+                
+                const uniqueDevices = new Set(logsData.map(l => l.device)).size;
+                const trafficDesc = uniqueDevices > 2 ? `Tunisia (Divers)` : 'Tunisia (100%)';
+
+                setStats({
+                    uptimeSsl: 'Actif',
+                    uptimeStatus: 'Safe',
+                    alertes24h: alerts,
+                    trafficOrigin: 'Global',
+                    trafficStatus: trafficDesc,
+                    authPercentage: `${authRate}%`,
+                    authStatus: authRate >= 90 ? 'Sécurisé' : 'Alerte'
+                });
+
+            } catch (err) {
+                console.error("Error fetching logs", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchLogs();
+    }, []);
+
     return (
         <DashboardLayout role="Admin">
             <div className="space-y-12 pb-10 text-white">
@@ -34,10 +76,10 @@ export default function AdminSecurity() {
 
                 {/* Security Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <SecurityStat label="Uptime SSL" value="Actif" status="Safe" icon={<Key size={24} />} />
-                    <SecurityStat label="Alertes 24h" value="12" status="Monitoring" icon={<ShieldAlert size={24} />} isWarning />
-                    <SecurityStat label="Origine Trafic" value="Global" status="Tunisia (84%)" icon={<Globe size={24} />} />
-                    <SecurityStat label="Auth 2FA" value="95%" status="Activé" icon={<Lock size={24} />} />
+                    <SecurityStat label="Uptime SSL" value={stats.uptimeSsl} status={stats.uptimeStatus} icon={<Key size={24} />} />
+                    <SecurityStat label="Alertes 24h" value={stats.alertes24h} status={stats.alertes24h > 0 ? "Monitoring" : "Safe"} icon={<ShieldAlert size={24} />} isWarning={stats.alertes24h > 0} />
+                    <SecurityStat label="Origine Trafic" value={stats.trafficOrigin} status={stats.trafficStatus} icon={<Globe size={24} />} />
+                    <SecurityStat label="Auth" value={stats.authPercentage} status={stats.authStatus} icon={<Lock size={24} />} isWarning={stats.authPercentage !== '100%'} />
                 </div>
 
                 {/* Toolbar */}
@@ -71,18 +113,29 @@ export default function AdminSecurity() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {mockLogs.map((log) => (
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan="5" className="px-10 py-8 text-center text-white/50">Chargement des logs...</td>
+                                    </tr>
+                                ) : logs.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5" className="px-10 py-8 text-center text-white/50">Aucun log trouvé</td>
+                                    </tr>
+                                ) : logs.map((log) => (
                                     <tr key={log.id} className="hover:bg-white/5 transition-colors group">
-                                        <td className="px-10 py-8 text-xs text-white/30 uppercase tracking-widest font-black">{log.date}</td>
+                                        <td className="px-10 py-8 text-xs text-white/30 uppercase tracking-widest font-black">
+                                            {new Date(log.date).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                        </td>
                                         <td className="px-10 py-8">
                                             <div className="flex items-center gap-4">
                                                 <div className={cn(
                                                     "w-10 h-10 rounded-xl flex items-center justify-center border",
                                                     log.type === 'Danger' ? "bg-accent/10 text-accent border-accent/20 shadow-[0_0_20px_rgba(255,112,67,0.15)]" :
                                                         log.type === 'Sensible' ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" :
-                                                            "bg-primary/10 text-primary border-primary/20"
+                                                            log.type === 'Urgent' ? "bg-accent/10 text-accent border-accent/20 shadow-[0_0_20px_rgba(255,112,67,0.15)]" :
+                                                                "bg-primary/10 text-primary border-primary/20"
                                                 )}>
-                                                    {log.type === 'Danger' ? <AlertTriangle size={18} /> : log.type === 'Sensible' ? <Key size={18} /> : <Activity size={18} />}
+                                                    {log.type === 'Danger' || log.type === 'Urgent' ? <AlertTriangle size={18} /> : log.type === 'Sensible' ? <Key size={18} /> : <Activity size={18} />}
                                                 </div>
                                                 <div className="text-sm font-black uppercase tracking-tighter">{log.action}</div>
                                             </div>

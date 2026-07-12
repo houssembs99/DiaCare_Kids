@@ -29,6 +29,7 @@ builder.Services.AddScoped<DiaCareKids.Api.Services.DoctorsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.MessagesService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.TransactionsService>();
 builder.Services.AddScoped<DiaCareKids.Api.Services.ClinicPackagesService>();
+builder.Services.AddScoped<DiaCareKids.Api.Services.LogsService>();
 builder.Services.AddSingleton<DiaCareKids.Api.Services.DecisionSupportService>();
 builder.Services.AddSingleton<DiaCareKids.Api.Services.GlucosePredictionService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
@@ -110,6 +111,9 @@ using (var scope = app.Services.CreateScope())
 {
     var plansService = scope.ServiceProvider.GetRequiredService<DiaCareKids.Api.Services.PlansService>();
     await plansService.SeedAsync();
+
+    var logsService = scope.ServiceProvider.GetRequiredService<DiaCareKids.Api.Services.LogsService>();
+    await logsService.SeedAsync();
 
     var usersService = scope.ServiceProvider.GetRequiredService<UsersService>();
     var testEmail = "medecin@gmail.com";
